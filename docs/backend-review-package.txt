@@ -1,0 +1,201 @@
+FILE: server/app.mjs
+import http from 'node:http';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {readFile,realpath,stat,access} from 'node:fs/promises';
+import {createReadStream} from 'node:fs';
+import {Readable} from 'node:stream';
+import ExcelJS from 'exceljs';
+import {loadAdmin,passwordHash,decrypt,saveAdmin,verifyTotp,token,hash,safeEqual} from './security.mjs';
+import {openStore} from './storage.mjs';
+import {HttpError,parseMultipart,validateFields,scanBuffer} from './intake.mjs';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.avif':'image/avif','.woff2':'font/woff2','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.pdf':'application/pdf','.json':'application/json'};
+export async function createApp(options={}){
+ const {production=false,key=null,intakeEnabled=false,scannerCommand='',legalsReady=false,trustedProxy='',testDynamicOrigin=false}=options;
+ const dataDir=path.resolve(options.dataDir??path.join(root,'data')),publicDir=path.resolve(options.publicDir??path.join(root,'public'));
+ let origin=options.origin??'http://127.0.0.1:3000';const parsed=new URL(origin);
+ if(parsed.origin!==origin||parsed.username||parsed.password)throw new Error('APP_ORIGIN must contain exact origin without path');
+ if(key&&key.length!==32)throw new Error('Encryption key must contain 32 bytes');
+ if(production&&(!key||parsed.protocol!=='https:'||!legalsReady||!scannerCommand||!['127.0.0.1','::1'].includes(trustedProxy)))throw new Error('Production requires key, HTTPS origin, loopback trusted TLS proxy, scanner and legals readiness');
+ if(scannerCommand){if(!path.isAbsolute(scannerCommand))throw new Error('Scanner must be an absolute executable path');await access(scannerCommand);}
+ let admin=await loadAdmin(dataDir,key);if(production&&!admin)throw new Error('Configure administrator before production startup');
+ const store=key?await openStore(dataDir,key):null;const enabled=Boolean(intakeEnabled&&key&&admin&&(!production||(scannerCommand&&legalsReady)));
+ const sessions=new Map(),preauth=new Map(),rates=new Map();let loginBusy=0,uploadBusy=0;
+ function cleanup(){const now=Date.now();for(const [id,s]of sessions)if(now-s.seen>30*60*1000||now-s.created>8*60*60*1000)sessions.delete(id);for(const [id,p]of preauth)if(now>p.expires)preauth.delete(id);for(const [id,r]of rates)if(now>r.until)rates.delete(id);}
+ const timer=setInterval(cleanup,60000);timer.unref();
+ const cookie=(name,value,age)=>`${name}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${production?'; Secure':''}`;
+ const cookies=req=>Object.fromEntries((req.headers.cookie??'').split(';').map(c=>c.trim().split('=')).filter(p=>p.length===2));
+ const session=req=>{cleanup();const s=sessions.get(hash(cookies(req).admin_session??''));if(s)s.seen=Date.now();return s;};
+ const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
+ function rate(id,max,window){cleanup();if(!rates.has(id)){if(rates.size>10000)throw new HttpError(429,'Слишком много запросов. Попробуйте позже.','RATE_LIMIT');rates.set(id,{count:0,until:Date.now()+window});}const r=rates.get(id);if(++r.count>max)throw new HttpError(429,'Слишком много попыток. Попробуйте через несколько минут.','RATE_LIMIT');}
+ function checkOrigin(req){if(req.headers.origin!==origin||['cross-site','same-site'].includes(req.headers['sec-fetch-site']))throw new HttpError(403,'Обновите страницу и повторите отправку.','CSRF');}
+ function checkCsrf(req,s,fieldToken){const provided=req.headers['x-csrf-token']??fieldToken;const auth=s??preauth.get(hash(cookies(req).csrf_session??''));if(!auth||!provided||!safeEqual(auth.csrf,provided)||(auth.expires&&Date.now()>auth.expires))throw new HttpError(403,'Обновите страницу и повторите отправку.','CSRF');}
+ async function readJson(req){if(!(req.headers['content-type']??'').startsWith('application/json'))throw new HttpError(400,'Некорректный формат запроса.');let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>8192)throw new HttpError(413,'Запрос слишком большой.');chunks.push(chunk);}try{const data=JSON.parse(Buffer.concat(chunks).toString());if(!data||typeof data!=='object'||Array.isArray(data))throw new Error();return data;}catch{throw new HttpError(400,'Не удалось прочитать запрос.');}}
+ async function route(req,res){
+  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('X-Frame-Options','DENY');
+  if(testDynamicOrigin)origin=`http://127.0.0.1:${server.address().port}`;
+  if(production){res.setHeader('Strict-Transport-Security','max-age=31536000');if(req.socket.remoteAddress!==trustedProxy||req.headers['x-forwarded-proto']!=='https')throw new HttpError(400,'Требуется защищённое соединение.','HTTPS_REQUIRED');}
+  const currentHost=req.headers.host;if(currentHost!==new URL(origin).host)throw new HttpError(400,'Некорректный адрес запроса.');
+  let pathname;try{pathname=decodeURIComponent(new URL(req.url,origin).pathname);}catch{throw new HttpError(400,'Некорректный адрес запроса.');}
+  const ip=req.socket.remoteAddress??'unknown';const s=session(req);const isAdmin=pathname.startsWith('/api/admin/');
+  if(pathname.startsWith('/api/'))res.setHeader('Cache-Control','no-store');
+  if(req.method==='GET'&&pathname==='/api/config')return json(res,200,{enabled,consentVersion:'2026-10-09'});
+  if(req.method==='GET'&&pathname==='/api/csrf'){
+   rate('csrf:'+ip,120,60000);if(s)return json(res,200,{token:s.csrf});cleanup();const existing=preauth.get(hash(cookies(req).csrf_session??''));if(existing)return json(res,200,{token:existing.csrf});if(preauth.size>=5000)throw new HttpError(429,'Слишком много запросов.');const id=token(),csrf=token();preauth.set(hash(id),{csrf,expires:Date.now()+30*60*1000});res.setHeader('Set-Cookie',cookie('csrf_session',id,1800));return json(res,200,{token:csrf});
+  }
+  if(req.method==='GET'&&pathname==='/api/admin/session')return json(res,200,{authenticated:Boolean(s),csrfToken:s?.csrf??null});
+  if(req.method==='POST'&&pathname==='/api/admin/login'){
+   checkOrigin(req);checkCsrf(req,s);rate('login-ip:'+ip,10,15*60*1000);const body=await readJson(req);const username=String(body.username??'').slice(0,128);rate('login-user:'+hash(username),10,15*60*1000);
+   // One scrypt verification at a time bounds RAM and serializes the durable TOTP counter update.
+   if(loginBusy>=1)throw new HttpError(429,'Слишком много попыток. Попробуйте позже.','RATE_LIMIT');loginBusy++;
+   try{const password=typeof body.password==='string'?body.password:'';const bounded=password.length<=128?password:'';const digest=await passwordHash(bounded,admin?.salt??Buffer.alloc(32).toString('base64'));const correct=admin&&safeEqual(username,admin.username)&&safeEqual(digest.toString('base64'),admin.passwordDigest);const counter=correct?verifyTotp(decrypt(Buffer.from(admin.totp,'base64'),key,'admin-totp:'+admin.username),body.otp,admin.lastCounter):-1;
+    if(!correct||counter<0){store?.audit('login.failed');throw new HttpError(401,'Не удалось войти. Проверьте логин, пароль и одноразовый код.','LOGIN_FAILED');}
+    // Recheck after asynchronous scrypt: a concurrent request cannot reuse the same step.
+    if(counter<=admin.lastCounter)throw new HttpError(401,'Не удалось войти. Проверьте логин, пароль и одноразовый код.','LOGIN_FAILED');admin.lastCounter=counter;await saveAdmin(dataDir,admin);sessions.delete(hash(cookies(req).admin_session??''));preauth.delete(hash(cookies(req).csrf_session??''));const id=token(),csrf=token();sessions.set(hash(id),{csrf,created:Date.now(),seen:Date.now()});res.setHeader('Set-Cookie',[cookie('admin_session',id,8*3600),cookie('csrf_session','',0)]);store.audit('login.success');return json(res,200,{authenticated:true,csrfToken:csrf});
+   }finally{loginBusy--;}
+  }
+  if(req.method==='POST'&&pathname==='/api/applications'){
+   if(!enabled)throw new HttpError(503,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.','INTAKE_DISABLED');checkOrigin(req);if(req.headers['x-csrf-token'])checkCsrf(req,s);else if(!preauth.has(hash(cookies(req).csrf_session??''))&&!s)checkCsrf(req,s);rate('intake:'+ip,10,60*60*1000);
+   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);const validated=validateFields(fields);if(scannerCommand){await scanBuffer(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanBuffer(scannerCommand,file.data);}const id=await store.save(validated,files);return json(res,201,{id,reference:id,message:'Заявка получена. Организатор свяжется с вами.'});}finally{uploadBusy--;}
+  }
+  if(isAdmin){
+   if(!s)throw new HttpError(401,'Войдите в кабинет администратора.','AUTH_REQUIRED');if(!['GET','HEAD'].includes(req.method)){checkOrigin(req);checkCsrf(req,s);}
+   if(req.method==='POST'&&pathname==='/api/admin/logout'){sessions.delete(hash(cookies(req).admin_session??''));res.setHeader('Set-Cookie',cookie('admin_session','',0));store?.audit('logout');return json(res,200,{authenticated:false});}
+   if(req.method==='GET'&&pathname==='/api/admin/applications'){const applications=store.list().map(app=>Object.fromEntries(['id','createdAt','courseId','lastName','firstName','middleName','email','phone','education','status'].map(k=>[k,app[k]])));return json(res,200,{applications,total:applications.length});}
+   if(req.method==='GET'&&pathname==='/api/admin/export'){rate('export:'+hash(cookies(req).admin_session??''),10,60000);const workbook=new ExcelJS.Workbook(),sheet=workbook.addWorksheet('Заявки');const fields=['id','createdAt','status','courseId','lastName','firstName','middleName','birthDate','phone','email','snils','education','consentVersion','consentAt'];sheet.addRow(fields);for(const app of store.list())sheet.addRow(fields.map(k=>String(app[k]??'')));sheet.views=[{state:'frozen',ySplit:1}];sheet.columns.forEach(c=>{c.width=24;});const buffer=await workbook.xlsx.writeBuffer();store.audit('export.download');res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="applications.xlsx"','Content-Length':buffer.length});return res.end(buffer);}
+   const detail=pathname.match(/^\/api\/admin\/applications\/([0-9a-f-]{36})$/);if(detail){const app=store.get(detail[1]);if(!app)throw new HttpError(404,'Заявка не найдена.','NOT_FOUND');if(req.method==='GET')return json(res,200,app);if(req.method==='PATCH'){const {status}=await readJson(req);if(!['new','review','accepted','rejected'].includes(status))throw new HttpError(400,'Неизвестный статус заявки.');store.update(app.id,status);return json(res,200,{id:app.id,status});}}
+   const document=pathname.match(/^\/api\/admin\/documents\/([0-9a-f-]{36})$/);if(req.method==='GET'&&document){const doc=await store.document(document[1]);if(!doc)throw new HttpError(404,'Документ не найден.','NOT_FOUND');store.audit('document.download',document[1]);res.writeHead(200,{'Content-Type':doc.meta.mime,'Content-Disposition':`attachment; filename="${doc.meta.name}"`,'Content-Length':doc.data.length});return Readable.from(doc.data).pipe(res);}
+  }
+  if(pathname.startsWith('/api/'))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
+  if(!['GET','HEAD'].includes(req.method))throw new HttpError(405,'Этот способ обращения недоступен.');
+  if(pathname.includes('\\')||pathname.includes('\0')||pathname.split('/').some(segment=>segment.startsWith('.')))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
+  const mapped=pathname==='/admin'||pathname==='/admin/'?'/admin.html':pathname.endsWith('/')?pathname+'index.html':pathname;
+  const candidate=path.resolve(publicDir,'.'+mapped);if(!candidate.startsWith(publicDir+path.sep))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
+  let canonical,info;try{canonical=await realpath(candidate);info=await stat(canonical);}catch{throw new HttpError(404,'Страница не найдена.','NOT_FOUND');}const publicCanonical=await realpath(publicDir);if(!canonical.startsWith(publicCanonical+path.sep)||!info.isFile()||!mime[path.extname(canonical).toLowerCase()])throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
+  res.writeHead(200,{'Content-Type':mime[path.extname(canonical).toLowerCase()],'Content-Length':info.size,'Cache-Control':path.extname(canonical)==='.html'?'no-cache':'public, max-age=3600'});if(req.method==='HEAD')return res.end();const stream=createReadStream(canonical);stream.on('error',()=>res.destroy());stream.pipe(res);
+ }
+ const server=http.createServer((req,res)=>{route(req,res).catch(e=>{if(res.headersSent)return res.destroy();if(e instanceof HttpError){if(e.status===429)res.setHeader('Retry-After','900');json(res,e.status,{error:e.message,code:e.code});}else json(res,500,{error:'Сервис временно недоступен. Повторите попытку позже.',code:'INTERNAL_ERROR'});if(!req.complete)req.resume();});});
+ server.requestTimeout=60000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxHeadersCount=50;server.setTimeout(65000,socket=>socket.destroy());
+ return {server,close(){clearInterval(timer);sessions.clear();preauth.clear();store?.close();}};
+}
+
+FILE: server/security.mjs
+import {randomBytes,createCipheriv,createDecipheriv,createHash,createHmac,scrypt,timingSafeEqual} from 'node:crypto';
+import {promisify} from 'node:util';
+import {mkdir,writeFile,readFile,rename} from 'node:fs/promises';
+import path from 'node:path';
+const derive=promisify(scrypt);
+export const hash=value=>createHash('sha256').update(value).digest('hex');
+export const token=()=>randomBytes(32).toString('base64url');
+export function safeEqual(a,b){const x=Buffer.from(String(a??'')),y=Buffer.from(String(b??''));return x.length===y.length&&timingSafeEqual(x,y);}
+export function dataKey(raw){if(!raw)return null;if(!/^[A-Za-z0-9+/]{43}=$/.test(raw))throw new Error('APP_DATA_KEY must be base64 encoding of 32 random bytes');const key=Buffer.from(raw,'base64');if(key.length!==32)throw new Error('Invalid APP_DATA_KEY');return key;}
+export function encrypt(data,key,aad){const nonce=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,nonce);cipher.setAAD(Buffer.from(aad));const body=Buffer.concat([cipher.update(data),cipher.final()]);return Buffer.concat([nonce,cipher.getAuthTag(),body]);}
+export function decrypt(data,key,aad){const buf=Buffer.from(data);if(buf.length<28)throw new Error('Invalid encrypted data');const cipher=createDecipheriv('aes-256-gcm',key,buf.subarray(0,12));cipher.setAAD(Buffer.from(aad));cipher.setAuthTag(buf.subarray(12,28));return Buffer.concat([cipher.update(buf.subarray(28)),cipher.final()]);}
+export async function passwordHash(password,salt){return derive(password,Buffer.from(salt,'base64'),64,{N:131072,r:8,p:1,maxmem:256*1024*1024});}
+export function totp(secret,time=Date.now(),digits=6){const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(Math.floor(time/30000)));const digest=createHmac('sha1',secret).update(counter).digest();const offset=digest.at(-1)&15;return String((digest.readUInt32BE(offset)&0x7fffffff)%10**digits).padStart(digits,'0');}
+export function verifyTotp(secret,otp,lastCounter=-1,time=Date.now()){if(!/^\d{6}$/.test(String(otp)))return -1;for(const offset of [-1,0,1]){const candidate=Math.floor(time/30000)+offset;if(candidate>lastCounter&&safeEqual(totp(secret,candidate*30000),otp))return candidate;}return -1;}
+export function base32(buffer){const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits=0,value=0,out='';for(const byte of buffer){value=(value<<8)|byte;bits+=8;while(bits>=5){out+=alphabet[(value>>>(bits-5))&31];bits-=5;}}if(bits)out+=alphabet[(value<<(5-bits))&31];return out;}
+export async function saveAdmin(dir,admin){const tmp=path.join(dir,'admin.json.tmp');await writeFile(tmp,JSON.stringify(admin),{mode:0o600});await rename(tmp,path.join(dir,'admin.json'));}
+export async function setupAdmin(dir,key,username,password,secret,lastCounter=-1){if(!key||key.length!==32)throw new Error('Configure APP_DATA_KEY before setup');if(!/^[A-Za-z0-9._-]{3,64}$/.test(username))throw new Error('Username must contain 3–64 Latin letters, digits, dot, underscore or hyphen');if(password.length<16||password.length>128)throw new Error('Password must contain 16–128 characters');if(secret.length<20)throw new Error('Invalid TOTP secret');await mkdir(dir,{recursive:true,mode:0o700});const salt=randomBytes(32).toString('base64'),passwordDigest=(await passwordHash(password,salt)).toString('base64');const admin={username,salt,passwordDigest,totp:encrypt(secret,key,'admin-totp:'+username).toString('base64'),lastCounter};await saveAdmin(dir,admin);return admin;}
+export async function loadAdmin(dir,key){try{const admin=JSON.parse(await readFile(path.join(dir,'admin.json'),'utf8'));if(!key)throw new Error('APP_DATA_KEY is required for configured admin');decrypt(Buffer.from(admin.totp,'base64'),key,'admin-totp:'+admin.username);return admin;}catch(e){if(e.code==='ENOENT')return null;throw e;}}
+
+FILE: server/intake.mjs
+import Busboy from 'busboy';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
+const invalid=message=>new HttpError(400,message);
+const allowed=new Set(['courseId','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
+export function validateFields(fields){
+ for(const key of Object.keys(fields))if(!allowed.has(key))throw invalid('В форме есть неизвестное поле.');
+ if(fields.website)throw invalid('Не удалось принять заявку.');
+ if(!['drone','flowers','wine','bread','cider','nutrition'].includes(fields.courseId))throw invalid('Выберите программу обучения.');
+ const name=/^[\p{L}][\p{L}\p{M} '-]{0,79}$/u;
+ if(!name.test(fields.lastName??'')||!name.test(fields.firstName??'')||(fields.middleName&&!name.test(fields.middleName)))throw invalid('Проверьте фамилию, имя и отчество.');
+ const date=new Date(fields.birthDate+'T00:00:00.000Z');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(fields.birthDate??'')||Number.isNaN(+date)||date.toISOString().slice(0,10)!==fields.birthDate||date>new Date()||date<new Date('1900-01-01'))throw invalid('Укажите корректную дату рождения.');
+ if(!/^\+?[0-9 ()-]{10,24}$/.test(fields.phone??''))throw invalid('Проверьте номер телефона.');
+ const digits=fields.phone.replace(/\D/g,'');if(digits.length<10||digits.length>15)throw invalid('Проверьте номер телефона.');
+ if(!/^[^\s@<>\x00-\x1f]{1,64}@[^\s@<>.]+(?:\.[^\s@<>.]+)+$/.test(fields.email??'')||fields.email.length>254)throw invalid('Проверьте адрес электронной почты.');
+ const snils=(fields.snils??'').replace(/[ -]/g,'');if(!/^\d{11}$/.test(snils)||/^0+$/.test(snils))throw invalid('Проверьте номер СНИЛС.');
+ if(Number(snils.slice(0,9))>1001998){let sum=snils.slice(0,9).split('').reduce((s,c,i)=>s+Number(c)*(9-i),0);let check=sum%101;if(check===100)check=0;if(check!==Number(snils.slice(9)))throw invalid('Контрольное число СНИЛС не совпадает.');}
+ if(!['professional','student'].includes(fields.education))throw invalid('Выберите уровень образования.');
+ if(fields.consent!=='true'||fields.consentVersion!=='2026-10-09')throw invalid('Для отправки требуется актуальное согласие на обработку данных.');
+ return Object.fromEntries(['courseId','lastName','firstName','middleName','birthDate','phone','email','education','consent','consentVersion'].map(k=>[k,fields[k]??'']).concat([['snils',snils]]));
+}
+function identify(data){if(data.subarray(0,5).toString()==='%PDF-'&&data.subarray(-1024).includes(Buffer.from('%%EOF')))return ['application/pdf','.pdf'];if(data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))&&data.subarray(-12).includes(Buffer.from('IEND')))return ['image/png','.png'];if(data[0]===255&&data[1]===216&&data[2]===255&&data.at(-2)===255&&data.at(-1)===217)return ['image/jpeg','.jpg'];throw invalid('Прикрепите PDF, JPG или PNG с корректным содержимым.');}
+export function parseMultipart(req){return new Promise((resolve,reject)=>{
+ let parser;try{parser=Busboy({headers:req.headers,defParamCharset:'utf8',limits:{fileSize:10*1024*1024,files:2,fields:14,fieldSize:1024,parts:16,headerPairs:100}});}catch{req.resume();reject(invalid('Не удалось прочитать форму.'));return;}
+ const fields=Object.create(null),files=[],seen=new Set();let error=null,total=0;const fail=message=>{error??=invalid(message);};
+ const sizeHandler=chunk=>{total+=chunk.length;if(total>21*1024*1024){fail('Общий размер формы слишком большой.');req.unpipe(parser);parser.destroy(error);req.resume();}};
+ req.on('data',sizeHandler);req.once('aborted',()=>parser.destroy(invalid('Загрузка прервана.')));
+ parser.on('field',(name,value,info)=>{if(Object.hasOwn(fields,name)||info.valueTruncated||info.nameTruncated)fail('Некорректное или слишком длинное поле формы.');else fields[name]=value.trim();});
+ parser.on('file',(field,stream,info)=>{if(!['snilsFile','educationFile'].includes(field)||seen.has(field)){fail('Допустим один документ СНИЛС и один документ об образовании.');stream.resume();return;}seen.add(field);const chunks=[];let size=0;stream.on('limit',()=>fail('Каждый файл должен быть не больше 10 МБ.'));stream.on('error',()=>fail('Не удалось загрузить документ.'));stream.on('data',chunk=>{size+=chunk.length;if(!error&&size<=10*1024*1024)chunks.push(chunk);});stream.on('end',()=>{if(error)return;try{const data=Buffer.concat(chunks),[mime,ext]=identify(data),sourceExt=path.extname(info.filename??'').toLowerCase();if(info.mimeType!==mime||!(mime==='image/jpeg'?['.jpg','.jpeg']: [ext]).includes(sourceExt))throw invalid('Формат документа не соответствует его содержимому.');files.push({field,mime,name:field+ext,data});}catch(e){error=e;}});});
+ for(const event of ['filesLimit','fieldsLimit','partsLimit'])parser.on(event,()=>fail('В форме слишком много полей или файлов.'));
+ parser.on('error',e=>{req.removeListener('data',sizeHandler);reject(e instanceof HttpError?e:invalid('Не удалось прочитать форму.'));});
+ parser.on('close',()=>{req.removeListener('data',sizeHandler);if(error)reject(error);else if(files.length!==2)reject(invalid('Прикрепите оба обязательных документа.'));else resolve({fields,files});});req.pipe(parser);
+ });}
+export async function scanBuffer(command,data){return new Promise((resolve,reject)=>{const child=spawn(command,['--no-summary','-'],{shell:false,windowsHide:true,stdio:['pipe','ignore','ignore']});const timer=setTimeout(()=>{child.kill();reject(new HttpError(503,'Проверка документов временно недоступна.','SCANNER_UNAVAILABLE'));},30000);child.on('error',()=>{clearTimeout(timer);reject(new HttpError(503,'Проверка документов временно недоступна.','SCANNER_UNAVAILABLE'));});child.stdin.on('error',()=>{});child.on('close',code=>{clearTimeout(timer);if(code===0)resolve();else reject(new HttpError(code===1?400:503,code===1?'Проверка документа обнаружила угрозу.':'Проверка документов временно недоступна.','SCAN_REJECTED'));});child.stdin.end(data);});}
+
+FILE: server/storage.mjs
+import {DatabaseSync} from 'node:sqlite';
+import {mkdir,writeFile,readFile,unlink} from 'node:fs/promises';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {encrypt,decrypt} from './security.mjs';
+
+export async function openStore(dir,key){
+ await mkdir(path.join(dir,'files'),{recursive:true,mode:0o700});
+ const db=new DatabaseSync(path.join(dir,'applications.sqlite'));
+ db.exec('PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS applications (id TEXT PRIMARY KEY, createdAt TEXT NOT NULL,status TEXT NOT NULL,payload BLOB NOT NULL); CREATE TABLE IF NOT EXISTS documents (id TEXT PRIMARY KEY,applicationId TEXT NOT NULL REFERENCES applications(id)); CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY,time TEXT,event TEXT,reference TEXT);');
+ const unpack=row=>row?{...JSON.parse(decrypt(row.payload,key,'application:'+row.id).toString()),id:row.id,createdAt:row.createdAt,status:row.status}:null;
+ const get=id=>unpack(db.prepare('SELECT * FROM applications WHERE id=?').get(id));
+ const audit=(event,reference='')=>db.prepare('INSERT INTO audit(time,event,reference) VALUES(?,?,?)').run(new Date().toISOString(),event,reference);
+ return {
+  async save(fields,files){const id=randomUUID(),createdAt=new Date().toISOString();const documents=[];const written=[];try{for(const file of files){const documentId=randomUUID();await writeFile(path.join(dir,'files',documentId+'.enc'),encrypt(file.data,key,'document:'+documentId),{mode:0o600,flag:'wx'});written.push(documentId);documents.push({id:documentId,name:file.name,mime:file.mime,size:file.data.length,field:file.field});}db.exec('BEGIN IMMEDIATE');db.prepare('INSERT INTO applications VALUES(?,?,?,?)').run(id,createdAt,'new',encrypt(Buffer.from(JSON.stringify({...fields,consentAt:createdAt,reference:id,documents})),key,'application:'+id));for(const doc of documents)db.prepare('INSERT INTO documents VALUES(?,?)').run(doc.id,id);audit('application.created',id);db.exec('COMMIT');return id;}catch(e){try{db.exec('ROLLBACK');}catch{}for(const doc of written)await unlink(path.join(dir,'files',doc+'.enc')).catch(()=>{});throw e;}},
+  list:()=>db.prepare('SELECT * FROM applications ORDER BY createdAt DESC').all().map(unpack),get,
+  update(id,status){const info=db.prepare('UPDATE applications SET status=? WHERE id=?').run(status,id);if(info.changes)audit('application.status',id);return Boolean(info.changes);},
+  async document(id){const row=db.prepare('SELECT applicationId FROM documents WHERE id=?').get(id);if(!row)return null;const app=get(row.applicationId),meta=app.documents.find(doc=>doc.id===id);return {meta,data:decrypt(await readFile(path.join(dir,'files',id+'.enc')),key,'document:'+id)};},
+  audit,close:()=>db.close()
+ };
+}
+
+FILE: server/index.mjs
+import {createApp} from './app.mjs';
+import {dataKey} from './security.mjs';
+const production=process.env.NODE_ENV==='production';
+try{
+ const host=process.env.APP_HOST??'127.0.0.1',port=Number(process.env.PORT??3000);
+ if(!['127.0.0.1','::1'].includes(host))throw new Error('APP_HOST must be loopback; use an HTTPS reverse proxy for remote access');
+ if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid PORT');
+ const app=await createApp({production,key:dataKey(process.env.APP_DATA_KEY),dataDir:process.env.APP_DATA_DIR,origin:process.env.APP_ORIGIN??`http://${host==='::1'?'[::1]':host}:${port}`,intakeEnabled:process.env.APP_INTAKE_ENABLED==='true',scannerCommand:process.env.APP_SCANNER_COMMAND,legalsReady:process.env.APP_LEGALS_READY==='true',trustedProxy:process.env.APP_TRUSTED_PROXY});
+ app.server.listen(port,host,()=>console.log(`Server listening on ${host}:${port}. Intake requires explicit configuration.`));
+ const stop=()=>app.server.close(()=>{app.close();process.exit(0);});process.once('SIGINT',stop);process.once('SIGTERM',stop);
+}catch(e){console.error('Startup refused:',e.message);process.exitCode=1;}
+
+FILE: scripts/setup-admin.mjs
+import {createInterface} from 'node:readline/promises';
+import {Writable} from 'node:stream';
+import {randomBytes} from 'node:crypto';
+import {stat} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {dataKey,setupAdmin,base32,verifyTotp} from '../server/security.mjs';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+if(!process.stdin.isTTY){console.error('Admin setup requires an interactive local terminal. No credentials were written.');process.exit(1);}
+const key=dataKey(process.env.APP_DATA_KEY);if(!key){console.error('Configure APP_DATA_KEY with a secret manager before setup. No key is generated automatically.');process.exit(1);}
+const dir=path.resolve(process.env.APP_DATA_DIR??path.join(root,'data'));
+let hidden=false;const output=new Writable({write(chunk,encoding,done){if(!hidden)process.stdout.write(chunk);done();}});
+const readline=createInterface({input:process.stdin,output,terminal:true});
+async function prompt(text,mask=false){process.stdout.write(text);hidden=mask;try{return await readline.question('');}finally{hidden=false;if(mask)process.stdout.write('\n');}}
+try{
+ const exists=await stat(path.join(dir,'admin.json')).then(()=>true,()=>false);if(exists){const confirm=await prompt('Administrator already exists. Type REPLACE to revoke existing enrollment (stop server first): ');if(confirm!=='REPLACE')throw new Error('Cancelled');}
+ const username=(await prompt('Admin username (3–64 Latin letters, digits . _ -): ')).trim();
+ const password=await prompt('Unique password, at least 16 characters (hidden): ',true);
+ if(password.length<16||password.length>128)throw new Error('Password must contain 16–128 characters');
+ if(password!==await prompt('Repeat password (hidden): ',true))throw new Error('Passwords do not match');
+ const secret=randomBytes(20),encoded=base32(secret);process.stdout.write('\nSave this enrollment in a private authenticator. Do not share or screenshot it.\n');process.stdout.write(`Manual secret: ${encoded}\n`);process.stdout.write(`otpauth://totp/${encodeURIComponent('Agrarian Admin:'+username)}?secret=${encoded}&issuer=Agrarian%20Admin&algorithm=SHA1&digits=6&period=30\n`);
+ const otp=await prompt('Enter current 6-digit authenticator code to confirm enrollment: ',true);const counter=verifyTotp(secret,otp);if(counter<0)throw new Error('Code did not match. Nothing saved');
+ await setupAdmin(dir,key,username,password,secret,counter);secret.fill(0);process.stdout.write('Administrator saved with mandatory TOTP. Protect the data directory with OS access controls. Restart the server.\n');
+}catch(e){console.error(e.message);process.exitCode=1;}finally{readline.close();}

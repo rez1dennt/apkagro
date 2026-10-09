@@ -1,0 +1,28 @@
+{
+  "name": "agrarian-education-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.21.0"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "setup:admin": "node --env-file-if-exists=.env scripts/setup-admin.mjs",
+    "test": "node --test tests/server*.mjs tests/frontend*.mjs",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "exceljs": "^4.4.0"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
+  },
+  "devDependencies": {
+    "qrcode": "^1.5.4",
+    "wawoff2": "^2.0.1"
+  }
+}

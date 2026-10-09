@@ -1,0 +1,10 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const file=new URL('../.env',import.meta.url);
+let content=await readFile(file,'utf8');
+const value=key=>content.match(new RegExp(`^${key}=(.*)$`,'m'))?.[1].trim();
+if(value('NODE_ENV')!=='development'||value('APP_HOST')!=='127.0.0.1'||value('APP_ORIGIN')!=='http://127.0.0.1:3000')throw new Error('This operation only enables the existing loopback development server.');
+if(!value('APP_DATA_KEY'))throw new Error('Configure encrypted storage before intake.');
+if(!/^APP_INTAKE_ENABLED=/m.test(content))throw new Error('Missing intake setting.');
+content=content.replace(/^APP_INTAKE_ENABLED=.*$/m,'APP_INTAKE_ENABLED=true');
+await writeFile(file,content,{mode:0o600});
+console.log('Local intake enabled. Existing keys, administrator, MFA and legal readiness unchanged. Restart the project server.');

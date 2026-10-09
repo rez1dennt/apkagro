@@ -1,0 +1,16 @@
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require('node:path').join(require('node:os').homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE||require('node:path').join(require('node:os').homedir(), 'AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'),headless:true});
+const page=await browser.newPage();let checks=0;
+try{await page.goto('http://127.0.0.1:3000/',{waitUntil:'networkidle'});await page.locator('#cookie-acknowledge').click();await page.waitForTimeout(280);const phone=page.locator('#phone'),snils=page.locator('#snils');
+await phone.fill('7123');await phone.press('End');await phone.press('Backspace');assert.equal(await phone.inputValue(),'+7 (12','Backspace after closing parenthesis deletes preceding digit');checks++;
+await phone.fill('79991234567');await phone.press('End');for(let i=0;i<14;i++)await phone.press('Backspace');assert.equal(await phone.inputValue(),'','repeated Backspace clears phone including mask punctuation');checks++;
+await phone.fill('89991234567');assert.equal(await phone.inputValue(),'+7 (999) 123-45-67','paste normalizes leading 8');checks++;
+await phone.fill('9991234567');assert.equal(await phone.inputValue(),'+7 (999) 123-45-67','paste adds country code');checks++;
+await phone.evaluate(el=>{el.focus();el.setSelectionRange(8,8);});await phone.press('Delete');assert.equal((await phone.inputValue()).replace(/\D/g,''),'7999234567','Delete on closing parenthesis deletes next digit');checks++;
+await phone.fill('79991234567');await phone.evaluate(el=>{el.focus();el.setSelectionRange(9,12);});await phone.press('Backspace');assert.equal((await phone.inputValue()).replace(/\D/g,''),'79994567','selection deletes only chosen digits');checks++;
+await phone.press('ControlOrMeta+A');await phone.press('Backspace');assert.equal(await phone.inputValue(),'','select all can clear phone');checks++;
+await snils.fill('11223344595');await snils.evaluate(el=>{el.focus();el.setSelectionRange(12,12);});await snils.press('Backspace');assert.equal((await snils.inputValue()).replace(/\D/g,''),'1122334495','SNILS Backspace on separator deletes preceding digit');checks++;
+await snils.press('End');for(let i=0;i<14;i++)await snils.press('Backspace');assert.equal(await snils.inputValue(),'','repeated Backspace clears SNILS');checks++;
+console.log(`${checks} keyboard-mask regressions passed.`);
+}finally{await browser.close();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});

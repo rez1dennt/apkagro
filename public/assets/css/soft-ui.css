@@ -1,0 +1,158 @@
+/* Shared component geometry; photo scale is independent of validation height. */
+:root { --radius: 22px; --radius-sm: 14px; }
+.hero__aside {
+  clip-path: none;
+  right: 24px;
+  bottom: 24px;
+  width: 330px;
+  max-width: none;
+  height: 156px;
+  padding: 18px;
+  gap: 14px;
+  border-radius: 28px;
+  background: #faf9f4;
+  border: 1px solid rgba(255,255,255,.65);
+  box-shadow: 0 12px 38px rgba(18,32,13,.15);
+  align-items: center;
+}
+.hero__aside strong { flex: 1; font-size: 16px; line-height: 1.4; padding: 0; align-self: center; }
+.hero__aside img {
+  width: 126px;
+  height: 120px;
+  flex: 0 0 126px;
+  border-radius: 18px;
+  object-fit: cover;
+  object-position: 65% center;
+  mask-image: none;
+  -webkit-mask-image: none;
+  align-self: center;
+}
+.about__grid { align-items: stretch; }
+.about__intro { align-self: start; }
+.benefit { display: flex; flex-direction: column; height: 100%; border-radius: 22px; }
+.benefit > img { flex: 0 0 auto; }
+.benefit > div { flex: 1; }
+.program-card { border-radius: 22px; }
+.step-list li { border-radius: 20px; }
+.application__form-wrap { border-radius: 26px; }
+.application__right-note { border-radius: 24px; }
+.accordion, .faq-contact { border-radius: 22px; overflow: hidden; }
+.course-dialog, .notice-dialog { border-radius: 26px; }
+.button { border-radius: 16px; }
+.application__landscape {
+  background-size: cover, auto max(940px, 60vw), auto max(1040px, 66vw);
+  background-position: center, left top, right top;
+  background-repeat: no-repeat;
+}
+.consent-field .field-error { display: block; min-height: 18px; }
+.consent-field .field-error:empty { display: block; visibility: hidden; }
+.footer__main > .brand { width: auto; flex: 0 0 auto; }
+.footer__cookie {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer__cookie:hover { color: var(--gold-light, #f0d786); }
+.cookie-notice {
+  position: fixed;
+  z-index: 25;
+  left: max(20px, env(safe-area-inset-left));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: min(510px, calc(100% - 40px));
+  padding: 21px 24px;
+  border: 1px solid #dddccc;
+  border-radius: 24px;
+  background: #faf9f4;
+  box-shadow: 0 12px 45px rgba(28,43,20,.19);
+  color: #20351a;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--motion) var(--ease), transform var(--motion) var(--ease);
+}
+.cookie-notice[hidden] { display: none; }
+.cookie-notice.is-visible { opacity: 1; transform: translateY(0); }
+.cookie-notice__heading { display: flex; align-items: center; gap: 9px; padding-right: 30px; }
+.cookie-notice__heading > .icon { width: 24px; height: 24px; color: #9b7b29; }
+.cookie-notice h2 { font-size: 17px; line-height: 1.35; margin: 0; }
+.cookie-notice p { font-size: 12px; line-height: 1.6; margin: 10px 0 16px; max-width: 420px; }
+.cookie-notice__actions { display: flex; align-items: center; gap: 20px; }
+.cookie-notice__actions .button { min-height: 40px; padding: 9px 20px; font-size: 12px; }
+.cookie-notice__policy { font-size: 11px; text-underline-offset: 3px; }
+.cookie-notice__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #eaece2;
+  color: #405339;
+  cursor: pointer;
+}
+.cookie-notice__close:hover { background: #dde3d4; }
+.cookie-notice__close .icon { width: 16px; height: 16px; }
+@media (max-width: 1199px) { .hero__aside { display: none; } }
+@media (min-width: 1200px) {
+  .hero__features { max-width: min(900px, calc(100vw - 450px)); }
+}
+@media (min-width: 700px) and (max-width: 959px) {
+  .application__landscape { background-size: cover, auto 1200px, auto 1320px; }
+}
+@media (max-width: 699px) {
+  .about__grid { grid-template-rows: auto repeat(2, 1fr); }
+  .benefit { min-height: 0; border-radius: 20px; }
+  .application__landscape { background-size: cover, auto 1540px; background-position: center, left top; }
+  .application__form-wrap, .course-dialog, .notice-dialog { border-radius: 22px; }
+  .footer__main > .brand { width: 100%; }
+  .cookie-notice {
+    left: max(12px, env(safe-area-inset-left));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
+    padding: 16px 18px;
+    border-radius: 22px;
+  }
+  .cookie-notice h2 { font-size: 15px; }
+  .cookie-notice p { margin: 8px 0 12px; font-size: 11px; line-height: 1.5; }
+  .cookie-notice__actions { gap: 16px; }
+  .cookie-notice__actions .button { min-height: 38px; padding: 8px 16px; }
+  .cookie-notice__policy { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cookie-notice { transition: none; transform: none; }
+}
+@media (max-width: 360px) { .consent-field .field-error { min-height: 28px; } }
+
+/* Original sloping callout, with curved corners and independent text/photo columns. */
+.hero__aside {
+  right: 24px;
+  bottom: 28px;
+  width: 350px;
+  height: 174px;
+  padding: 50px 18px 20px 26px;
+  gap: 18px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.hero__aside-shape { position: absolute; inset: 0; width: 100%; height: 100%; fill: #faf9f4; pointer-events: none; filter: drop-shadow(0 6px 12px #18271118); }
+.hero__aside strong { position: relative; min-width: 0; font-size: 16px; line-height: 1.35; }
+.hero__aside img { position: relative; width: 120px; height: 104px; flex-basis: 120px; border-radius: 16px; mask-image: linear-gradient(90deg, transparent, #000 24%); }
+.application__right-note { max-width: 184px; padding: 28px 24px 20px 32px; border-radius: 34px 18px 24px 20px; }
+.faq-contact { background-image: linear-gradient(90deg, #faf9f4 0%, #faf9f4 60%, rgba(250,249,244,.95) 80%, rgba(250,249,244,.3) 100%), url('/assets/images/harvest.webp'); }
+.faq-contact h3, .faq-contact p { color: #20351a; }
+.faq-contact p { font-size: 12px; line-height: 1.5; }
+@media (min-width: 1200px) { .hero__features { max-width: min(880px, calc(100vw - 480px)); } }
+@media (max-width: 699px) { .faq-contact p { font-size: 11px; } }
+@media (max-width: 1399px) { .application__right-note { display: none; } }
+@media (min-width: 1400px) {
+  .application__form-wrap { max-width: min(820px, calc(100vw - 660px)); }
+}

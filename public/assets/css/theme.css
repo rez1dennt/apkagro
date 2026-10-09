@@ -1,0 +1,41 @@
+@font-face {
+  font-family: 'Esqadero FF CY 4F';
+  src: url('/assets/fonts/esqadero-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  color-scheme: light;
+  --ink: #17251c;
+  --muted: #5a6468;
+  --forest: #20351a;
+  --forest-deep: #142411;
+  --olive: #65763c;
+  --gold: #ad7800;
+  --gold-light: #ffdd78;
+  --gold-dark: #956100;
+  --paper: #f8f7f2;
+  --cream: #eeefdf;
+  --white: #ffffff;
+  --line: #d7ddd7;
+  --input: #f3f4f5;
+  --danger: #a23026;
+  --success: #2c623c;
+  --font-body: 'Esqadero FF CY 4F', Arial, sans-serif;
+  --font-display: 'Esqadero FF CY 4F', sans-serif;
+  --font-note: 'Segoe Print', 'Comic Sans MS', cursive;
+  --container: 1200px;
+  --header-height: 54px;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 38px #17251c0d;
+  --shadow-modal: 0 24px 80px #10201035;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --motion: 220ms;
+  --section-space: 52px;
+  --focus: 0 0 0 3px #b7872190;
+  --icon-secondary: #c49b43;
+  --gold-line: #d6bb794d;
+  --surface-shadow: 0 14px 34px #1730110a, 0 2px 4px #17301105;
+}

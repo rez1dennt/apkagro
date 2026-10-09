@@ -1,0 +1,30 @@
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {dataKey,decrypt,totp} from '../server/security.mjs';
+import {createInterface} from 'node:readline/promises';
+import {Writable} from 'node:stream';
+let password='';
+if(process.stdin.isTTY){
+  const hiddenOutput=new Writable({write(chunk,encoding,done){done();}});
+  const prompt=createInterface({input:process.stdin,output:hiddenOutput,terminal:true});
+  process.stdout.write('Owner password for local verification (hidden): ');
+  try{password=await prompt.question('');}finally{prompt.close();process.stdout.write('\n');}
+}else for await(const chunk of process.stdin)password+=chunk;
+password=password.trim();
+if(!password)throw new Error('Provide the owner password over stdin, never as a command-line argument.');
+const env=await readFile(new URL('../.env',import.meta.url),'utf8');
+const key=dataKey(env.match(/^APP_DATA_KEY=(.+)$/m)?.[1].trim());
+const admin=JSON.parse(await readFile(new URL('../data/admin.json',import.meta.url),'utf8'));
+const secret=decrypt(Buffer.from(admin.totp,'base64'),key,'admin-totp:'+admin.username);
+const origin='http://127.0.0.1:3000';
+const preauth=await fetch(origin+'/api/csrf');const csrf=(await preauth.json()).token;
+let cookie=preauth.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');
+const login=await fetch(origin+'/api/admin/login',{method:'POST',headers:{origin,cookie,'content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({username:admin.username,password,otp:totp(secret)})});
+assert.equal(login.status,200,'real local account authenticates with password and MFA');password='';secret.fill(0);key.fill(0);
+cookie=login.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');const session=await login.json();
+assert.equal((await fetch(origin+'/api/admin/applications',{headers:{cookie}})).status,200);
+assert.equal((await(await fetch(origin+'/api/config')).json()).enabled,false,'real intake remains disabled');
+for(const path of ['/.env','/data/admin.json','/output/private-access/authenticator-qr.png'])assert.ok([403,404].includes((await fetch(origin+path)).status),'private artifact is not served');
+const logout=await fetch(origin+'/api/admin/logout',{method:'POST',headers:{origin,cookie,'content-type':'application/json','x-csrf-token':session.csrfToken},body:'{}'});assert.equal(logout.status,200);
+assert.equal((await fetch(origin+'/api/admin/applications',{headers:{cookie}})).status,401,'logout revokes access');
+console.log('Local owner login + mandatory MFA, private-file denial and logout: 8 checks passed.');

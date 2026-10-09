@@ -1,0 +1,20 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const root=new URL('../',import.meta.url);
+const shape='<svg class="hero__aside-shape" viewBox="0 0 420 180" preserveAspectRatio="none" aria-hidden="true"><path d="M22 49L398 8Q420 5 420 28V156Q420 180 396 180H24Q0 180 0 156V74Q0 52 22 49Z"/></svg>';
+let main=await readFile(new URL('public/index.html',root),'utf8');
+if(!main.includes('hero__aside-shape'))main=main.replace('<div class="hero__aside">',`<div class="hero__aside">${shape}`);
+const version=source=>source.replace(/20261009-(?:soft|polish)(?![\w-])/g,'20261009-working');
+await writeFile(new URL('public/index.html',root),version(main));
+let admin=await readFile(new URL('public/admin.html',root),'utf8');
+if(!admin.includes('admin-live-status'))admin=admin.replace('<p class="admin-table-caption" id="table-caption" role="status"></p>','<p class="admin-table-caption" id="table-caption" role="status"></p><p class="admin-live-status" id="admin-live-status" role="status" aria-live="polite">Список обновляется автоматически каждые 15 секунд.</p>');
+await writeFile(new URL('public/admin.html',root),version(admin));
+let app=await readFile(new URL('server/app.mjs',root),'utf8');
+app=app.replace("import ExcelJS from 'exceljs';","import {createApplicationsWorkbook} from './export.mjs';");
+app=app.replace(/const workbook=new ExcelJS\.Workbook\(\),sheet=workbook\.addWorksheet\('Заявки'\);[\s\S]*?const buffer=await workbook\.xlsx\.writeBuffer\(\);/,"const workbook=createApplicationsWorkbook(store.list());const buffer=await workbook.xlsx.writeBuffer();");
+await writeFile(new URL('server/app.mjs',root),app);
+let builder=await readFile(new URL('scripts/build-legals.mjs',root),'utf8');
+builder=builder.replace('Приём реальных заявок выключен до утверждения документов, условий участия и настройки инфраструктуры. ','');
+builder=builder.replace(' В текущей конфигурации автоматический сбор реальных заявок отключён.','');
+await writeFile(new URL('scripts/build-legals.mjs',root),version(builder));
+for(const name of ['scripts/refine-markup.mjs','scripts/soft-ui-markup.mjs','public/assets/js/site.js']){const file=new URL(name,root);await writeFile(file,version(await readFile(file,'utf8')));}
+console.log('Curved hero shape, Russian export, admin live-status and current asset versions applied.');
