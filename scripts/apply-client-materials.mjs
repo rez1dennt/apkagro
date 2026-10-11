@@ -18,6 +18,9 @@ html=html.replace('alt="Цветовод в цветущем саду"','alt="Ц
  .replace('alt="Яблоки и золотистый сидр"','alt="Сидродел с яблоками в производственном помещении"');
 html=html.replace('и виноградарства <span','и виноторговли <span')
  .replace('Управление сидродельческим проектом: от идеи<br>до масштабирования <span','Управление сидродельческим проектом <span');
+html=html.replace('>Растениеводство</span>','>Цветоводство</span>')
+ .replace('>Виноградарство</span>','>Виноделие</span>')
+ .replace('>Управление проектом</span>','>Сидроделие</span>');
 html=html.replace('<h3>О чём программа</h3>','<h3 id="dialog-topics-heading">О чём программа</h3>');
 if(!html.includes('class="course-dialog__media"'))html=html.replace(/<img id="dialog-image"[^>]*>/,'<div class="course-dialog__media">$&</div>');
 html=html.replace(/^[ \t]+(?=\r?$)/gm,'');
