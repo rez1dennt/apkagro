@@ -28,7 +28,7 @@ async function run(){
         const size=await dimensions(page);check(size.scrollWidth<=size.width,`${route} overflow at ${width}: ${JSON.stringify(size)}`);
         check(await page.locator('h1').count()===1,`${route} one h1 at ${width}`);
         const images=await page.evaluate(()=>[...document.images].filter(image=>!image.complete||!image.naturalWidth).map(image=>image.src));check(!images.length,`${route} broken images: ${images}`);
-        if(route==='/'){check(await page.locator('[data-course]').count()===6,'six courses');check(await page.locator('.header').evaluate(el=>getComputedStyle(el).position==='fixed'),'fixed header');const benefit=await page.locator('.benefit').first().boundingBox();check(benefit.width>=(width<700?120:width<960?130:140),'benefit cards retain readable columns');check(await page.evaluate(()=>[...document.fonts].some(face=>face.family.replaceAll('"','')==='Esqadero FF CY 4F'&&face.status==='loaded')),'requested local font actually loaded');}
+        if(route==='/'){check(await page.locator('.program-card[data-course]').count()===6,'six courses');check(await page.locator('.header').evaluate(el=>getComputedStyle(el).position==='fixed'),'fixed header');const benefit=await page.locator('.benefit').first().boundingBox();check(benefit.width>=(width<700?120:width<960?130:140),'benefit cards retain readable columns');check(await page.evaluate(()=>[...document.fonts].some(face=>face.family.replaceAll('"','')==='Esqadero FF CY 4F'&&face.status==='loaded')),'requested local font actually loaded');}
         if(route==='/'&&[1440,360,320].includes(width))await page.screenshot({path:path.join(output,`landing-${width}.png`),fullPage:true});
         if(route==='/admin'&&width===1440)await page.screenshot({path:path.join(output,'admin-login.png'),fullPage:true});
         if(route==='/operator/'&&width===360)await page.screenshot({path:path.join(output,'operator-360.png'),fullPage:true});
@@ -36,7 +36,7 @@ async function run(){
     }
     for(const width of [1440,360,320]){
       await page.setViewportSize({width,height:900});await page.goto(preview,{waitUntil:'networkidle'});
-      const card=page.locator('[data-course="flowers"]');await card.scrollIntoViewIfNeeded();
+      const card=page.locator('.program-card[data-course="flowers"]');await card.scrollIntoViewIfNeeded();
       const before=await page.evaluate(()=>({y:scrollY,x:document.querySelector('.header .brand').getBoundingClientRect().x}));
       await card.click();check(await page.locator('#course-dialog').evaluate(el=>el.open),'course modal opens');
       check(await page.locator('#dialog-title').textContent()==='Декоративное цветоводство','correct course copy');
@@ -60,7 +60,9 @@ async function run(){
         check(anchor.top>=63&&Math.abs(anchor.y-anchor.expected)<=2,`FAQ anchor clears header or reaches page end: ${JSON.stringify(anchor)}`);
       }
     }
-    await page.goto(preview+'/privacy/',{waitUntil:'networkidle'});await page.locator('[data-document-placeholder]').first().click();check(await page.locator('#notice-dialog').evaluate(el=>el.open),'cloud placeholder explains state');await page.locator('.dialog-dismiss').click();await page.waitForTimeout(280);
+    await page.goto(preview+'/privacy/',{waitUntil:'networkidle'});
+    const [policyDownload]=await Promise.all([page.waitForEvent('download'),page.locator('a[href="/documents/privacy-policy.pdf"]').first().click()]);
+    check(await policyDownload.failure()===null,'public privacy policy PDF downloads');
     const reduced=await browser.newContext({reducedMotion:'reduce',viewport:{width:320,height:800}}),reducedPage=await reduced.newPage();await reducedPage.goto(preview,{waitUntil:'networkidle'});await reducedPage.locator('.menu-toggle').click();await reducedPage.keyboard.press('Escape');await reducedPage.waitForTimeout(50);check(!await reducedPage.evaluate(()=>document.documentElement.classList.contains('is-locked')),'reduced motion menu unlocks');await reduced.close();
 
     // Isolated, synthetic full-stack exercise. These credentials never configure the preview/real deployment.
@@ -68,7 +70,7 @@ async function run(){
     fixtureDir=await mkdtemp(path.join(root,'.browser-test-'));const key=randomBytes(32),secret=randomBytes(20),password=randomBytes(24).toString('base64url');
     await setupAdmin(fixtureDir,key,'browser-test-admin',password,secret);app=await createApp({dataDir:fixtureDir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
     const origin=`http://127.0.0.1:${app.server.address().port}`;await page.setViewportSize({width:1440,height:1000});await page.goto(origin,{waitUntil:'networkidle'});
-    await page.locator('[data-course="drone"]').click();await page.locator('#choose-course').click();await page.waitForTimeout(300);
+    await page.locator('.program-card[data-course="drone"]').click();await page.locator('#choose-course').click();await page.waitForTimeout(300);
     await page.locator('#submit-application').click();check(await page.locator('[aria-invalid="true"]').count()>0,'live form required validation');
     for(const [selector,value]of Object.entries({'#last-name':'Тестовый','#first-name':'Участник','#middle-name':'Тестович','#birth-date':'1990-01-01','#phone':'+79991234567','#email':'synthetic@example.test','#snils':'11223344595'}))await page.locator(selector).fill(value);
     await page.locator('#education').selectOption('professional');
@@ -80,14 +82,14 @@ async function run(){
     check(await page.locator('#application-success').isHidden(),'HTML HTTP 200 cannot show saved-success UI');
     await page.unroute(origin+'/api/applications');
     await page.locator('#submit-application').click();await page.waitForSelector('#application-success:not([hidden])');check((await page.locator('#success-reference').textContent()).includes('Номер заявки:'),'real synthetic submission confirms reference');
-    await page.locator('[data-course="flowers"]').click();await page.keyboard.press('Escape');await page.waitForTimeout(280);await page.locator('#new-application').click();check(await page.locator('#course-id').inputValue()==='drone','reset restores chosen course instead of last preview');check(await page.locator('#form-status').isHidden(),'reset clears previous form status');
+    await page.locator('.program-card[data-course="flowers"]').click();await page.keyboard.press('Escape');await page.waitForTimeout(280);await page.locator('#new-application').click();check(await page.locator('#course-id').inputValue()==='drone','reset restores chosen course instead of last preview');check(await page.locator('#form-status').isHidden(),'reset clears previous form status');
     await page.goto(origin+'/admin',{waitUntil:'networkidle'});await page.locator('#admin-username').fill('browser-test-admin');await page.locator('#admin-password').fill(password);await page.locator('#admin-otp').fill(totp(secret));await page.locator('#login-submit').click();await page.waitForSelector('#dashboard-screen:not([hidden])');await page.waitForSelector('.table-open');check(await page.locator('#stat-total').textContent()==='1','admin sees synthetic application');
     await page.screenshot({path:path.join(output,'admin-synthetic.png'),fullPage:true});await page.locator('.table-open').click();await page.waitForSelector('#application-detail[open]');check((await page.locator('#detail-fields').textContent()).includes('11223344595'),'admin sees decrypted SNILS');check(await page.locator('#detail-documents a').count()===2,'two authenticated documents');
     const documentHref=await page.locator('#detail-documents a').first().getAttribute('href');const documentResponse=await context.request.get(origin+documentHref);check(documentResponse.status()===200,'document download authenticated');check((await documentResponse.body()).equals(pdf),'decrypted document bytes match');
     await page.locator('#detail-status-trigger').click();await page.locator('#detail-status-options').getByRole('option',{name:'На проверке',exact:true}).click();await page.locator('#save-status').click();await page.waitForFunction(()=>document.querySelector('#detail-status-message').textContent.includes('сохранён'));check(await page.locator('#stat-review').textContent()==='1','status persists in admin table');await page.locator('#close-detail').click();
     const focusedId=await page.locator('.table-open').first().getAttribute('data-application-id');await page.locator('.table-open').first().focus();
     const visitor=await browser.newContext(),csrf=(await(await visitor.request.get(origin+'/api/csrf')).json()).token;
-    const incoming=await visitor.request.post(origin+'/api/applications',{headers:{Origin:origin,'X-CSRF-Token':csrf},multipart:{courseId:'flowers',lastName:'Тестовый',firstName:'Новый',middleName:'',birthDate:'2000-01-02',phone:'+79990000000',email:'incoming@example.test',snils:'11223344595',education:'professional',consent:'true',consentVersion:'2026-10-09',_csrf:csrf,snilsFile:{name:'synthetic-snils.pdf',mimeType:'application/pdf',buffer:pdf},educationFile:{name:'synthetic-education.pdf',mimeType:'application/pdf',buffer:pdf}}});
+    const incoming=await visitor.request.post(origin+'/api/applications',{headers:{Origin:origin,'X-CSRF-Token':csrf},multipart:{courseId:'flowers',lastName:'Тестовый',firstName:'Новый',middleName:'',birthDate:'2000-01-02',phone:'+79990000000',email:'incoming@example.test',snils:'11223344595',education:'professional',consent:'true',consentVersion:(await(await page.request.get(origin+'/api/config')).json()).consentVersion,_csrf:csrf,snilsFile:{name:'synthetic-snils.pdf',mimeType:'application/pdf',buffer:pdf},educationFile:{name:'synthetic-education.pdf',mimeType:'application/pdf',buffer:pdf}}});
     check(incoming.status()===201,'second visitor submits while admin stays open');const incomingId=(await incoming.json()).id;
     await page.waitForFunction(()=>document.querySelector('#stat-total').textContent==='2',null,{timeout:22000});
     check(await page.locator(`[data-application-id="${incomingId}"]`).count()===1,'new application appears without manual refresh');check(await page.evaluate(id=>document.activeElement?.dataset.applicationId===id,focusedId),'auto refresh preserves focused application');

@@ -1,0 +1,92 @@
+:root {
+  --footer-details-gap: 24px;
+  --footer-details-copy: 12px;
+  --footer-details-heading: 16px;
+  --cider-card-focus: 50% 45%;
+  --cider-modal-focus: 50% 35%;
+  --program-photo-ratio: 3 / 2;
+  --wine-card-focus: 50% 50%;
+  --wine-modal-focus: 50% 50%;
+  --benefit-content-padding: 20px;
+  --benefit-icon-size: 32px;
+  --benefit-icon-gap: 12px;
+  --benefit-title-size: 16px;
+  --benefit-title-line: 1.35;
+  --benefit-title-height: 2.7em;
+  --benefit-copy-size: 13px;
+  --benefit-copy-line: 1.55;
+  --benefit-copy-gap: 10px;
+  --benefit-grid-gap: 20px;
+  --benefit-intro-min: 240px;
+  --benefit-intro-gap: 32px;
+  --benefit-photo-height: 125px;
+  --benefit-mobile-intro-gap: 16px;
+}
+.about__grid { grid-template-columns: minmax(var(--benefit-intro-min), 1.4fr) repeat(4, minmax(0, 1fr)); grid-template-rows: none; gap: var(--benefit-grid-gap); align-items: stretch; }
+.benefit { display: flex; flex-direction: column; min-height: 0; }
+.benefit > img { height: var(--benefit-photo-height); }
+.benefit .benefit__content { display: flex; flex-direction: column; flex: 1; padding: var(--benefit-content-padding); }
+.benefit .benefit-icon { position: static; width: var(--benefit-icon-size); height: var(--benefit-icon-size); flex: none; margin-bottom: var(--benefit-icon-gap); }
+.benefit .benefit__content h3 { margin: 0; min-height: var(--benefit-title-height); font-size: var(--benefit-title-size); line-height: var(--benefit-title-line); }
+.benefit .benefit__content p { margin: var(--benefit-copy-gap) 0 0; font-size: var(--benefit-copy-size); line-height: var(--benefit-copy-line); }
+@media (max-width: 1279px) {
+  .about__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .about__intro { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--benefit-mobile-intro-gap) var(--benefit-intro-gap); align-items: start; }
+  .about__intro .eyebrow { grid-column: 1 / -1; margin-bottom: 0; }
+  .about__intro .body-copy { margin: 0; max-width: none; }
+}
+@media (max-width: 959px) {
+  :root { --benefit-photo-height: 180px; }
+  .about__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 760px) and (max-width: 959px) {
+  :root { --benefit-title-height: 1.35em; }
+}
+@media (max-width: 699px) {
+  :root { --benefit-content-padding: 18px; --benefit-grid-gap: var(--mobile-card-gap); --benefit-photo-height: var(--mobile-card-photo); }
+  .about__grid { grid-template-columns: minmax(0, 1fr); }
+  .about__intro { display: block; }
+  .about__intro .eyebrow { margin-bottom: var(--benefit-icon-gap); }
+  .about__intro .body-copy { margin-top: var(--benefit-mobile-intro-gap); }
+  .benefit .benefit__content h3 { min-height: 0; }
+}
+.footer__organization {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--footer-details-gap);
+  margin-top: var(--footer-details-gap);
+  padding-block: var(--footer-details-gap);
+  border-top: 1px solid color-mix(in srgb, var(--white) 22%, transparent);
+  font-size: var(--footer-details-copy);
+  line-height: 1.65;
+}
+.footer__organization > div { min-width: 0; }
+.footer__organization h2 { font-size: var(--footer-details-heading); margin-bottom: 8px; }
+.footer__organization p, .footer__organization address { margin: 0; font-style: normal; }
+.footer__organization .footer__license { margin-top: 12px; }
+.footer__registration { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; }
+.footer__organization .footer__documents { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.footer__documents a { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding-block: 4px; }
+.footer__documents .icon { flex: none; width: 16px; height: 16px; }
+.program-card__photo { height: auto; aspect-ratio: var(--program-photo-ratio); flex-shrink: 0; }
+.program-card[data-course="wine"] .program-card__photo > img { object-fit: cover; object-position: var(--wine-card-focus); transform: none; }
+.course-dialog__image[src*="wine-client"] { height: auto; aspect-ratio: var(--program-photo-ratio); object-fit: cover; object-position: var(--wine-modal-focus); }
+.program-card[data-course="wine"] .program-category { left: auto; right: 11px; }
+.program-card[data-course="wine"] .program-card__badge { top: auto; right: auto; bottom: 11px; left: 11px; }
+.course-dialog__media { position: relative; overflow: hidden; }
+.program-card[data-course="cider"] .program-card__photo > img,
+.course-dialog[data-course="cider"] .course-dialog__image {
+  position: relative;
+  z-index: 1;
+  object-fit: cover;
+}
+.program-card[data-course="cider"] .program-card__photo > img { object-position: var(--cider-card-focus); transform: none; }
+.course-dialog[data-course="cider"] .course-dialog__image { object-position: var(--cider-modal-focus); }
+.program-card__footer { margin-top: auto; }
+.consent-text p { overflow-wrap: anywhere; }
+@media (max-width: 699px) {
+  :root { --footer-details-gap: 18px; --footer-details-copy: 11px; }
+  .footer__organization { grid-template-columns: minmax(0, 1fr); }
+  .footer__organization .footer__documents { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .document-downloads .button { min-width: 0; white-space: normal; text-align: left; }
+}

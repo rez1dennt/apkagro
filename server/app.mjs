@@ -9,8 +9,9 @@ import {createApplicationsWorkbook} from './export.mjs';
 import {loadAdmin,passwordHash,decrypt,saveAdmin,verifyTotp,token,hash,safeEqual} from './security.mjs';
 import {openStore} from './storage.mjs';
 import {HttpError,parseMultipart,validateFields,scanBuffer} from './intake.mjs';
+import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.avif':'image/avif','.woff2':'font/woff2','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.pdf':'application/pdf','.json':'application/json'};
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.avif':'image/avif','.woff2':'font/woff2','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.json':'application/json'};
 function clientAddress(req, production, trustedProxy) {
  if (!production) return req.socket.remoteAddress ?? 'unknown';
  const invalid = () => new HttpError(400, 'Некорректные данные доверенного прокси.', 'PROXY_CLIENT_IP');
@@ -58,7 +59,7 @@ export async function createApp(options={}){
   const backgroundPoll=req.method==='GET'&&pathname==='/api/admin/applications'&&new URL(req.url,origin).searchParams.get('poll')==='1';
   const s=session(req,!backgroundPoll);const isAdmin=pathname.startsWith('/api/admin/');
   if(pathname.startsWith('/api/'))res.setHeader('Cache-Control','no-store');
-  if(req.method==='GET'&&pathname==='/api/config')return json(res,200,{enabled,consentVersion:'2026-10-09'});
+   if(req.method==='GET'&&pathname==='/api/config')return json(res,200,{enabled,consentVersion:CONSENT_VERSION});
   if(req.method==='GET'&&pathname==='/api/csrf'){
    rate('csrf:'+ip,120,60000);if(s)return json(res,200,{token:s.csrf});cleanup();const existing=preauth.get(hash(cookies(req).csrf_session??''));if(existing)return json(res,200,{token:existing.csrf});if(preauth.size>=5000)throw new HttpError(429,'Слишком много запросов.');const id=token(),csrf=token();preauth.set(hash(id),{csrf,expires:Date.now()+30*60*1000});res.setHeader('Set-Cookie',cookie('csrf_session',id,1800));return json(res,200,{token:csrf});
   }

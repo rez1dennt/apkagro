@@ -1,5 +1,6 @@
 import './cookie-notice.js?v=20261009-working';
-import { courses } from './courses.js';
+import { courses } from './courses.js?v=20261011-materials';
+import { CONSENT_VERSION } from './organization.js?v=20261011-materials';
 import { validSnils, savedApplication } from './form-logic.js';
 import { attachMask, formatPhone, formatSnils } from './input-masks.js';
 
@@ -64,8 +65,6 @@ document.querySelectorAll('dialog').forEach(dialog => {
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeDialog(dialog);
   });
 });
-document.querySelectorAll('[data-document-placeholder]').forEach(button => button.addEventListener('click', () => openDialog(document.querySelector('#notice-dialog'), button)));
-
 document.querySelectorAll('.accordion details').forEach(details => {
   const summary = details.querySelector('summary'), content = details.querySelector('.accordion__content');
   let animation, targetOpen = details.open;
@@ -88,13 +87,18 @@ document.querySelectorAll('.accordion details').forEach(details => {
 
 const courseDialog = document.querySelector('#course-dialog');
 let displayedCourse, selectedCourseId;
-document.querySelectorAll('[data-course]').forEach(button => button.addEventListener('click', () => {
+document.querySelectorAll('.program-card[data-course]').forEach(button => button.addEventListener('click', () => {
   const id = button.dataset.course, course = courses[id]; if (!course || !courseDialog) return;
   displayedCourse = id;
+  courseDialog.dataset.course = id;
   document.querySelector('#dialog-title').textContent = course.title;
   document.querySelector('#dialog-description').textContent = course.description;
   const image = document.querySelector('#dialog-image'); image.src = `/assets/images/${course.image}.webp`; image.alt = course.title;
-  document.querySelector('#dialog-topics').replaceChildren(...course.topics.map(topic => { const item = document.createElement('li'); item.textContent = topic; return item; }));
+  const topics = document.querySelector('#dialog-topics');
+  topics.replaceChildren(...course.topics.map(topic => { const item = document.createElement('li'); item.textContent = topic; return item; }));
+  topics.hidden = course.topics.length === 0;
+  document.querySelector('#dialog-topics-heading').hidden = topics.hidden;
+  document.querySelector('.course-dialog__disclaimer').hidden = Boolean(course.suppliedAnnotation);
   openDialog(courseDialog, button);
 }));
 function selectCourse(id) {
@@ -103,7 +107,7 @@ function selectCourse(id) {
   document.querySelector('#course-id').value = id;
   document.querySelector('#selected-course-label').textContent = courses[id].title;
   document.querySelector('#change-course').textContent = 'Изменить';
-  document.querySelectorAll('[data-course]').forEach(button => {
+  document.querySelectorAll('.program-card[data-course]').forEach(button => {
     const selected = button.dataset.course === id; button.classList.toggle('is-selected', selected);
     button.querySelector('.program-card__badge').hidden = !selected;
   });
@@ -121,6 +125,7 @@ document.querySelector('#change-course')?.addEventListener('click', () => {
 });
 
 const form = document.querySelector('#application-form');
+if (form) form.elements.consentVersion.value = CONSENT_VERSION;
 let csrfToken = null;
 let config = { enabled: false };
 async function refreshConfig() {

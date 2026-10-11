@@ -1,3 +1,4 @@
+import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,readFile,rm,readdir} from 'node:fs/promises';
@@ -43,7 +44,7 @@ if(moduleExists){
   return {dir,key,secret,origin,req,login,authorize,close};
  }
  function form(extra={},file=Buffer.from('%PDF-1.4\nsynthetic document\n%%EOF')){
-  const f=new FormData(); const fields={courseId:'drone',lastName:'Тестовый',firstName:'Тестер',middleName:'',birthDate:'1990-01-01',phone:'+79991234567',email:'synthetic@example.test',snils:'112-233-445 95',education:'professional',consent:'true',consentVersion:'2026-10-09',website:'',...extra};
+  const f=new FormData(); const fields={courseId:'drone',lastName:'Тестовый',firstName:'Тестер',middleName:'',birthDate:'1990-01-01',phone:'+79991234567',email:'synthetic@example.test',snils:'112-233-445 95',education:'professional',consent:'true',consentVersion:CONSENT_VERSION,website:'',...extra};
   for(const [k,v]of Object.entries(fields))f.append(k,v);
   f.append('snilsFile',new Blob([file],{type:'application/pdf'}),'snils.pdf');
   f.append('educationFile',new Blob([Buffer.from('%PDF-1.4\nsynthetic diploma\n%%EOF')],{type:'application/pdf'}),'diploma.pdf');return f;

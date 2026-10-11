@@ -1,6 +1,7 @@
 import Busboy from 'busboy';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
+import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
 const invalid=message=>new HttpError(400,message);
 const allowed=new Set(['courseId','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
@@ -18,7 +19,7 @@ export function validateFields(fields){
  const snils=(fields.snils??'').replace(/[ -]/g,'');if(!/^\d{11}$/.test(snils)||/^0+$/.test(snils))throw invalid('Проверьте номер СНИЛС.');
  if(Number(snils.slice(0,9))>1001998){let sum=snils.slice(0,9).split('').reduce((s,c,i)=>s+Number(c)*(9-i),0);let check=sum%101;if(check===100)check=0;if(check!==Number(snils.slice(9)))throw invalid('Контрольное число СНИЛС не совпадает.');}
  if(!['professional','student'].includes(fields.education))throw invalid('Выберите уровень образования.');
- if(fields.consent!=='true'||fields.consentVersion!=='2026-10-09')throw invalid('Для отправки требуется актуальное согласие на обработку данных.');
+ if(fields.consent!=='true'||fields.consentVersion!==CONSENT_VERSION)throw invalid('Для отправки требуется актуальное согласие на обработку данных.');
  return Object.fromEntries(['courseId','lastName','firstName','middleName','birthDate','phone','email','education','consent','consentVersion'].map(k=>[k,fields[k]??'']).concat([['snils',snils]]));
 }
 function identify(data){if(data.subarray(0,5).toString()==='%PDF-'&&data.subarray(-1024).includes(Buffer.from('%%EOF')))return ['application/pdf','.pdf'];if(data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))&&data.subarray(-12).includes(Buffer.from('IEND')))return ['image/png','.png'];if(data[0]===255&&data[1]===216&&data[2]===255&&data.at(-2)===255&&data.at(-1)===217)return ['image/jpeg','.jpg'];throw invalid('Прикрепите PDF, JPG или PNG с корректным содержимым.');}

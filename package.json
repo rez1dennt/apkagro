@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "setup:admin": "node --env-file-if-exists=.env scripts/setup-admin.mjs",
+    "build:content": "node scripts/build-client-content.mjs",
     "test": "node --test tests/server*.mjs tests/frontend*.mjs",
     "verify": "node scripts/verify.mjs"
   },
