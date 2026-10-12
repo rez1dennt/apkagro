@@ -19,6 +19,7 @@
     "exceljs": "^4.4.0",
     "linkedom": "^0.18.13",
     "pdf-lib": "^1.17.1",
+    "saxes": "^6.0.0",
     "sharp": "^0.35.5"
   },
   "overrides": {
