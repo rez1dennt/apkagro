@@ -7,5 +7,7 @@ try{
  if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid PORT');
  const app=await createApp({production,key:dataKey(process.env.APP_DATA_KEY),dataDir:process.env.APP_DATA_DIR,origin:process.env.APP_ORIGIN??`http://${host==='::1'?'[::1]':host}:${port}`,intakeEnabled:process.env.APP_INTAKE_ENABLED==='true',scannerCommand:process.env.APP_SCANNER_COMMAND,legalsReady:process.env.APP_LEGALS_READY==='true',trustedProxy:process.env.APP_TRUSTED_PROXY});
  app.server.listen(port,host,()=>console.log(`Server listening on ${host}:${port}. Intake requires explicit configuration.`));
- const stop=()=>app.server.close(()=>{app.close();process.exit(0);});process.once('SIGINT',stop);process.once('SIGTERM',stop);
+ let stopping=false;
+ const stop=()=>{if(stopping)return;stopping=true;app.server.close(async error=>{try{await app.close();if(error)throw error;process.exit(0);}catch(e){console.error('Shutdown failed:',e.message);process.exit(1);}});};
+ process.once('SIGINT',stop);process.once('SIGTERM',stop);
 }catch(e){console.error('Startup refused:',e.message);process.exitCode=1;}

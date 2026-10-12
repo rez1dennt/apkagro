@@ -138,7 +138,7 @@ export function referencedMedia(content,{publicOnly=false}={}){
   for(const binding of bindings)if(['image','background','url'].includes(binding.kind)&&(!publicOnly||visible(binding)))add(value.fields[binding.id]);
   for(const group of Object.values(value.navigation))group.forEach(item=>add(item.url));
   value.benefits.forEach(item=>add(item.image));value.programs.forEach(item=>{add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);item.items.forEach(entry=>{add(entry.image);add(entry.buttonUrl);});});
-  Object.values(value.documents).forEach(add);add(value.seo.icon);add(value.seo.ogImage);
+  Object.values(value.documents).forEach(add);add(value.seo.icon);add(value.seo.ogImage);add(value.settings.organization.registryUrl);
   for(const page of value.pages){add(page.seo.ogImage);for(const match of page.body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);}
   for(const body of [...value.benefits.map(item=>item.body),...value.steps.map(item=>item.body),...value.faqs.map(item=>item.answer),...value.programs.map(item=>item.description),...value.extraSections.flatMap(item=>[item.body,...item.items.map(entry=>entry.body)])].filter(body=>typeof body==='string'))for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
   return references;

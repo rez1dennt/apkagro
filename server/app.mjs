@@ -8,7 +8,10 @@ import {Readable} from 'node:stream';
 import {createApplicationsWorkbook} from './export.mjs';
 import {loadAdmin,passwordHash,decrypt,saveAdmin,verifyTotp,token,hash,safeEqual} from './security.mjs';
 import {openStore} from './storage.mjs';
-import {HttpError,parseMultipart,validateFields,scanBuffer} from './intake.mjs';
+import {HttpError,parseMultipart,validateFields,createScannerGuard} from './intake.mjs';
+import {openContentStore} from './content-store.mjs';
+import {openContentMedia} from './content-media.mjs';
+import {handleContentRoute} from './content-routes.mjs';
 import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.avif':'image/avif','.woff2':'font/woff2','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.json':'application/json'};
@@ -38,6 +41,14 @@ export async function createApp(options={}){
  if(scannerCommand){if(!path.isAbsolute(scannerCommand))throw new Error('Scanner must be an absolute executable path');await access(scannerCommand);}
  let admin=await loadAdmin(dataDir,key);if(production&&!admin)throw new Error('Configure administrator before production startup');
  const store=key?await openStore(dataDir,key):null;const enabled=Boolean(intakeEnabled&&key&&admin&&(!production||(scannerCommand&&legalsReady)));
+ const scanner=createScannerGuard();let contentServices=null,contentPromise=null,closing=false,appClosePromise=null;
+ async function getContentServices(){
+  if(closing)throw new HttpError(503,'Хранилище содержимого закрыто.','CONTENT_STORE_CLOSED');
+  if(contentServices)return contentServices;if(contentPromise)return contentPromise;
+  if(!key||!admin)return null;
+  contentPromise=(async()=>{const contentStore=options.contentStore??await openContentStore({dir:path.join(dataDir,'content')});try{const media=options.contentMedia??await openContentMedia({dir:path.join(dataDir,'content','media'),store:contentStore,scannerCommand,scanner,publicDir});return contentServices={store:contentStore,media};}catch(e){if(!options.contentStore)await contentStore.close();throw e;}})();
+  try{return await contentPromise;}finally{contentPromise=null;}
+ }
  const sessions=new Map(),preauth=new Map(),rates=new Map();let loginBusy=0,uploadBusy=0;
  function cleanup(){const now=Date.now();for(const [id,s]of sessions)if(now-s.seen>30*60*1000||now-s.created>8*60*60*1000)sessions.delete(id);for(const [id,p]of preauth)if(now>p.expires)preauth.delete(id);for(const [id,r]of rates)if(now>r.until)rates.delete(id);}
  const timer=setInterval(cleanup,60000);timer.unref();
@@ -76,10 +87,11 @@ export async function createApp(options={}){
   }
   if(req.method==='POST'&&pathname==='/api/applications'){
    if(!enabled)throw new HttpError(503,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.','INTAKE_DISABLED');checkOrigin(req);if(req.headers['x-csrf-token'])checkCsrf(req,s);else if(!preauth.has(hash(cookies(req).csrf_session??''))&&!s)checkCsrf(req,s);rate('intake:'+ip,10,60*60*1000);
-   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);const validated=validateFields(fields);if(scannerCommand){await scanBuffer(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanBuffer(scannerCommand,file.data);}const id=await store.save(validated,files);return json(res,201,{id,reference:id,message:'Заявка получена. Организатор свяжется с вами.'});}finally{uploadBusy--;}
+   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);const validated=validateFields(fields);if(scannerCommand){await scanner.scan(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanner.scan(scannerCommand,file.data);}const id=await store.save(validated,files);return json(res,201,{id,reference:id,message:'Заявка получена. Организатор свяжется с вами.'});}finally{uploadBusy--;}
   }
   if(isAdmin){
    if(!s)throw new HttpError(401,'Войдите в кабинет администратора.','AUTH_REQUIRED');if(!['GET','HEAD'].includes(req.method)){checkOrigin(req);checkCsrf(req,s);}
+   if(await handleContentRoute({req,res,pathname,session:s,origin:checkOrigin,csrf:checkCsrf,getServices:getContentServices,json,rate}))return;
    if(req.method==='POST'&&pathname==='/api/admin/logout'){sessions.delete(hash(cookies(req).admin_session??''));res.setHeader('Set-Cookie',cookie('admin_session','',0));store?.audit('logout');return json(res,200,{authenticated:false});}
    if(req.method==='GET'&&pathname==='/api/admin/applications'){const applications=store.list().map(app=>Object.fromEntries(['id','createdAt','courseId','lastName','firstName','middleName','email','phone','education','status'].map(k=>[k,app[k]])));return json(res,200,{applications,total:applications.length});}
    if(req.method==='GET'&&pathname==='/api/admin/export'){
@@ -91,6 +103,7 @@ export async function createApp(options={}){
    const detail=pathname.match(/^\/api\/admin\/applications\/([0-9a-f-]{36})$/);if(detail){const app=store.get(detail[1]);if(!app)throw new HttpError(404,'Заявка не найдена.','NOT_FOUND');if(req.method==='GET')return json(res,200,app);if(req.method==='PATCH'){const {status}=await readJson(req);if(!['new','review','accepted','rejected'].includes(status))throw new HttpError(400,'Неизвестный статус заявки.');store.update(app.id,status);return json(res,200,{id:app.id,status});}}
    const document=pathname.match(/^\/api\/admin\/documents\/([0-9a-f-]{36})$/);if(req.method==='GET'&&document){const doc=await store.document(document[1]);if(!doc)throw new HttpError(404,'Документ не найден.','NOT_FOUND');store.audit('document.download',document[1]);res.writeHead(200,{'Content-Type':doc.meta.mime,'Content-Disposition':`attachment; filename="${doc.meta.name}"`,'Content-Length':doc.data.length});return Readable.from(doc.data).pipe(res);}
   }
+  if(await handleContentRoute({req,res,pathname,session:s,origin:checkOrigin,csrf:checkCsrf,getServices:getContentServices,json}))return;
   if(pathname.startsWith('/api/'))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
   if(!['GET','HEAD'].includes(req.method))throw new HttpError(405,'Этот способ обращения недоступен.');
   if(pathname.includes('\\')||pathname.includes('\0')||pathname.split('/').some(segment=>segment.startsWith('.')))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
@@ -99,7 +112,7 @@ export async function createApp(options={}){
   let canonical,info;try{canonical=await realpath(candidate);info=await stat(canonical);}catch{throw new HttpError(404,'Страница не найдена.','NOT_FOUND');}const publicCanonical=await realpath(publicDir);if(!canonical.startsWith(publicCanonical+path.sep)||!info.isFile()||!mime[path.extname(canonical).toLowerCase()])throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
   res.writeHead(200,{'Content-Type':mime[path.extname(canonical).toLowerCase()],'Content-Length':info.size,'Cache-Control':path.extname(canonical)==='.html'?'no-cache':'public, max-age=3600'});if(req.method==='HEAD')return res.end();const stream=createReadStream(canonical);stream.on('error',()=>res.destroy());stream.pipe(res);
  }
- const server=http.createServer((req,res)=>{route(req,res).catch(e=>{if(res.headersSent)return res.destroy();if(e instanceof HttpError){if(e.status===429)res.setHeader('Retry-After','900');json(res,e.status,{error:e.message,code:e.code});}else json(res,500,{error:'Сервис временно недоступен. Повторите попытку позже.',code:'INTERNAL_ERROR'});if(!req.complete)req.resume();});});
+ const server=http.createServer((req,res)=>{route(req,res).catch(e=>{if(res.headersSent)return res.destroy();if(e instanceof HttpError){if(e.status===429)res.setHeader('Retry-After','900');json(res,e.status,{error:e.message,code:e.code,...(e.locations?{locations:e.locations}:{})});}else json(res,500,{error:'Сервис временно недоступен. Повторите попытку позже.',code:'INTERNAL_ERROR'});if(!req.complete)req.resume();});});
  server.requestTimeout=60000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxHeadersCount=50;server.setTimeout(65000,socket=>socket.destroy());
- return {server,close(){clearInterval(timer);sessions.clear();preauth.clear();store?.close();}};
+ return {server,getContentServices,get contentStore(){return contentServices?.store??null;},get contentMedia(){return contentServices?.media??null;},close(){if(appClosePromise)return appClosePromise;closing=true;clearInterval(timer);sessions.clear();preauth.clear();appClosePromise=(async()=>{await contentPromise?.catch(()=>{});await contentServices?.media.close();await contentServices?.store.close();await scanner.close();store?.close();})();return appClosePromise;}};
 }
