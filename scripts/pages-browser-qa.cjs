@@ -10,7 +10,7 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
 
 (async () => {
   let server, browser;
-  const errors = [], broken = [], apiRequests = [];
+  const errors = [], broken = [], apiRequests = [], textIssues = [];
   let checks = 0;
   const check = (value, label) => { assert.ok(value, label); checks++; };
   try {
@@ -66,10 +66,35 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
         } else {
           check(await page.locator('.header').isVisible(), `${route} stylesheet/header ${width}`);
           if (await page.locator('#cookie-banner').isVisible()) await page.locator('#cookie-acknowledge').click();
+          const footerName = await page.locator('.footer__organization > div > p').first().innerText();
+          if (/[„“]/.test(footerName) || (footerName.match(/«/g) || []).length !== 1 || (footerName.match(/»/g) || []).length !== 1) {
+            textIssues.push(`${route || 'home'}/${width}: footer must show one balanced pair of quotes: ${footerName}`);
+          } else checks++;
         }
       }
       await page.goto(base, { waitUntil: 'networkidle' });
       check(await page.locator('.program-card').count() === 7, `all seven courses ${width}`);
+      const copy = {
+        '.hero__description': 'Бесплатное повышение квалификации для специалистов АПК по актуальным направлениям развития отрасли.',
+        '#application-title': 'Оставьте заявку на обучение',
+        '.closing h2': 'Подайте заявку на обучение в рамках проекта «Кадры в АПК»',
+        '#steps-title': 'Как поступить на обучение',
+        '.faq-contact h3': 'Есть другие вопросы?'
+      };
+      for (const [selector, expected] of Object.entries(copy)) {
+        const actual = (await page.locator(selector).innerText()).replace(/\s+/g, ' ').trim();
+        if (actual !== expected) textIssues.push(`${selector}/${width}: expected "${expected}"; got "${actual}"`);
+        else checks++;
+      }
+      const wineCopy = (await page.locator('.program-card[data-course="wine"] .program-card__body').innerText()).replace(/\s+/g, ' ');
+      if (!wineCopy.includes('виноделия и виноторговли')) textIssues.push(`wine/${width}: joined words in ${wineCopy}`);
+      else checks++;
+      if (width === 360) {
+        await page.locator('.hero__copy').screenshot({ path: path.join(output, 'hero-copy-360.png') });
+        await page.locator('.application__intro').screenshot({ path: path.join(output, 'application-copy-360.png') });
+        await page.locator('.closing').screenshot({ path: path.join(output, 'closing-copy-360.png') });
+        await page.locator('.footer__organization').screenshot({ path: path.join(output, 'footer-copy-360.png') });
+      }
       check((await page.locator('#form-status').textContent()).includes('Предпросмотр дизайна'), `intake preview explicit ${width}`);
       await page.locator('#application-form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
       check(await page.locator('#application-success').isHidden(), `no fake successful intake ${width}`);
@@ -100,6 +125,7 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
     check(errors.length === 0, `browser errors: ${JSON.stringify(errors)}`);
     check(broken.length === 0, `broken requests: ${JSON.stringify(broken)}`);
     check(apiRequests.length === 0, `no server API requests: ${JSON.stringify(apiRequests)}`);
+    check(textIssues.length === 0, `responsive text regressions:\n${textIssues.join('\n')}`);
     await writeFile(path.join(output, 'report.json'), JSON.stringify({ base, checks, errors, broken, apiRequests }, null, 2));
     console.log(`${checks} GitHub Pages route/asset/modal/mobile/preview checks passed: ${base}`);
   } finally {

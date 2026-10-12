@@ -38,5 +38,7 @@ for(const [id,material] of Object.entries(newMaterials)){
 html=html.replace('<h3>О чём программа</h3>','<h3 id="dialog-topics-heading">О чём программа</h3>');
 if(!html.includes('class="course-dialog__media"'))html=html.replace(/<img id="dialog-image"[^>]*>/,'<div class="course-dialog__media">$&</div>');
 html=html.replace(/^[ \t]+(?=\r?$)/gm,'');
+// Mobile styles hide selected line breaks; preserve the word separator when they disappear.
+html=html.replace(/(\S)(<br\b[^>]*>)/g,'$1 $2');
 await writeFile(target,html,'utf8');
 console.log('Updated landing with organization footer, consent edition and client photos.');
