@@ -130,7 +130,7 @@ function pdfPreflight(data){
   // Preserve opaque image codecs in supplied PDFs; never allow them for ObjStm/XRef.
   if(image&&!objectStream&&!xref&&filters.length===1&&['DCTDecode','JPXDecode','CCITTFaxDecode','JBIG2Decode','LZWDecode'].includes(filters[0].value)){if(input.length>maximum)fail();expanded+=input.length;return input;}
   let output=input;
-  for(const filter of filters){if(filter.value==='ASCII85Decode')output=ascii85(output);else if(filter.value==='ASCIIHexDecode'){const hex=output.toString('ascii').replace(/[\x00\t\n\f\r ]/g,'').replace(/>$/,'');if(!/^[a-f0-9]*$/i.test(hex))fail();output=Buffer.from(hex.length%2?hex+'0':hex,'hex');}else if(filter.value==='FlateDecode'){if(!maximum)fail();output=inflateSync(output,{maxOutputLength:maximum});}else fail('Фильтр PDF не поддерживается.');if(output.length>maximum)fail('PDF превышает бюджет декодирования.');}
+  for(const filter of filters){if(filter.value==='ASCII85Decode')output=ascii85(output,maximum);else if(filter.value==='ASCIIHexDecode')output=asciiHex(output,maximum);else if(filter.value==='FlateDecode'){if(!maximum)fail();output=inflateSync(output,{maxOutputLength:maximum});}else fail('Фильтр PDF не поддерживается.');if(output.length>maximum)fail('PDF превышает бюджет декодирования.');}
   if(output.length>maximum)fail('PDF превышает бюджет декодирования.');expanded+=output.length;
   if(objectStream)compressedObjects(dictionary,output);if(xref&&output.length!==tableLength)fail('Некорректная длина таблицы ссылок PDF.');if(xref)decodedIndexes.set(offset,output);return output;
  };
@@ -175,7 +175,19 @@ async function pdf(data){
  const text=data.toString('latin1');if(!/^%PDF-1\.[0-7][\r\n]/.test(text)||!/(?:\r?\n)%%EOF\s*$/.test(text)||!/startxref\s+\d+\s+%%EOF\s*$/.test(text))fail();pdfPreflight(data);
  const parsed=await PDFDocument.load(data,{updateMetadata:false,throwOnInvalidObject:true});if(parsed.getPageCount()<1||parsed.getPageCount()>2000)fail();parsed.getPages();
 }
-function ascii85(data){const source=data.toString('ascii').replace(/\s/g,'').replace(/^<~/,'').replace(/~>$/,'');const output=[],group=[];const append=length=>{let value=0;for(const digit of group)value=value*85+digit;if(value>0xffffffff)fail();for(let i=0;i<length;i++)output.push(Math.floor(value/256**(3-i))&255);group.length=0;};for(const char of source){if(char==='z'){if(group.length)fail();output.push(0,0,0,0);continue;}const digit=char.charCodeAt(0)-33;if(digit<0||digit>84)fail();group.push(digit);if(group.length===5)append(4);}if(group.length===1)fail();if(group.length){const length=group.length-1;while(group.length<5)group.push(84);append(length);}return Buffer.from(output);}
+function ascii85(data,maximum){
+ if(!Number.isSafeInteger(maximum)||maximum<0)fail();const source=data.toString('ascii').replace(/\s/g,'').replace(/^<~/,'').replace(/~>$/,'');
+ // A fixed byte buffer never exceeds the remaining stage budget. No decoded
+ // number array is materialized, and every group checks capacity before writes.
+ const output=Buffer.alloc(Math.min(maximum,source.length*4));let written=0,digits=0,value=0;
+ const append=length=>{if(written+length>maximum||value>0xffffffff)fail('PDF превышает бюджет декодирования.');for(let i=0;i<length;i++)output[written++]=Math.floor(value/256**(3-i))&255;digits=0;value=0;};
+ for(const char of source){if(char==='z'){if(digits)fail();append(4);continue;}const digit=char.charCodeAt(0)-33;if(digit<0||digit>84)fail();value=value*85+digit;if(++digits===5)append(4);}
+ if(digits===1)fail();if(digits){const length=digits-1;while(digits++<5)value=value*85+84;append(length);}return output.subarray(0,written);
+}
+function asciiHex(data,maximum){
+ if(!Number.isSafeInteger(maximum)||maximum<0)fail();const hex=data.toString('ascii').replace(/[\x00\t\n\f\r ]/g,'').replace(/>$/,'');
+ if(!/^[a-f0-9]*$/i.test(hex))fail();if(Math.ceil(hex.length/2)>maximum)fail('PDF превышает бюджет декодирования.');return Buffer.from(hex.length%2?hex+'0':hex,'hex');
+}
 async function prepare(input,scannerCommand,scanner){
  labels(input,['data','name','mime','title','alt']);const {data,name,mime}=input;
  if(!Buffer.isBuffer(data)||!data.length)fail();if(data.length>MAX_FILE)throw new HttpError(413,'Размер файла превышает 10 МиБ.','MEDIA_TOO_LARGE');
