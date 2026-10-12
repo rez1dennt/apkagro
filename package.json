@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "busboy": "^1.6.0",
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "linkedom": "^0.18.13"
   },
   "overrides": {
     "exceljs": {
