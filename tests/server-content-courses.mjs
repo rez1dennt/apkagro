@@ -14,6 +14,7 @@ import {setupAdmin,totp} from '../server/security.mjs';
 import ExcelJS from 'exceljs';
 import {openStore} from '../server/storage.mjs';
 import {parseHTML} from 'linkedom';
+import {renderContentCss} from '../server/content-render.mjs';
 const fields={courseId:'brand-new',lastName:'Иванов',firstName:'Иван',middleName:'',birthDate:'1990-01-01',phone:'+79267908090',email:'person@example.test',snils:'11223344595',education:'professional',consent:'true',consentVersion:'new-version'};
 test('intake accepts only exact current published IDs and consent version',()=>{const options={programs:[{id:'brand-new',status:'published'},{id:'closed',status:'closed'}],consentVersion:'new-version'};assert.equal(validateFields(fields,options).courseId,'brand-new');for(const id of ['drone','closed','__proto__'])assert.throws(()=>validateFields({...fields,courseId:id},options));assert.throws(()=>validateFields({...fields,consentVersion:'old'},options));});
 test('intake rejects stale catalog revisions while legacy initial form remains compatible',()=>{const options={programs:[{id:'brand-new',status:'published'}],consentVersion:'new-version',contentRevision:2};assert.throws(()=>validateFields({...fields,contentRevision:'1'},options),e=>e.code==='CONTENT_CHANGED');assert.throws(()=>validateFields(fields,options),e=>e.code==='CONTENT_CHANGED');assert.equal(validateFields({...fields,contentRevision:'2'},options).courseId,'brand-new');assert.equal(validateFields(fields,{...options,contentRevision:1}).courseId,'brand-new');});
@@ -37,4 +38,49 @@ test('HTTP draft/history preview, publication, current intake and compact immuta
   const xlsx=await request('/api/admin/export');const workbook=new ExcelJS.Workbook();await workbook.xlsx.load(await xlsx.arrayBuffer());assert.equal(workbook.worksheets[0].getCell('D2').value,'Новая программа');assert.equal(workbook.worksheets[0].getCell('M2').value,version);assert.match(workbook.worksheets[0].getCell('D3').value,/Применение БАС/);
   draft=store.getDraft();draft.content.hiddenSections=['programs'];draft=await store.saveDraft(draft.content,draft.revision);await media.publish(draft.revision);assert.equal((await(await request('/api/config')).json()).enabled,false);assert.equal((await submit({courseId:'drone'})).status,503);assert.ok(!(await(await request('/assets/content/theme.css')).text()).includes('data-course'));
  }finally{await new Promise(r=>app.server.close(r));await app.close();await rm(dir,{recursive:true,force:true});}
+});
+
+async function previewFixture(t) {
+ const dir=await mkdtemp(path.join(process.cwd(),'.server-test-preview-boundary-')),key=randomBytes(32),secret=randomBytes(20);
+ await setupAdmin(dir,key,'preview-editor','synthetic-preview-password!',secret);
+ const app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});
+ await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
+ t.after(async()=>{await new Promise(resolve=>app.server.close(resolve));await app.close();await rm(dir,{recursive:true,force:true});});
+ const origin='http://127.0.0.1:'+app.server.address().port;let cookie='',csrf='';
+ const request=async(url,options={})=>{const response=await fetch(origin+url,{...options,headers:{origin,cookie,'x-csrf-token':csrf,...options.headers}});if(response.headers.getSetCookie().length)cookie=response.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');return response;};
+ csrf=(await(await request('/api/csrf')).json()).token;
+ const login=await request('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'preview-editor',password:'synthetic-preview-password!',otp:totp(secret)})});
+ assert.equal(login.status,200);csrf=(await login.json()).csrfToken;
+ const {store,media}=await app.getContentServices();let draft=store.getDraft();draft.content.settings.intake.deadline='';draft=await store.saveDraft(draft.content,draft.revision);await media.publish(draft.revision);
+ const document=async route=>parseHTML(await(await request(route)).text()).document;
+ const submit=(doc,route='/api/applications',overrides={})=>{const body=new FormData(),hidden=Object.fromEntries([...doc.querySelectorAll('#application-form input[type="hidden"][name]')].map(input=>[input.name,input.value]));for(const [name,value]of Object.entries({...fields,...hidden,courseId:'drone',...overrides})){if(value!==undefined)body.append(name,value);}for(const name of ['snilsFile','educationFile'])body.append(name,new Blob(['%PDF-1.4\npreview-only synthetic\n%%EOF'],{type:'application/pdf'}),name+'.pdf');return request(route,{method:'POST',body});};
+ return {request,document,submit,store,media};
+}
+
+test('HTTP rejects actual preview multipart context while independent public tab remains usable',async t=>{
+ const f=await previewFixture(t),revision=f.store.getPublished().revision;
+ for(const route of ['/admin/preview/','/admin/preview/?revision='+revision]){
+  const doc=await f.document(route),response=await f.submit(doc);
+  assert.equal(response.status,403,'copied preview form data must never create an application');
+  assert.equal((await response.json()).code,'PREVIEW_INTAKE_DISABLED');
+  assert.equal(doc.querySelector('[name="contentRevision"]').value,'preview');
+  assert.equal(doc.querySelector('#application-form').getAttribute('action'),'/api/preview-applications');
+  assert.equal((await f.submit(doc,'/api/preview-applications')).status,403);
+  assert.equal((await f.submit(doc,'/api/applications',{submissionContext:undefined})).status,403,'unusable preview revision independently rejects context');
+  assert.equal((await f.submit(doc,'/api/applications',{contentRevision:String(revision)})).status,403,'explicit preview marker independently rejects context');
+ }
+ assert.equal((await(await f.request('/api/admin/applications')).json()).total,0);
+ const publicTab=await f.document('/');assert.equal((await f.submit(publicTab)).status,201,'preview must not poison the shared authenticated session');
+ assert.equal((await(await f.request('/api/admin/applications')).json()).total,1);
+});
+
+test('HTTP current-preview cache refreshes consent on publication at the same draft revision',async t=>{
+ const f=await previewFixture(t);let draft=f.store.getDraft();draft.content.pages.find(page=>page.id==='consent').body+='\n\nНовая редакция согласия.';draft=await f.store.saveDraft(draft.content,draft.revision);
+ const before=await f.document('/admin/preview/');await f.document('/admin/preview/consent/');
+ const styles=['theme','site','refinement','soft-ui'];for(const name of styles)assert.equal((await f.request('/admin/preview/styles/'+name+'.css')).status,200);
+ const old=JSON.parse(before.querySelector('#site-content').textContent).intake.consentVersion;
+ const published=await f.media.publish(draft.revision,{documentsConfirmed:true});assert.equal(published.revision,draft.revision);const current=f.store.getDraft();assert.notEqual(current.content.settings.intake.consentVersion,old);
+ for(const route of ['/admin/preview/','/admin/preview/consent/']){const after=await f.document(route),bootstrap=JSON.parse(after.querySelector('#site-content').textContent);assert.equal(bootstrap.intake.consentVersion,current.content.settings.intake.consentVersion);const hidden=after.querySelector('[name="consentVersion"]');if(hidden)assert.equal(hidden.value,current.content.settings.intake.consentVersion);}
+ for(const name of styles){const response=await f.request('/admin/preview/styles/'+name+'.css');assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(await response.text(),renderContentCss({content:current.content,preview:true,file:name==='theme'?null:'assets/css/'+name+'.css'}));}
+ const live=await f.document('/');assert.equal(live.querySelector('[name="consentVersion"]').value,current.content.settings.intake.consentVersion);assert.equal((await f.submit(live)).status,201,'fresh published form submits the newly versioned consent');
 });

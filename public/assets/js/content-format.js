@@ -1,5 +1,6 @@
 // Pure shared formatting used by SSR, the public dialogs and editor previews.
 export const refreshRequiredMessage='Обновите страницу и повторите отправку.';
+export const previewSubmissionMessage='Предпросмотр содержимого. Отправка заявок отключена.';
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeContentUrl(value) {
   if (typeof value !== 'string' || /[\s<>"'\\\x00-\x1f]/.test(value)) return false;

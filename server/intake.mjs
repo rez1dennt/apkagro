@@ -3,11 +3,12 @@ import path from 'node:path';
 import {spawn} from 'node:child_process';
 import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 import {courses} from '../public/assets/js/courses.js';
-import {refreshRequiredMessage} from '../public/assets/js/content-format.js';
+import {refreshRequiredMessage,previewSubmissionMessage} from '../public/assets/js/content-format.js';
 export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
 const invalid=message=>new HttpError(400,message);
 const allowed=new Set(['courseId','contentRevision','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
 export function validateFields(fields,{programs,consentVersion=CONSENT_VERSION,contentRevision}={}){
+ if(fields.submissionContext==='preview'||fields.contentRevision==='preview')throw new HttpError(403,previewSubmissionMessage,'PREVIEW_INTAKE_DISABLED');
  for(const key of Object.keys(fields))if(!allowed.has(key))throw invalid('В форме есть неизвестное поле.');
  if(fields.website)throw invalid('Не удалось принять заявку.');
  if(contentRevision!==undefined&&fields.contentRevision!==String(contentRevision)&&!(contentRevision===1&&fields.contentRevision===undefined))throw new HttpError(409,refreshRequiredMessage,'CONTENT_CHANGED');
