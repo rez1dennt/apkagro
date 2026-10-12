@@ -257,7 +257,7 @@ test('public media excludes draft programs, archived pages and hidden sections w
 
 test('incomplete page and extra section drafts persist while visible publication requires content', async t => {
   const {store}=await fixture(t);const draft=store.getDraft();
-  draft.content.pages.push({id:'new-page',slug:'new-page',title:'',intro:'',body:'',seo:{title:'',description:'',robots:'noindex,follow'},status:'published'});
+  draft.content.pages.push({id:'new-page',slug:'new-page',title:'',intro:'',body:'',seo:{...draft.content.pages[0].seo,title:'',description:'',robots:'noindex,follow'},status:'published'});
   draft.content.extraSections.push({id:'new-section',type:'image',title:'',body:'',image:'',alt:'',imageFocus:{x:50,y:50},buttonLabel:'',buttonUrl:'',items:[]});draft.content.sectionOrder.push('new-section');
   await store.saveDraft(draft.content,draft.revision);
   await assert.rejects(store.publish(store.getDraft().revision),invalid);
@@ -297,4 +297,66 @@ test('seed extractor is reproducible and every public text surface is bound or t
       }
     }
   }
+});
+
+test('percent-encoded local media prefixes, UUIDs and extensions cannot bypass link validation', async () => {
+  const {loadDefaultContent,validateContent,referencedMedia}=await modules();const seed=await loadDefaultContent();
+  const media='/media/92f97b08-69b5-4a81-a476-b23a6e35cb57.pdf';
+  for(const alias of ['/%6dedia/92f97b08-69b5-4a81-a476-b23a6e35cb57.pdf','/m%65dia/92f97b08-69b5-4a81-a476-b23a6e35cb57.exe','/media/%392f97b08-69b5-4a81-a476-b23a6e35cb57.pdf','/media/92f97b08-69b5-4a81-a476-b23a6e35cb57%2epdf','/%256dedia/92f97b08-69b5-4a81-a476-b23a6e35cb57.pdf']){
+    const nav=structuredClone(seed);nav.navigation.desktop[0].url=alias;assert.throws(()=>validateContent(nav),invalid,alias);
+    const legal=structuredClone(seed);legal.pages[0].body+='\n\n[Документ]('+alias+')';assert.throws(()=>validateContent(legal),invalid,alias);
+  }
+  seed.navigation.desktop[0].url=media;seed.pages[0].body+='\n\n[Документ]('+media+')';
+  assert.ok(referencedMedia(validateContent(seed)).has(media));
+});
+
+test('trusted explicit DOM and CSS ownership keeps all hidden application/program media private', async () => {
+  const {loadDefaultContent,referencedMedia}=await modules();const seed=await loadDefaultContent();
+  const registry=JSON.parse(await readFile(path.join(root,'content/content-bindings.json'),'utf8'));
+  const field=registry.find(binding=>binding.kind==='background'&&binding.targets.some(target=>target.selector==='.field select'));
+  const leaf=registry.find(binding=>binding.kind==='background'&&binding.targets.some(target=>target.selector==='.leaf-decoration'));
+  assert.ok(field&&leaf);
+  const urls=['/media/92f97b08-69b5-4a81-a476-b23a6e35cb57.webp','/media/ae72ff37-60d2-4997-bb9f-dc7cd1b5b98f.webp'];
+  seed.fields[field.id]=urls[0];seed.fields[leaf.id]=urls[1];seed.hiddenSections=['application','programs'];
+  const all=referencedMedia(seed),visible=referencedMedia(seed,{publicOnly:true});
+  urls.forEach(url=>{assert.ok(all.has(url));assert.equal(visible.has(url),false);});
+  assert.ok(field.targets.every(target=>target.section==='application'));
+  assert.ok(leaf.targets.every(target=>target.section==='programs'));
+  for(const binding of registry)for(const target of binding.targets)assert.ok(Object.hasOwn(target,'section'),binding.id);
+});
+
+test('typed cards and galleries save incomplete drafts, validate publication and retain hidden media', async t => {
+  const {store,api}=await fixture(t);const draft=store.getDraft();
+  const base={title:'Новый блок',body:'',image:'',alt:'',imageFocus:{x:50,y:50},buttonLabel:'',buttonUrl:''};
+  const media='/media/92f97b08-69b5-4a81-a476-b23a6e35cb57.webp';
+  draft.content.extraSections.push({id:'new-cards',type:'cards',...base,items:[{id:'card-1',title:'',body:'Описание',icon:'info',image:media,alt:'Фото карточки',imageFocus:{x:20,y:30},buttonLabel:'',buttonUrl:''}]},{id:'new-gallery',type:'gallery',...base,items:[{id:'photo-1',image:'',alt:'',imageFocus:{x:50,y:50},caption:'Подпись'}]});
+  draft.content.sectionOrder.push('new-cards','new-gallery');await store.saveDraft(draft.content,draft.revision);
+  await assert.rejects(store.publish(store.getDraft().revision),invalid);
+  const ready=store.getDraft();ready.content.extraSections[0].items[0].title='Карточка';Object.assign(ready.content.extraSections[1].items[0],{image:media,alt:'Описание фото'});
+  await store.saveDraft(ready.content,ready.revision);await store.publish(store.getDraft().revision);
+  assert.ok(api.referencedMedia(store.getPublished().content,{publicOnly:true}).has(media));
+  const hidden=store.getDraft();hidden.content.hiddenSections.push('new-cards','new-gallery');
+  await store.saveDraft(hidden.content,hidden.revision);await store.publish(store.getDraft().revision);
+  assert.ok(store.references().has(media));assert.equal(api.referencedMedia(store.getPublished().content,{publicOnly:true}).has(media),false);
+  const bad=store.getDraft().content;bad.extraSections[1].items[0].imageFocus.x=101;assert.throws(()=>api.validateContent(bad),invalid);
+  bad.extraSections[1].items[0].imageFocus.x=50;bad.extraSections[1].items.push({...bad.extraSections[1].items[0]});assert.throws(()=>api.validateContent(bad),invalid);
+});
+
+test('main and per-page Open Graph fields validate images and keep archived share media private', async () => {
+  const {loadDefaultContent,validateContent,referencedMedia}=await modules();const seed=await loadDefaultContent();
+  assert.equal(seed.seo.ogImage,'');
+  for(const page of seed.pages)for(const key of ['ogTitle','ogDescription','ogImage','ogType'])assert.ok(Object.hasOwn(page.seo,key),key);
+  const publicImage='/media/92f97b08-69b5-4a81-a476-b23a6e35cb57.webp',privateImage='/media/ae72ff37-60d2-4997-bb9f-dc7cd1b5b98f.webp';
+  seed.seo.ogImage=publicImage;seed.pages[0].seo.ogImage=publicImage;
+  seed.pages.push({...structuredClone(seed.pages[0]),id:'future',slug:'future',seo:{...seed.pages[0].seo,ogImage:privateImage},status:'archived'});
+  assert.ok(referencedMedia(validateContent(seed)).has(privateImage));assert.ok(referencedMedia(seed,{publicOnly:true}).has(publicImage));assert.equal(referencedMedia(seed,{publicOnly:true}).has(privateImage),false);
+  seed.pages[0].seo.ogImage='javascript:alert(1)';assert.throws(()=>validateContent(seed),invalid);
+  seed.pages[0].seo.ogImage='/media/92f97b08-69b5-4a81-a476-b23a6e35cb57.pdf';assert.throws(()=>validateContent(seed),invalid);
+});
+
+test('restricted Markdown supports safe ATX headings without accepting executable or unsupported markup', async () => {
+  const {loadDefaultContent,validateContent}=await modules();const seed=await loadDefaultContent();
+  seed.pages[0].body='# Заголовок\n\n## Раздел\n\n### Подраздел\n\n**Жирный** и *курсив*, [ссылка](/consent/).\n\n- Пункт';
+  assert.doesNotThrow(()=>validateContent(seed));
+  for(const body of ['# <script>alert(1)</script>','# [ссылка](javascript:alert(1))','```js\nalert(1)\n```','> Цитата','| a | b |']){seed.pages[0].body=body;assert.throws(()=>validateContent(seed),invalid);}
 });

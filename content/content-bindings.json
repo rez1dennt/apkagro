@@ -12,28 +12,32 @@
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -50,28 +54,32 @@
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -88,7 +96,8 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -105,28 +114,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -143,28 +156,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -181,28 +198,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -219,28 +240,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -257,28 +282,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -295,28 +324,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -336,7 +369,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -346,7 +380,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -356,7 +391,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -366,7 +402,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -383,7 +420,8 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -401,7 +439,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Шапка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -409,7 +448,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Шапка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -417,7 +457,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Шапка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -425,7 +466,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Шапка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -442,28 +484,32 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > button:nth-child(4)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > button:nth-child(4)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > button:nth-child(4)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > button:nth-child(4)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -480,28 +526,32 @@
         "selector": "#mobile-menu > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#mobile-menu > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#mobile-menu > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#mobile-menu > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -518,28 +568,32 @@
         "selector": "#mobile-menu > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#mobile-menu > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#mobile-menu > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#mobile-menu > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -556,7 +610,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -573,7 +628,8 @@
         "selector": "#hero-title",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -590,7 +646,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -610,7 +667,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -627,7 +685,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(4) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -645,7 +704,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Первый экран",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "hero"
       }
     ]
   },
@@ -662,7 +722,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(4) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -679,7 +740,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(4) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -697,7 +759,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Первый экран",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "hero"
       }
     ]
   },
@@ -714,7 +777,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -731,7 +795,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -749,7 +814,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Первый экран",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "hero"
       }
     ]
   },
@@ -766,7 +832,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -783,7 +850,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -801,7 +869,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Первый экран",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "hero"
       }
     ]
   },
@@ -818,7 +887,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(3) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -835,7 +905,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(3) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -852,7 +923,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(2) > strong:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -869,7 +941,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(2) > img:nth-child(3)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -886,7 +959,8 @@
         "selector": "#main > section:nth-child(1) > div:nth-child(2) > img:nth-child(3)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Первый экран"
+        "group": "Первый экран",
+        "section": "hero"
       }
     ]
   },
@@ -903,7 +977,8 @@
         "selector": "#about > div:nth-child(1) > div:nth-child(1) > p:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "О проекте"
+        "group": "О проекте",
+        "section": "about"
       }
     ]
   },
@@ -920,7 +995,8 @@
         "selector": "#about-title",
         "mode": "text",
         "multiline": true,
-        "group": "О проекте"
+        "group": "О проекте",
+        "section": "about"
       }
     ]
   },
@@ -937,7 +1013,8 @@
         "selector": "#about > div:nth-child(1) > div:nth-child(1) > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "О проекте"
+        "group": "О проекте",
+        "section": "about"
       }
     ]
   },
@@ -954,7 +1031,8 @@
         "selector": "#programs-title",
         "mode": "text",
         "multiline": true,
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -971,7 +1049,8 @@
         "selector": "#programs > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -991,7 +1070,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -1008,7 +1088,8 @@
         "selector": "#programs > div:nth-child(2) > div:nth-child(1) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -1026,7 +1107,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Программы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -1046,7 +1128,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -1064,7 +1147,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Программы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -1081,7 +1165,8 @@
         "selector": "#steps-title",
         "mode": "text",
         "multiline": true,
-        "group": "Как поступить"
+        "group": "Как поступить",
+        "section": "steps"
       }
     ]
   },
@@ -1098,7 +1183,8 @@
         "selector": "#steps > div:nth-child(1) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Как поступить"
+        "group": "Как поступить",
+        "section": "steps"
       }
     ]
   },
@@ -1115,7 +1201,8 @@
         "selector": "#application-title",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1132,7 +1219,8 @@
         "selector": "#application > div:nth-child(2) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1150,7 +1238,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -1167,7 +1256,8 @@
         "selector": "#application > div:nth-child(2) > div:nth-child(1) > div:nth-child(4) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1185,7 +1275,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -1202,7 +1293,8 @@
         "selector": "#application-form > div:nth-child(1) > div:nth-child(2) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1219,7 +1311,8 @@
         "selector": "#selected-course-label",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1236,7 +1329,8 @@
         "selector": "#change-course",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1256,7 +1350,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1276,7 +1371,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1293,7 +1389,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(1) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1310,7 +1407,8 @@
         "selector": "#last-name",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1330,7 +1428,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1347,7 +1446,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(2) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1364,7 +1464,8 @@
         "selector": "#first-name",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1384,7 +1485,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1401,7 +1503,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(3) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1418,7 +1521,8 @@
         "selector": "#middle-name",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1438,7 +1542,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1455,7 +1560,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(4) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1475,7 +1581,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1492,7 +1599,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(5) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1509,7 +1617,8 @@
         "selector": "#phone",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1529,7 +1638,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1546,7 +1656,8 @@
         "selector": "#application-form > div:nth-child(5) > div:nth-child(6) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1563,7 +1674,8 @@
         "selector": "#email",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1583,7 +1695,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1600,7 +1713,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(1) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1617,7 +1731,8 @@
         "selector": "#snils",
         "mode": "attribute",
         "attribute": "placeholder",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1637,7 +1752,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1654,7 +1770,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(2) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1671,7 +1788,8 @@
         "selector": "#education > option:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1688,7 +1806,8 @@
         "selector": "#education > option:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1705,7 +1824,8 @@
         "selector": "#education > option:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1725,7 +1845,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1742,7 +1863,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(3) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1760,7 +1882,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -1777,7 +1900,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(3) > label:nth-child(2) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1794,7 +1918,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(3) > label:nth-child(2) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1814,7 +1939,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1831,7 +1957,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(4) > label:nth-child(1) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1849,7 +1976,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -1866,7 +1994,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(4) > label:nth-child(2) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1883,7 +2012,8 @@
         "selector": "#application-form > div:nth-child(6) > div:nth-child(4) > label:nth-child(2) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1903,7 +2033,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1920,7 +2051,8 @@
         "selector": "#application-form > div:nth-child(7) > label:nth-child(1) > span:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1937,7 +2069,8 @@
         "selector": "#application-form > div:nth-child(7) > label:nth-child(1) > span:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1954,7 +2087,8 @@
         "selector": "#application-form > div:nth-child(7) > label:nth-child(1) > span:nth-child(2) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1974,7 +2108,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -1994,7 +2129,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2011,7 +2147,8 @@
         "selector": "#application-form > div:nth-child(7) > p:nth-child(3) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2028,7 +2165,8 @@
         "selector": "#application-form > div:nth-child(7) > p:nth-child(3) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2046,7 +2184,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -2063,7 +2202,8 @@
         "selector": "#application-form > div:nth-child(8) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2080,7 +2220,8 @@
         "selector": "#submit-application > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2098,7 +2239,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -2118,7 +2260,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2136,7 +2279,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -2154,7 +2298,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -2171,7 +2316,8 @@
         "selector": "#application-success > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2188,7 +2334,8 @@
         "selector": "#application-success > h2:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2205,7 +2352,8 @@
         "selector": "#application-success > p:nth-child(5)",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2222,7 +2370,8 @@
         "selector": "#new-application",
         "mode": "text",
         "multiline": true,
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2242,7 +2391,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2262,7 +2412,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2282,7 +2433,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заявка"
+        "group": "Заявка",
+        "section": "application"
       }
     ]
   },
@@ -2300,7 +2452,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заявка",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "application"
       }
     ]
   },
@@ -2317,7 +2470,8 @@
         "selector": "#faq-title",
         "mode": "text",
         "multiline": true,
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -2334,7 +2488,8 @@
         "selector": "#faq > div:nth-child(1) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -2351,7 +2506,8 @@
         "selector": "#faq > div:nth-child(1) > aside:nth-child(3) > div:nth-child(1) > h3:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -2368,7 +2524,8 @@
         "selector": "#faq > div:nth-child(1) > aside:nth-child(3) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -2388,7 +2545,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -2406,7 +2564,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Вопросы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "faq"
       }
     ]
   },
@@ -2423,7 +2582,8 @@
         "selector": "#main > section:nth-child(7) > div:nth-child(1) > div:nth-child(1) > h2:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2440,7 +2600,8 @@
         "selector": "#main > section:nth-child(7) > div:nth-child(1) > div:nth-child(1) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2460,7 +2621,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2477,7 +2639,8 @@
         "selector": "#main > section:nth-child(7) > div:nth-child(1) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2495,7 +2658,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заключительный блок",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "closing"
       }
     ]
   },
@@ -2515,7 +2679,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2535,7 +2700,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2555,7 +2721,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Заключительный блок"
+        "group": "Заключительный блок",
+        "section": "closing"
       }
     ]
   },
@@ -2573,7 +2740,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Заключительный блок",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "closing"
       }
     ]
   },
@@ -2590,7 +2758,8 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2607,28 +2776,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2645,28 +2818,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > img:nth-child(1)",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2683,28 +2860,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > strong:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2721,28 +2902,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1) > span:nth-child(2) > small:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2759,28 +2944,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > nav:nth-child(2)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2798,7 +2987,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -2806,7 +2996,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -2814,7 +3005,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -2822,7 +3014,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -2840,7 +3033,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -2848,7 +3042,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -2856,7 +3051,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -2864,7 +3060,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -2881,28 +3078,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2919,28 +3120,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2957,28 +3162,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -2998,7 +3207,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3008,7 +3218,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3018,7 +3229,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3028,7 +3240,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3046,7 +3259,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3054,7 +3268,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3062,7 +3277,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3070,7 +3286,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -3090,7 +3307,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3100,7 +3318,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3110,7 +3329,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3120,7 +3340,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3137,28 +3358,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3176,7 +3401,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3184,7 +3410,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3192,7 +3419,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3200,7 +3428,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -3220,7 +3449,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3230,7 +3460,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3240,7 +3471,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3250,7 +3482,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3267,28 +3500,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3306,7 +3543,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3314,7 +3552,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3322,7 +3561,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3330,7 +3570,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -3350,7 +3591,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3360,7 +3602,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3370,7 +3613,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3380,7 +3624,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3397,28 +3642,32 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(4)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(4)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(4)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(3) > a:nth-child(4)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3436,7 +3685,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -3444,7 +3694,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -3452,7 +3703,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -3460,7 +3712,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Подвал",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -3477,28 +3730,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3515,28 +3772,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3553,28 +3814,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3591,28 +3856,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3629,28 +3898,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3667,28 +3940,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3705,28 +3982,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3743,28 +4024,32 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > button:nth-child(4)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > button:nth-child(4)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > button:nth-child(4)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(3) > div:nth-child(2) > button:nth-child(4)",
         "mode": "text",
         "multiline": true,
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -3781,7 +4066,8 @@
         "selector": "#course-dialog > button:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3799,7 +4085,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Общие элементы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -3816,7 +4103,8 @@
         "selector": "#dialog-image",
         "mode": "attribute",
         "attribute": "src",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3833,7 +4121,8 @@
         "selector": "#dialog-image",
         "mode": "attribute",
         "attribute": "alt",
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3850,7 +4139,8 @@
         "selector": "#course-dialog > div:nth-child(3) > p:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3870,7 +4160,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3888,7 +4179,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Общие элементы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -3908,7 +4200,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3926,7 +4219,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Общие элементы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -3943,7 +4237,8 @@
         "selector": "#course-dialog > div:nth-child(3) > div:nth-child(3) > span:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3960,7 +4255,8 @@
         "selector": "#dialog-topics-heading",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3977,7 +4273,8 @@
         "selector": "#course-dialog > div:nth-child(3) > p:nth-child(7)",
         "mode": "text",
         "multiline": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -3997,7 +4294,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -4015,7 +4313,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Общие элементы",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": "programs"
       }
     ]
   },
@@ -4032,28 +4331,32 @@
         "selector": "#cookie-dismiss",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-dismiss",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-dismiss",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-dismiss",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4071,7 +4374,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -4079,7 +4383,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -4087,7 +4392,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -4095,7 +4401,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -4113,7 +4420,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -4121,7 +4429,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -4129,7 +4438,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -4137,7 +4447,8 @@
         "mode": "attribute",
         "attribute": "href",
         "group": "Cookie",
-        "prefix": "/assets/icons-v2.svg#"
+        "prefix": "/assets/icons-v2.svg#",
+        "section": null
       }
     ]
   },
@@ -4154,28 +4465,32 @@
         "selector": "#cookie-title",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-title",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-title",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-title",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4192,28 +4507,32 @@
         "selector": "#cookie-banner > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-banner > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-banner > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-banner > p:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4230,28 +4549,32 @@
         "selector": "#cookie-acknowledge",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-acknowledge",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-acknowledge",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-acknowledge",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4268,28 +4591,32 @@
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4306,28 +4633,32 @@
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#cookie-banner > div:nth-child(4) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Cookie"
+        "group": "Cookie",
+        "section": null
       }
     ]
   },
@@ -4347,7 +4678,8 @@
         "leadingSpace": false,
         "trailingSpace": true,
         "variables": [],
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -4367,7 +4699,8 @@
         "leadingSpace": false,
         "trailingSpace": false,
         "variables": [],
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -4402,21 +4735,24 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -4433,21 +4769,24 @@
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "html > body:nth-child(2) > header:nth-child(2) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Шапка"
+        "group": "Шапка",
+        "section": null
       }
     ]
   },
@@ -4464,21 +4803,24 @@
         "selector": "#main > div:nth-child(1) > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1)",
         "mode": "attribute",
         "attribute": "aria-label",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4495,21 +4837,24 @@
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4526,21 +4871,24 @@
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4557,21 +4905,24 @@
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(2)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4588,21 +4939,24 @@
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > nav:nth-child(1) > span:nth-child(3)",
         "mode": "text",
         "multiline": true,
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4619,21 +4973,24 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "group": "Подвал"
+        "group": "Подвал",
+        "section": null
       }
     ]
   },
@@ -4651,7 +5008,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -4659,7 +5017,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4677,7 +5036,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -4685,7 +5045,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4703,7 +5064,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -4711,7 +5073,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4728,14 +5091,16 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4752,14 +5117,16 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4776,14 +5143,16 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4801,7 +5170,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4819,7 +5189,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4837,7 +5208,8 @@
         "mode": "attribute",
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4854,7 +5226,8 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(4) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4871,7 +5244,8 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(7) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4888,7 +5262,8 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(7) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4905,7 +5280,8 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(7) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "download",
-        "group": "Документы"
+        "group": "Документы",
+        "section": null
       }
     ]
   },
@@ -4924,7 +5300,8 @@
         "childIndex": 0,
         "all": true,
         "trailingSpace": true,
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -4943,7 +5320,8 @@
         "childIndex": 0,
         "all": true,
         "trailingSpace": true,
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -4962,7 +5340,8 @@
         "childIndex": 0,
         "all": true,
         "trailingSpace": true,
-        "group": "Программы"
+        "group": "Программы",
+        "section": "programs"
       }
     ]
   },
@@ -4981,7 +5360,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Вопросы"
+        "group": "Вопросы",
+        "section": "faq"
       }
     ]
   },
@@ -5000,7 +5380,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -5019,7 +5400,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -5038,7 +5420,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": "programs"
       }
     ]
   },
@@ -5057,7 +5440,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5066,7 +5450,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -5075,7 +5460,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5084,7 +5470,8 @@
         "attribute": "href",
         "prefix": "/assets/icons-v2.svg#",
         "all": true,
-        "group": "Общие элементы"
+        "group": "Общие элементы",
+        "section": null
       }
     ]
   },
@@ -5102,7 +5489,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/hero.webp",
         "occurrence": 0,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "hero"
       }
     ]
   },
@@ -5120,7 +5508,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/field-ornament.svg",
         "occurrence": 1,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "programs"
       }
     ]
   },
@@ -5138,7 +5527,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/field-ornament.svg",
         "occurrence": 2,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "programs"
       }
     ]
   },
@@ -5156,7 +5546,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/hero.webp",
         "occurrence": 3,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "hero"
       }
     ]
   },
@@ -5174,7 +5565,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/plant.webp",
         "occurrence": 4,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5192,7 +5584,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/wheat-detail.webp",
         "occurrence": 5,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5210,7 +5603,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/plant.webp",
         "occurrence": 6,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5228,7 +5622,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/hero.webp",
         "occurrence": 0,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "hero"
       }
     ]
   },
@@ -5246,7 +5641,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/plant.webp",
         "occurrence": 1,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5264,7 +5660,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/hero.webp",
         "occurrence": 2,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5282,7 +5679,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/select-arrow.svg",
         "occurrence": 3,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5300,7 +5698,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/harvest.webp",
         "occurrence": 4,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "faq"
       }
     ]
   },
@@ -5318,7 +5717,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/harvest.webp",
         "occurrence": 5,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "closing"
       }
     ]
   },
@@ -5336,7 +5736,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/hero.webp",
         "occurrence": 6,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "hero"
       }
     ]
   },
@@ -5354,7 +5755,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/plant.webp",
         "occurrence": 7,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "application"
       }
     ]
   },
@@ -5372,7 +5774,8 @@
         "mode": "css-url",
         "sourceUrl": "/assets/images/harvest.webp",
         "occurrence": 0,
-        "group": "Оформление"
+        "group": "Оформление",
+        "section": "faq"
       }
     ]
   },
@@ -5392,14 +5795,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": "faq"
       },
       {
         "file": "index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "index.html",
@@ -5407,14 +5812,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "index.html",
         "selector": "html > body:nth-child(2) > noscript:nth-child(8) > p:nth-child(1) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "index.html",
@@ -5422,20 +5829,23 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5443,27 +5853,31 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "mailto:sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(21) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5471,21 +5885,24 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "mailto:sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5493,14 +5910,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -5508,20 +5927,23 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(12) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5529,21 +5951,24 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "mailto:sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5551,17 +5976,20 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "sacracorona@yandex.ru",
-        "prefix": "mailto:"
+        "prefix": "mailto:",
+        "section": null
       },
       {
         "mode": "message-alias",
         "messageKey": "site-dfca1870e9ce",
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       },
       {
         "mode": "message-alias",
         "messageKey": "site-c2a0e11412b8",
-        "sourceText": "sacracorona@yandex.ru"
+        "sourceText": "sacracorona@yandex.ru",
+        "section": null
       }
     ]
   },
@@ -5580,54 +6008,62 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(3)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(14) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90"
+        "sourceText": "+7 (926) 790-80-90",
+        "section": null
       }
     ]
   },
@@ -5647,7 +6083,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5655,14 +6092,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "tel:+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5670,7 +6109,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -5678,7 +6118,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5686,14 +6127,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "tel:+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5701,7 +6144,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "+79267908090",
-        "prefix": "tel:"
+        "prefix": "tel:",
+        "section": null
       }
     ]
   },
@@ -5720,67 +6164,77 @@
         "selector": "#footer-organization-title",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(4)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#footer-organization-title",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#footer-organization-title",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(4)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#footer-organization-title",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "АНО «Возрождение»"
+        "sourceText": "АНО «Возрождение»",
+        "section": null
       }
     ]
   },
@@ -5800,20 +6254,23 @@
         "mode": "text-node",
         "childIndex": 0,
         "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг Возрождение»",
-        "transform": "footer-name"
+        "transform": "footer-name",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > strong:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»"
+        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»"
+        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -5821,20 +6278,23 @@
         "mode": "text-node",
         "childIndex": 0,
         "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг Возрождение»",
-        "transform": "footer-name"
+        "transform": "footer-name",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > div:nth-child(3) > p:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Автономной некоммерческой организации «Центр предоставления социальных услуг «Возрождение»"
+        "sourceText": "Автономной некоммерческой организации «Центр предоставления социальных услуг «Возрождение»",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "pageId": "consent",
         "mode": "markdown-alias",
-        "sourceText": "Автономной некоммерческой организации «Центр предоставления социальных услуг «Возрождение»"
+        "sourceText": "Автономной некоммерческой организации «Центр предоставления социальных услуг «Возрождение»",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -5842,20 +6302,23 @@
         "mode": "text-node",
         "childIndex": 0,
         "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг Возрождение»",
-        "transform": "footer-name"
+        "transform": "footer-name",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»"
+        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»"
+        "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг „Возрождение“»",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -5863,7 +6326,8 @@
         "mode": "text-node",
         "childIndex": 0,
         "sourceText": "Автономная некоммерческая организация «Центр предоставления социальных услуг Возрождение»",
-        "transform": "footer-name"
+        "transform": "footer-name",
+        "section": null
       }
     ]
   },
@@ -5882,54 +6346,62 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(6)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "1207700044310"
+        "sourceText": "1207700044310",
+        "section": null
       }
     ]
   },
@@ -5948,54 +6420,62 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(8)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(1) > div:nth-child(3) > span:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "7707437711"
+        "sourceText": "7707437711",
+        "section": null
       }
     ]
   },
@@ -6014,54 +6494,62 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > address:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > address:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > address:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(10)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > address:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5"
+        "sourceText": "105264, г. Москва, вн. тер. г. муниципальный округ Измайлово, ул. Верхняя Первомайская, д. 59/35, к. 3, этаж/пом. 0/I, ком. 5",
+        "section": null
       }
     ]
   },
@@ -6080,54 +6568,62 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(4)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(16)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Л035-01298-77/07267658"
+        "sourceText": "Л035-01298-77/07267658",
+        "section": null
       }
     ]
   },
@@ -6146,54 +6642,62 @@
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(4)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(16)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "selector": "#contacts > div:nth-child(1) > section:nth-child(2) > div:nth-child(2) > p:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "05.10.2026"
+        "sourceText": "05.10.2026",
+        "section": null
       }
     ]
   },
@@ -6213,7 +6717,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6221,7 +6726,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6229,7 +6735,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6237,14 +6744,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6252,7 +6761,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "https://islod.obrnadzor.gov.ru/view/322690",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       }
     ]
   },
@@ -6272,7 +6782,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6280,7 +6791,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6288,7 +6800,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6296,14 +6809,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6311,7 +6826,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/license-extract.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       }
     ]
   },
@@ -6331,7 +6847,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6339,14 +6856,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6354,7 +6873,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6362,14 +6882,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "pageId": "consent",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6377,7 +6899,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6385,14 +6908,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6400,7 +6925,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       }
     ]
   },
@@ -6420,7 +6946,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6428,14 +6955,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
@@ -6443,7 +6972,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6451,14 +6981,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "pageId": "consent",
         "mode": "markdown-alias",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6466,7 +6998,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6474,14 +7007,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6489,7 +7024,8 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/privacy-policy.pdf",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       }
     ]
   },
@@ -6509,14 +7045,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
@@ -6524,14 +7062,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "consent/index.html",
         "pageId": "consent",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
@@ -6539,14 +7079,16 @@
         "mode": "attribute",
         "attribute": "href",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
         "sourceText": "/documents/consent.docx",
-        "prefix": ""
+        "prefix": "",
+        "section": null
       }
     ]
   },
@@ -6565,13 +7107,15 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(18)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "Департамент образования и науки города Москвы"
+        "sourceText": "Департамент образования и науки города Москвы",
+        "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "Департамент образования и науки города Москвы"
+        "sourceText": "Департамент образования и науки города Москвы",
+        "section": null
       }
     ]
   }

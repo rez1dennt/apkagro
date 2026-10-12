@@ -27,6 +27,9 @@ function icon(value,where){if(!icons.has(value))fail(where,'Неизвестны
 function url(value,where,{image=false,document=false,empty=false}={}){
   string(value,where,2048,empty?0:1);if(empty&&value==='')return;
   if(value!==value.trim()||/[\s\\<>"'`\u007f]/.test(value)||value.startsWith('//'))fail(where,'Недопустимая ссылка');
+  // Public local namespaces have canonical ASCII paths; reject encoded aliases
+  // before classification so UUID/extensions and media references cannot diverge.
+  if(value.startsWith('/')&&value.split(/[?#]/)[0].includes('%'))fail(where,'Используйте канонический локальный путь');
   let decoded=value;
   try{for(let i=0;i<4;i++){const next=decodeURIComponent(decoded);if(next===decoded)break;decoded=next;}}catch{fail(where,'Недопустимая ссылка');}
   if(/%[a-f\d]{2}/i.test(decoded)||/[\\\u0000-\u0020\u007f]/.test(decoded)||decoded.startsWith('//')||decoded.split(/[/?#]/).some(part=>part==='.'||part==='..'))fail(where,'Небезопасный путь');
@@ -49,7 +52,7 @@ function url(value,where,{image=false,document=false,empty=false}={}){
 }
 function markdown(value,where,max=100000){
   string(value,where,max);
-  if(/!\[|```|~~~|^\s*(?:#{1,6}\s|>|\|)/m.test(value)||/\][ \t]*\[|^\s*\[[^\]]+\]:/m.test(value))fail(where,'Разрешены абзацы, списки, выделение и ссылки');
+  if(/!\[|```|~~~|^\s*(?:>|\|)/m.test(value)||/\][ \t]*\[|^\s*\[[^\]]+\]:/m.test(value))fail(where,'Разрешены абзацы, заголовки, списки, выделение и ссылки');
   const links=[...value.matchAll(/(?<!\\)\[([^\]\n]*)\]\(([^\s)]*)\)/g)];
   for(const match of links)url(match[2],where+'.link');
   const remainder=value.replace(/(?<!\\)\[([^\]\n]*)\]\(([^\s)]*)\)/g,'').replace(/\\[\[\]]/g,'');
@@ -60,9 +63,9 @@ function records(value,where,max,keys,validate){
   for(const [index,record] of value.entries()){const location=where+'['+index+']';object(record,keys,location);identifier(record.id,location+'.id');if(ids.has(record.id))fail(location,'Повтор идентификатора');ids.add(record.id);validate(record,location);}
 }
 function seo(value,where,main=false){
-  const keys=main?Object.keys(defaults.seo):['title','description','robots'];object(value,keys,where);
-  for(const key of keys){if(key==='themeColor')color(value[key],where+'.'+key);else if(key==='icon')url(value[key],where+'.icon',{image:true});else string(value[key],where+'.'+key,key==='description'||key==='ogDescription'?2000:500);}
-  if(main)enumValue(value.ogType,['website'],where+'.ogType');
+  const keys=main?Object.keys(defaults.seo):['title','description','robots','ogTitle','ogDescription','ogType','ogImage'];object(value,keys,where);
+  for(const key of keys){if(key==='themeColor')color(value[key],where+'.'+key);else if(key==='icon')url(value[key],where+'.icon',{image:true});else if(key==='ogImage')url(value[key],where+'.ogImage',{image:true,empty:true});else string(value[key],where+'.'+key,key==='description'||key==='ogDescription'?2000:500);}
+  enumValue(value.ogType,['website'],where+'.ogType');
   enumValue(value.robots,['index,follow','noindex,follow','noindex,nofollow','index,nofollow'],where+'.robots');
 }
 
@@ -89,9 +92,20 @@ export function validateContent(content,{forPublication=false}={}){
   records(content.pages,'pages',100,['id','slug','title','intro','body','seo','status'],(item,where)=>{identifier(item.slug,where+'.slug');if(reserved.has(item.slug))fail(where+'.slug','Служебное имя страницы');string(item.title,where+'.title',500,forPublication&&item.status==='published'?1:0);string(item.intro,where+'.intro',5000);markdown(item.body,where+'.body');if(forPublication&&item.status==='published'&&!item.body.trim())fail(where+'.body');seo(item.seo,where+'.seo');enumValue(item.status,['published','draft','archived'],where+'.status');if(builtin.includes(item.slug)&&(item.id!==item.slug||item.status!=='published'))fail(where,'Обязательная страница');});
   const slugs=content.pages.map(page=>page.slug);if(new Set(slugs).size!==slugs.length||builtin.some(slug=>!slugs.includes(slug)))fail('pages','Необходимы все обязательные страницы без повторов');
   records(content.extraSections,'extraSections',50,['id','type','title','body','image','alt','imageFocus','buttonLabel','buttonUrl','items'],(item,where)=>{
-    if(defaults.sectionOrder.includes(item.id)||reserved.has(item.id))fail(where+'.id');enumValue(item.type,['text','image','cta','faq'],where+'.type');string(item.title,where+'.title',500);markdown(item.body,where+'.body',20000);url(item.image,where+'.image',{image:true,empty:true});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');string(item.buttonLabel,where+'.buttonLabel',200);url(item.buttonUrl,where+'.buttonUrl',{empty:true});records(item.items,where+'.items',100,['id','title','body'],(entry,location)=>{string(entry.title,location+'.title',1000);markdown(entry.body,location+'.body',20000);});
+    if(defaults.sectionOrder.includes(item.id)||reserved.has(item.id))fail(where+'.id');enumValue(item.type,['text','image','cta','faq','cards','gallery'],where+'.type');string(item.title,where+'.title',500);markdown(item.body,where+'.body',20000);url(item.image,where+'.image',{image:true,empty:true});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');string(item.buttonLabel,where+'.buttonLabel',200);url(item.buttonUrl,where+'.buttonUrl',{empty:true});
+    const visible=forPublication&&!hidden.has(item.id);
+    if(item.type==='faq')records(item.items,where+'.items',100,['id','title','body'],(entry,location)=>{string(entry.title,location+'.title',1000);markdown(entry.body,location+'.body',20000);});
+    else if(item.type==='cards')records(item.items,where+'.items',50,['id','title','body','icon','image','alt','imageFocus','buttonLabel','buttonUrl'],(entry,location)=>{
+      string(entry.title,location+'.title',500);markdown(entry.body,location+'.body',20000);string(entry.icon,location+'.icon',100);if(entry.icon)icon(entry.icon,location+'.icon');url(entry.image,location+'.image',{image:true,empty:true});string(entry.alt,location+'.alt',500);focus(entry.imageFocus,location+'.imageFocus');string(entry.buttonLabel,location+'.buttonLabel',200);url(entry.buttonUrl,location+'.buttonUrl',{empty:true});
+      if(visible&&(!entry.title.trim()||Boolean(entry.buttonLabel.trim())!==Boolean(entry.buttonUrl)))fail(location,'Заполните заголовок и обе части кнопки карточки');
+    });
+    else if(item.type==='gallery')records(item.items,where+'.items',100,['id','image','alt','imageFocus','caption'],(entry,location)=>{
+      url(entry.image,location+'.image',{image:true,empty:!visible});string(entry.alt,location+'.alt',500);focus(entry.imageFocus,location+'.imageFocus');string(entry.caption,location+'.caption',1000);if(visible&&!entry.alt.trim())fail(location+'.alt','Добавьте описание изображения');
+    });
+    else list(item.items,where+'.items',0);
     if(forPublication&&!hidden.has(item.id)){
       if(!item.title.trim())fail(where+'.title');if(item.type==='image'&&!item.image)fail(where+'.image');if(item.type==='text'&&!item.body.trim())fail(where+'.body');if(item.type==='cta'&&(!item.buttonLabel.trim()||!item.buttonUrl))fail(where+'.buttonUrl');if(item.type==='faq'&&(!item.items.length||item.items.some(entry=>!entry.title.trim()||!entry.body.trim())))fail(where+'.items');
+      if(['cards','gallery'].includes(item.type)&&!item.items.length)fail(where+'.items','Добавьте хотя бы один элемент');
     }
   });
   const sections=[...defaults.sectionOrder,...content.extraSections.map(section=>section.id)];
@@ -120,15 +134,13 @@ export function referencedMedia(content,{publicOnly=false}={}){
   const hidden=new Set(value.hiddenSections);
   if(publicOnly){value.programs=hidden.has('programs')?[]:value.programs.filter(program=>['published','closed'].includes(program.status));value.pages=value.pages.filter(page=>page.status==='published');value.benefits=hidden.has('about')?[]:value.benefits;value.steps=hidden.has('steps')?[]:value.steps;value.faqs=hidden.has('faq')?[]:value.faqs;value.extraSections=value.extraSections.filter(section=>!hidden.has(section.id));}
   const add=url=>{if(url?.startsWith('/media/'))references.add(url);};
-  const visible=binding=>binding.targets.some(target=>{
-    const section=target.section??target.selector?.match(/\.(hero|about|programs|steps|application|faq|closing)(?=__|-|[.\s:>]|$)/)?.[1]??binding.id.split('.')[0];return !hidden.has(section);
-  });
+  const visible=binding=>binding.targets.some(target=>(target.sections??[target.section]).some(section=>section===null||!hidden.has(section)));
   for(const binding of bindings)if(['image','background','url'].includes(binding.kind)&&(!publicOnly||visible(binding)))add(value.fields[binding.id]);
   for(const group of Object.values(value.navigation))group.forEach(item=>add(item.url));
-  value.benefits.forEach(item=>add(item.image));value.programs.forEach(item=>{add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);});
-  Object.values(value.documents).forEach(add);add(value.seo.icon);
-  for(const page of value.pages)for(const match of page.body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
-  for(const body of [...value.benefits.map(item=>item.body),...value.steps.map(item=>item.body),...value.faqs.map(item=>item.answer),...value.programs.map(item=>item.description),...value.extraSections.flatMap(item=>[item.body,...item.items.map(entry=>entry.body)])])for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
+  value.benefits.forEach(item=>add(item.image));value.programs.forEach(item=>{add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);item.items.forEach(entry=>{add(entry.image);add(entry.buttonUrl);});});
+  Object.values(value.documents).forEach(add);add(value.seo.icon);add(value.seo.ogImage);
+  for(const page of value.pages){add(page.seo.ogImage);for(const match of page.body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);}
+  for(const body of [...value.benefits.map(item=>item.body),...value.steps.map(item=>item.body),...value.faqs.map(item=>item.answer),...value.programs.map(item=>item.description),...value.extraSections.flatMap(item=>[item.body,...item.items.map(entry=>entry.body)])].filter(body=>typeof body==='string'))for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
   return references;
 }
 function stable(value){if(Array.isArray(value))return value.map(stable);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])]));return value;}

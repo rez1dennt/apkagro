@@ -293,3 +293,15 @@
 Доверенная выборка публичных медиа: `referencedMedia(content,{publicOnly:true})` исключает draft/archived программы/страницы и hiddenSections. Полная выборка/история защищает файлы от удаления. Публичный bootstrap должен дополнительно фильтровать сами коллекции; полное хранилище содержит приватные будущие записи.
 
 Сохраняемый черновик может иметь незаполненные новые записи; `validateContent(content,{forPublication:true})` проверяет готовность видимого контента. Небезопасные URL, HTML, типы, размеры и структуры отклоняются при любом сохранении.
+
+## Полный контракт дополнительных секций и Open Graph
+
+extraSections.type: text, image, cta, faq, cards, gallery. Общие поля: id,type,title,body,image,alt,imageFocus,buttonLabel,buttonUrl,items. items — типизированная коллекция: FAQ {id,title,body}, карточки {id,title,body,icon,image,alt,imageFocus,buttonLabel,buttonUrl}, галерея {id,image,alt,imageFocus,caption}. У text/image/cta items всегда пуст. Карточки допускают отсутствие фотографии/значка; при публикации нужен заголовок и обе части заданной кнопки. Галерея при публикации требует изображение, непустой alt и числовой focus. У видимых коллекций требуется хотя бы один элемент. Лимиты: cards 50, gallery/faq 100.
+
+SEO главной страницы: title,description,robots,ogTitle,ogDescription,ogType,ogImage,themeColor,icon. SEO каждой страницы: title,description,robots,ogTitle,ogDescription,ogType,ogImage. ogType=website; ogImage — проверенный локальный URL изображения или пустая строка (метаданные изображения изначально отсутствуют). Исходные OG title/description сохраняются; у страниц без OG используются их исходные title/description. Медиа OG исключается из публичного набора для draft/archived страниц.
+
+Каждая доверенная target содержит section:string|null. Владение определяется при сборке по реальному DOM: .field select относится к application, .leaf-decoration к programs, модальный .course-dialog также к programs. Для целей, общих нескольким секциям, sections содержит полный перечень (null означает общий элемент). Runtime не выводит владение из строк селекторов. Полный набор защищает все файлы, публичный набор проверяет эти явные сведения.
+
+Локальные URL содержат только канонический путь: percent-encoded aliases в path отклоняются для полей, навигации, Markdown и SEO. Кодирование параметров внешних URL не превращается в локальные медиа.
+
+Форматирование Markdown: абзацы, маркированные/нумерованные списки, emphasis/strong, inline links и ATX headings (# .. ###### + пробел). Исполняемый HTML, изображения Markdown, блоки кода, цитаты, таблицы и reference-links запрещены. Рендерер строит элементы безопасно; в rich body исходный h1 показывается как h2, остальные уровни сохраняются для одного h1 документа.
