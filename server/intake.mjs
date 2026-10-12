@@ -2,13 +2,14 @@ import Busboy from 'busboy';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
 import {CONSENT_VERSION} from '../public/assets/js/organization.js';
+import {courses} from '../public/assets/js/courses.js';
 export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
 const invalid=message=>new HttpError(400,message);
 const allowed=new Set(['courseId','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
 export function validateFields(fields){
  for(const key of Object.keys(fields))if(!allowed.has(key))throw invalid('В форме есть неизвестное поле.');
  if(fields.website)throw invalid('Не удалось принять заявку.');
- if(!['drone','flowers','wine','bread','cider','nutrition'].includes(fields.courseId))throw invalid('Выберите программу обучения.');
+ if(!Object.hasOwn(courses,fields.courseId))throw invalid('Выберите программу обучения.');
  const name=/^[\p{L}][\p{L}\p{M} '-]{0,79}$/u;
  if(!name.test(fields.lastName??'')||!name.test(fields.firstName??'')||(fields.middleName&&!name.test(fields.middleName)))throw invalid('Проверьте фамилию, имя и отчество.');
  const date=new Date(fields.birthDate+'T00:00:00.000Z');

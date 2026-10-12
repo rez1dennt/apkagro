@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
 const source = (await readFile(new URL('../public/assets/js/admin.js', import.meta.url), 'utf8'))
-  .replace("import { courses } from './courses.js';", 'const courses = {};')
+  .replace(/import \{ courses \} from '[^']+';/, 'const courses = {};')
   .replace(/import \{ enhanceStatusSelects, syncStatusSelect, closeStatusSelects \} from '[^']+';/, 'const enhanceStatusSelects = () => {}; const syncStatusSelect = () => {}; const closeStatusSelects = () => {};')
   .replace(/restoreSession\(\);\s*$/, '');
 

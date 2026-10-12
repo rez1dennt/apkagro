@@ -7,6 +7,8 @@
   --program-photo-ratio: 3 / 2;
   --wine-card-focus: 50% 50%;
   --wine-modal-focus: 50% 50%;
+  --client-course-focus: 50% 50%;
+  --course-dialog-photo-max: 290px;
   --benefit-content-padding: 20px;
   --benefit-icon-size: 32px;
   --benefit-icon-gap: 12px;
@@ -74,6 +76,8 @@
 .program-card[data-course="wine"] .program-category { left: auto; right: 11px; }
 .program-card[data-course="wine"] .program-card__badge { top: auto; right: auto; bottom: 11px; left: 11px; }
 .course-dialog__media { position: relative; overflow: hidden; }
+.course-dialog:is([data-course="drone"], [data-course="bread"], [data-course="nutrition"], [data-course="cheese"]) .course-dialog__image { height: auto; max-height: var(--course-dialog-photo-max); aspect-ratio: var(--program-photo-ratio); object-fit: cover; object-position: var(--client-course-focus); }
+.course-dialog:is([data-course="bread"], [data-course="nutrition"]) { --client-course-focus: 50% 68%; }
 .program-card[data-course="cider"] .program-card__photo > img,
 .course-dialog[data-course="cider"] .course-dialog__image {
   position: relative;
@@ -83,6 +87,7 @@
 .program-card[data-course="cider"] .program-card__photo > img { object-position: var(--cider-card-focus); transform: none; }
 .course-dialog[data-course="cider"] .course-dialog__image { object-position: var(--cider-modal-focus); }
 .program-card__footer { margin-top: auto; }
+#dialog-description { white-space: pre-line; }
 .consent-text p { overflow-wrap: anywhere; }
 @media (max-width: 699px) {
   :root { --footer-details-gap: 18px; --footer-details-copy: 11px; }

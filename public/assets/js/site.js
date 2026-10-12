@@ -1,5 +1,5 @@
 import './cookie-notice.js?v=20261009-working';
-import { courses } from './courses.js?v=20261011-materials';
+import { courses } from './courses.js?v=20261012-course-materials';
 import { CONSENT_VERSION } from './organization.js?v=20261011-materials';
 import { validSnils, savedApplication } from './form-logic.js';
 import { attachMask, formatPhone, formatSnils } from './input-masks.js';

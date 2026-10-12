@@ -1,4 +1,4 @@
-import { courses } from './courses.js';
+import { courses } from './courses.js?v=20261012-course-materials';
 import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261009-controls';
 let csrfToken = null, applications = [], currentId = null, opener = null;
 let pollTimer = null, loading = false;
