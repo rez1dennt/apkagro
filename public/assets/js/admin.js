@@ -1,7 +1,7 @@
 import { courses } from './courses.js?v=20261012-course-materials';
 import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261009-controls';
 let csrfToken = null, applications = [], currentId = null, opener = null;
-let pollTimer = null, loading = false;
+let pollTimer = null, loading = false, programOptions=[];
 let authGeneration = 0;
 const pendingRequests = new Set();
 function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
@@ -23,7 +23,7 @@ function setScreen(authenticated) {
   pendingRequests.clear();loading=false;
   $('#login-screen').hidden=authenticated; $('#dashboard-screen').hidden=!authenticated;
   if(authenticated)startPolling();
-  else { stopPolling();applications=[]; $('#applications-table-body').replaceChildren(); $('#detail-fields').replaceChildren(); $('#detail-documents').replaceChildren(); }
+  else { stopPolling();applications=[];programOptions=[];$('#program-filter').replaceChildren(programOption('Все программы','all')); $('#applications-table-body').replaceChildren(); $('#detail-fields').replaceChildren(); $('#detail-documents').replaceChildren(); }
 }
 async function api(url, options = {}) {
   const generation=authGeneration,controller=new AbortController();pendingRequests.add(controller);
@@ -45,14 +45,15 @@ $('#admin-login-form').addEventListener('submit',async event=>{
 });
 $('#logout-button').addEventListener('click',async()=>{try{await api('/api/admin/logout',{method:'POST',body:JSON.stringify({})});csrfToken=null;setScreen(false);await preauth();}catch(error){showError('#dashboard-error',error.message);}});
 function textElement(tag,text,className){const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;}
+function programOption(text,value){const option=textElement('option',text);option.value=value;return option;}
 function renderApplications(){
   const query=$('#application-search').value.toLocaleLowerCase('ru').trim(),filter=$('#status-filter').value;
-  const filtered=applications.filter(a=>(filter==='all'||a.status===filter)&&[a.lastName,a.firstName,a.middleName,a.email,a.phone].join(' ').toLocaleLowerCase('ru').includes(query));
+  const courseFilter=$('#program-filter').value;const filtered=applications.filter(a=>(courseFilter==='all'||a.courseId===courseFilter)&&(filter==='all'||a.status===filter)&&[a.lastName,a.firstName,a.middleName,a.email,a.phone,a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId].join(' ').toLocaleLowerCase('ru').includes(query));
   $('#stat-total').textContent=applications.length;
   for(const status of ['new','review','accepted'])$(`#stat-${status}`).textContent=applications.filter(a=>a.status===status).length;
   $('#applications-table-body').replaceChildren(...filtered.map(a=>{
     const tr=document.createElement('tr'),name=document.createElement('td');name.append(textElement('strong',[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ')),textElement('small',a.education==='student'?'Студент 4-го курса и старше':'Профессиональное образование'));
-    const course=textElement('td',courses[a.courseId]?.title||a.courseId,'course-cell');
+    const course=textElement('td',a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId,'course-cell');
     const contact=document.createElement('td');contact.className='contact-cell';for(const [label,href] of [[a.email,'mailto:'+encodeURIComponent(a.email)],[a.phone,'tel:'+String(a.phone).replace(/[^+\d]/g,'')]]){const link=textElement('a',label);link.href=href;contact.append(link);}
     const date=textElement('td',formatDate(a.createdAt));const status=document.createElement('td');status.append(textElement('span',statuses[a.status]||a.status,`status-badge status-badge--${Object.hasOwn(statuses,a.status)?a.status:'new'}`));
     const action=document.createElement('td'),button=textElement('button','Открыть →','table-open');button.type='button';button.dataset.applicationId=a.id;button.addEventListener('click',()=>openDetail(a.id,button));action.append(button);tr.append(name,course,contact,date,status,action);return tr;
@@ -68,6 +69,7 @@ async function loadApplications(background=false){
   try{
     const result=await api('/api/admin/applications'+(background?'?poll=1':''));
     if(generation!==authGeneration||$('#dashboard-screen').hidden)return;
+    const nextOptions=result.programs||[];if(JSON.stringify(nextOptions)!==JSON.stringify(programOptions)){const select=$('#program-filter'),value=select.value;programOptions=nextOptions;select.replaceChildren(programOption('Все программы','all'),...programOptions.map(p=>programOption(p.title,p.id)));select.value=programOptions.some(p=>p.id===value)?value:'all';}
     const next=(result.applications||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     if(!background||JSON.stringify(next)!==JSON.stringify(applications)){
       const focusedId=document.activeElement?.dataset.applicationId;
@@ -78,7 +80,7 @@ async function loadApplications(background=false){
     }
   }catch(error){if(error.name!=='AbortError'&&generation===authGeneration)showError($('#dashboard-screen').hidden?'#login-error':'#dashboard-error',error.message);}finally{if(generation===authGeneration){button.disabled=false;loading=false;}}
 }
-$('#application-search').addEventListener('input',renderApplications);$('#status-filter').addEventListener('change',renderApplications);$('#refresh-button').addEventListener('click',()=>loadApplications());
+$('#program-filter').addEventListener('change',renderApplications);$('#application-search').addEventListener('input',renderApplications);$('#status-filter').addEventListener('change',renderApplications);$('#refresh-button').addEventListener('click',()=>loadApplications());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#dashboard-screen').hidden&&!$('#application-detail').open)loadApplications(true);});
 window.addEventListener('pagehide',stopPolling);
 window.addEventListener('pageshow',()=>{if(!$('#dashboard-screen').hidden)startPolling();});
@@ -90,7 +92,7 @@ function svgIcon(id){const svg=document.createElementNS('http://www.w3.org/2000/
 async function openDetail(id,button){
   button.disabled=true;showError('#dashboard-error','');
   try{const a=await api('/api/admin/applications/'+encodeURIComponent(id));currentId=id;opener=button;$('#detail-title').textContent=[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ');$('#detail-reference').textContent=`${a.reference||a.id} · ${formatDate(a.createdAt)}`;
-    const fields=[['Программа',courses[a.courseId]?.title||a.courseId],['Дата рождения',a.birthDate?new Date(a.birthDate+'T00:00:00').toLocaleDateString('ru-RU'):'—'],['Телефон',a.phone],['Электронная почта',a.email],['СНИЛС',a.snils],['Образование',a.education==='student'?'Студент 4-го курса и старше':'Среднее профессиональное / высшее'],['Согласие',`Версия ${a.consentVersion||'—'}, ${formatDate(a.consentAt||a.createdAt)}`]];
+    const fields=[['Программа',a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId],['Дата рождения',a.birthDate?new Date(a.birthDate+'T00:00:00').toLocaleDateString('ru-RU'):'—'],['Телефон',a.phone],['Электронная почта',a.email],['СНИЛС',a.snils],['Образование',a.education==='student'?'Студент 4-го курса и старше':'Среднее профессиональное / высшее'],['Согласие',`Версия ${a.consentVersion||'—'}, ${formatDate(a.consentAt||a.createdAt)}`]];
     $('#detail-fields').replaceChildren(...fields.flatMap(([label,value])=>[textElement('dt',label),textElement('dd',value||'—')]));
     $('#detail-documents').replaceChildren(...(a.documents||[]).map(doc=>{const link=document.createElement('a');link.href='/api/admin/documents/'+encodeURIComponent(doc.id);link.setAttribute('download','');const span=document.createElement('span');span.append(textElement('strong',doc.field==='snilsFile'?'Копия СНИЛС':'Документ об образовании'),textElement('small',`${doc.name} · ${Math.ceil(doc.size/1024)} КБ`));link.append(svgIcon('download'),span);return link;}));
     $('#detail-status').value=a.status;syncStatusSelect($('#detail-status'));showError('#detail-error','');$('#detail-status-message').textContent='';const dialog=$('#application-detail');dialog.classList.remove('is-closing');document.documentElement.classList.add('is-locked');dialog.showModal();

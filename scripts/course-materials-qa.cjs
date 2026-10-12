@@ -1,3 +1,4 @@
+const qaBase=process.env.QA_BASE_URL||'http://127.0.0.1:3000';
 const path=require('node:path'),os=require('node:os'),fs=require('node:fs/promises'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
 const updates={drone:'БАС',nutrition:'Рационы питания',bread:'Хлебопечение',cheese:'Сыроделие'};
@@ -22,7 +23,7 @@ const normalize=text=>text.replace(/\s+/g,' ').trim();
  try{
   for(const width of [1440,768,360,320]){
    await page.setViewportSize({width,height:900});
-   await page.goto('http://127.0.0.1:3000/?v=20261012-course-materials',{waitUntil:'networkidle'});
+   await page.goto(qaBase+'/?v=20261012-course-materials',{waitUntil:'networkidle'});
    if(await page.locator('#cookie-banner').isVisible()){await page.locator('#cookie-acknowledge').click();await page.waitForTimeout(250);}
    check(await page.locator('.program-card').count()===Object.keys(courses).length,`every course has one card ${width}`);
    for(const [id,label] of Object.entries(updates)){

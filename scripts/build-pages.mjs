@@ -2,6 +2,8 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { CONSENT_VERSION } from '../public/assets/js/organization.js';
+import {loadDefaultContent} from '../server/content-schema.mjs';
+import {renderContentPage,renderContentCss,contentCssFiles} from '../server/content-render.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const sourceDir = path.join(root, 'public');
@@ -75,6 +77,8 @@ export async function buildPages({
     throw new Error('Pages output must be a child directory of workspace output/');
   }
   const files = await publicFiles(sourceDir);
+  const defaults=await loadDefaultContent();
+  defaults.settings.intake.enabled=false;
   // Only this verified output child is replaced; private files and source code are never copied.
   await rm(target, { recursive: true, force: true });
   await mkdir(target, { recursive: true });
@@ -83,6 +87,7 @@ export async function buildPages({
     let content = await readFile(file);
     if (/\.(?:html|css|js)$/.test(name)) {
       let text = content.toString('utf8');
+      if(name==='index.html'||/^(privacy|consent|operator)\/index\.html$/.test(name))text=renderContentPage({content:defaults,template:text,route:name==='index.html'?'/':'/'+name.replace(/index\.html$/,'')});
       if (name === 'assets/js/site.js') text = previewSiteScript(text);
       if (name === 'assets/js/admin.js') text = previewAdminScript;
       content = rewritePublicUrls(text, base);
@@ -92,6 +97,8 @@ export async function buildPages({
     await writeFile(destination, content);
   }
   await mkdir(path.join(target, 'admin'), { recursive: true });
+  await mkdir(path.join(target,'assets/content'),{recursive:true});
+  for(const file of [...contentCssFiles,null])await writeFile(path.join(target,'assets/content',file?path.basename(file):'theme.css'),rewritePublicUrls(renderContentCss({content:defaults,file}),base));
   await writeFile(path.join(target, 'admin/index.html'), await readFile(path.join(target, 'admin.html')));
   await writeFile(path.join(target, 'assets/pages-config.json'), JSON.stringify({ enabled: false, consentVersion: CONSENT_VERSION }) + '\n');
   await writeFile(path.join(target, '.nojekyll'), '');

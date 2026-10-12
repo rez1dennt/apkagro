@@ -12,7 +12,8 @@ import {HttpError,parseMultipart,validateFields,createScannerGuard} from './inta
 import {openContentStore} from './content-store.mjs';
 import {openContentMedia} from './content-media.mjs';
 import {handleContentRoute} from './content-routes.mjs';
-import {CONSENT_VERSION} from '../public/assets/js/organization.js';
+import {loadDefaultContent} from './content-schema.mjs';
+import {renderContentPage,renderContentCss,contentCssFiles,contentPrograms,contentIntakeEnabled,applicationSnapshots,contentMessage} from './content-render.mjs';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.avif':'image/avif','.woff2':'font/woff2','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.pdf':'application/pdf','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.json':'application/json'};
 function clientAddress(req, production, trustedProxy) {
@@ -49,6 +50,10 @@ export async function createApp(options={}){
   contentPromise=(async()=>{const contentStore=options.contentStore??await openContentStore({dir:path.join(dataDir,'content')});try{const media=options.contentMedia??await openContentMedia({dir:path.join(dataDir,'content','media'),store:contentStore,scannerCommand,scanner,publicDir});return contentServices={store:contentStore,media};}catch(e){if(!options.contentStore)await contentStore.close();throw e;}})();
   try{return await contentPromise;}finally{contentPromise=null;}
  }
+ const initialContent=await loadDefaultContent(),renderCache=new Map();
+ const published=async()=>{const services=await getContentServices();return services?services.store.getPublished():{revision:1,content:initialContent};};
+ const cache=(key,build)=>{if(renderCache.has(key))return renderCache.get(key);if(renderCache.size>=64)renderCache.clear();const result=build();renderCache.set(key,result);return result;};
+ const historicalTitle=application=>application.courseSnapshot?.title??initialContent.programs.find(p=>p.id===application.courseId)?.title??application.courseId;
  const sessions=new Map(),preauth=new Map(),rates=new Map();let loginBusy=0,uploadBusy=0;
  function cleanup(){const now=Date.now();for(const [id,s]of sessions)if(now-s.seen>30*60*1000||now-s.created>8*60*60*1000)sessions.delete(id);for(const [id,p]of preauth)if(now>p.expires)preauth.delete(id);for(const [id,r]of rates)if(now>r.until)rates.delete(id);}
  const timer=setInterval(cleanup,60000);timer.unref();
@@ -70,7 +75,7 @@ export async function createApp(options={}){
   const backgroundPoll=req.method==='GET'&&pathname==='/api/admin/applications'&&new URL(req.url,origin).searchParams.get('poll')==='1';
   const s=session(req,!backgroundPoll);const isAdmin=pathname.startsWith('/api/admin/');
   if(pathname.startsWith('/api/'))res.setHeader('Cache-Control','no-store');
-   if(req.method==='GET'&&pathname==='/api/config')return json(res,200,{enabled,consentVersion:CONSENT_VERSION});
+   if(req.method==='GET'&&pathname==='/api/config'){const {content,revision}=await published();return json(res,200,{enabled:enabled&&contentIntakeEnabled(content),consentVersion:content.settings.intake.consentVersion,contentRevision:revision});}
   if(req.method==='GET'&&pathname==='/api/csrf'){
    rate('csrf:'+ip,120,60000);if(s)return json(res,200,{token:s.csrf});cleanup();const existing=preauth.get(hash(cookies(req).csrf_session??''));if(existing)return json(res,200,{token:existing.csrf});if(preauth.size>=5000)throw new HttpError(429,'Слишком много запросов.');const id=token(),csrf=token();preauth.set(hash(id),{csrf,expires:Date.now()+30*60*1000});res.setHeader('Set-Cookie',cookie('csrf_session',id,1800));return json(res,200,{token:csrf});
   }
@@ -86,33 +91,49 @@ export async function createApp(options={}){
    }finally{loginBusy--;}
   }
   if(req.method==='POST'&&pathname==='/api/applications'){
-   if(!enabled)throw new HttpError(503,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.','INTAKE_DISABLED');checkOrigin(req);if(req.headers['x-csrf-token'])checkCsrf(req,s);else if(!preauth.has(hash(cookies(req).csrf_session??''))&&!s)checkCsrf(req,s);rate('intake:'+ip,10,60*60*1000);
-   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);const validated=validateFields(fields);if(scannerCommand){await scanner.scan(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanner.scan(scannerCommand,file.data);}const id=await store.save(validated,files);return json(res,201,{id,reference:id,message:'Заявка получена. Организатор свяжется с вами.'});}finally{uploadBusy--;}
+   const current=await published();if(!enabled||!contentIntakeEnabled(current.content))throw new HttpError(503,contentMessage(current.content,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.'),'INTAKE_DISABLED');checkOrigin(req);if(req.headers['x-csrf-token'])checkCsrf(req,s);else if(!preauth.has(hash(cookies(req).csrf_session??''))&&!s)checkCsrf(req,s);rate('intake:'+ip,10,60*60*1000);
+   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);let accepted=await published();let validated=validateFields(fields,{programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});if(scannerCommand){await scanner.scan(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanner.scan(scannerCommand,file.data);}const id=await (await getContentServices()).media.withMutation(async()=>{accepted=await published();if(!contentIntakeEnabled(accepted.content))throw new HttpError(503,contentMessage(accepted.content,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.'),'INTAKE_DISABLED');validated=validateFields(fields,{programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});return await store.save({...validated,...applicationSnapshots(accepted.content,validated.courseId,{revision:accepted.revision})},files);});return json(res,201,{id,reference:id,message:contentMessage(accepted.content,'Заявка получена. Организатор свяжется с вами.')});}finally{uploadBusy--;}
   }
   if(isAdmin){
    if(!s)throw new HttpError(401,'Войдите в кабинет администратора.','AUTH_REQUIRED');if(!['GET','HEAD'].includes(req.method)){checkOrigin(req);checkCsrf(req,s);}
    if(await handleContentRoute({req,res,pathname,session:s,origin:checkOrigin,csrf:checkCsrf,getServices:getContentServices,json,rate}))return;
    if(req.method==='POST'&&pathname==='/api/admin/logout'){sessions.delete(hash(cookies(req).admin_session??''));res.setHeader('Set-Cookie',cookie('admin_session','',0));store?.audit('logout');return json(res,200,{authenticated:false});}
-   if(req.method==='GET'&&pathname==='/api/admin/applications'){const applications=store.list().map(app=>Object.fromEntries(['id','createdAt','courseId','lastName','firstName','middleName','email','phone','education','status'].map(k=>[k,app[k]])));return json(res,200,{applications,total:applications.length});}
+   if(req.method==='GET'&&pathname==='/api/admin/applications'){const applications=store.list().map(app=>Object.fromEntries(['id','createdAt','courseId','lastName','firstName','middleName','email','phone','education','status'].map(k=>[k,app[k]]).concat([['courseTitle',historicalTitle(app)],['courseSnapshot',app.courseSnapshot?{id:app.courseSnapshot.id,title:app.courseSnapshot.title,revision:app.courseSnapshot.revision}:null],['consentSnapshot',app.consentSnapshot?{version:app.consentSnapshot.version,revision:app.consentSnapshot.revision}:null]])));const current=await published();const programs=new Map(contentPrograms(current.content).map(p=>[p.id,{id:p.id,title:p.title}]));for(const a of applications)if(!programs.has(a.courseId))programs.set(a.courseId,{id:a.courseId,title:a.courseSnapshot?.title??initialContent.programs.find(p=>p.id===a.courseId)?.title??a.courseId});return json(res,200,{applications,total:applications.length,programs:[...programs.values()]});}
    if(req.method==='GET'&&pathname==='/api/admin/export'){
     rate('export:'+hash(cookies(req).admin_session??''),10,60000);
     const workbook=createApplicationsWorkbook(store.list());const buffer=await workbook.xlsx.writeBuffer();store.audit('export.download');
     res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':`attachment; filename="applications.xlsx"; filename*=UTF-8''${encodeURIComponent('Заявки-Кадры-в-АПК.xlsx')}`,'Content-Length':buffer.length});
     return res.end(buffer);
    }
-   const detail=pathname.match(/^\/api\/admin\/applications\/([0-9a-f-]{36})$/);if(detail){const app=store.get(detail[1]);if(!app)throw new HttpError(404,'Заявка не найдена.','NOT_FOUND');if(req.method==='GET')return json(res,200,app);if(req.method==='PATCH'){const {status}=await readJson(req);if(!['new','review','accepted','rejected'].includes(status))throw new HttpError(400,'Неизвестный статус заявки.');store.update(app.id,status);return json(res,200,{id:app.id,status});}}
+   const detail=pathname.match(/^\/api\/admin\/applications\/([0-9a-f-]{36})$/);if(detail){const app=store.get(detail[1]);if(!app)throw new HttpError(404,'Заявка не найдена.','NOT_FOUND');if(req.method==='GET')return json(res,200,{...app,courseTitle:historicalTitle(app)});if(req.method==='PATCH'){const {status}=await readJson(req);if(!['new','review','accepted','rejected'].includes(status))throw new HttpError(400,'Неизвестный статус заявки.');store.update(app.id,status);return json(res,200,{id:app.id,status});}}
    const document=pathname.match(/^\/api\/admin\/documents\/([0-9a-f-]{36})$/);if(req.method==='GET'&&document){const doc=await store.document(document[1]);if(!doc)throw new HttpError(404,'Документ не найден.','NOT_FOUND');store.audit('document.download',document[1]);res.writeHead(200,{'Content-Type':doc.meta.mime,'Content-Disposition':`attachment; filename="${doc.meta.name}"`,'Content-Length':doc.data.length});return Readable.from(doc.data).pipe(res);}
   }
   if(await handleContentRoute({req,res,pathname,session:s,origin:checkOrigin,csrf:checkCsrf,getServices:getContentServices,json}))return;
   if(pathname.startsWith('/api/'))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
   if(!['GET','HEAD'].includes(req.method))throw new HttpError(405,'Этот способ обращения недоступен.');
   if(pathname.includes('\\')||pathname.includes('\0')||pathname.split('/').some(segment=>segment.startsWith('.')))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
+  const isPreview=pathname.startsWith('/admin/preview/');
+  if(isPreview&&!s)throw new HttpError(401,'Войдите в кабинет администратора.','AUTH_REQUIRED');
+  const cssMatch=pathname.match(/^\/(?:assets\/content|admin\/preview\/styles)\/(theme|site|refinement|soft-ui)\.css$/);
+  const contentPath=isPreview?pathname.slice('/admin/preview'.length):pathname;
+  const pageMatch=contentPath==='/'||contentPath==='/index.html'||/^\/[a-z0-9][a-z0-9_-]{0,63}\/(?:index\.html)?$/.test(contentPath);
+  if(cssMatch||pageMatch&&contentPath!=='/admin/'){
+   let envelope;
+   if(isPreview){const services=await getContentServices();if(!services)throw new HttpError(503,'Редактор недоступен.','CONTENT_UNAVAILABLE');const params=new URL(req.url,origin).searchParams;const revision=params.get('revision');if(revision!==null&&(!/^[1-9][0-9]{0,14}$/.test(revision)||params.getAll('revision').length!==1))throw new HttpError(400,'Некорректная версия.','INVALID_CONTENT_REVISION');envelope=revision===null?services.store.getDraft():services.store.version(Number(revision));if(!envelope)throw new HttpError(404,'Версия не найдена.','CONTENT_VERSION_NOT_FOUND');
+    res.setHeader('Cache-Control','no-store');res.setHeader('X-Robots-Tag','noindex, nofollow');res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("frame-ancestors 'none'","frame-ancestors 'self'"));
+   }else envelope=await published();
+   const key=[isPreview?'preview':'public',envelope.revision,pathname,new URL(req.url,origin).searchParams.get('revision')??''].join(':');
+   let rendered,type;
+   if(cssMatch){const file=cssMatch[1]==='theme'?null:'assets/css/'+cssMatch[1]+'.css';if(file&&!contentCssFiles.includes(file))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');rendered=cache(key,()=>renderContentCss({content:envelope.content,preview:isPreview,file}));type='text/css; charset=utf-8';}
+   else {const slug=contentPath.split('/')[1];const templateFile=contentPath==='/'||contentPath==='/index.html'?'index.html':['privacy','consent','operator'].includes(slug)?slug+'/index.html':'privacy/index.html';const template=await readFile(path.join(publicDir,templateFile),'utf8');rendered=cache(key,()=>renderContentPage({content:envelope.content,template,route:contentPath,preview:isPreview,revision:envelope.revision,historyRevision:isPreview&&new URL(req.url,origin).searchParams.has('revision')?envelope.revision:null}));type='text/html; charset=utf-8';}
+   if(rendered===null)throw new HttpError(404,'Страница не найдена.','NOT_FOUND');res.writeHead(200,{'Content-Type':type,'Cache-Control':isPreview?'no-store':'no-cache','Content-Length':Buffer.byteLength(rendered)});return res.end(req.method==='HEAD'?undefined:rendered);
+  }
   const mapped=pathname==='/admin'||pathname==='/admin/'?'/admin.html':pathname.endsWith('/')?pathname+'index.html':pathname;
   const candidate=path.resolve(publicDir,'.'+mapped);if(!candidate.startsWith(publicDir+path.sep))throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
   let canonical,info;try{canonical=await realpath(candidate);info=await stat(canonical);}catch{throw new HttpError(404,'Страница не найдена.','NOT_FOUND');}const publicCanonical=await realpath(publicDir);if(!canonical.startsWith(publicCanonical+path.sep)||!info.isFile()||!mime[path.extname(canonical).toLowerCase()])throw new HttpError(404,'Страница не найдена.','NOT_FOUND');
   res.writeHead(200,{'Content-Type':mime[path.extname(canonical).toLowerCase()],'Content-Length':info.size,'Cache-Control':path.extname(canonical)==='.html'?'no-cache':'public, max-age=3600'});if(req.method==='HEAD')return res.end();const stream=createReadStream(canonical);stream.on('error',()=>res.destroy());stream.pipe(res);
  }
- const server=http.createServer((req,res)=>{route(req,res).catch(e=>{if(res.headersSent)return res.destroy();if(e instanceof HttpError){if(e.status===429)res.setHeader('Retry-After','900');json(res,e.status,{error:e.message,code:e.code,...(e.locations?{locations:e.locations}:{})});}else json(res,500,{error:'Сервис временно недоступен. Повторите попытку позже.',code:'INTERNAL_ERROR'});if(!req.complete)req.resume();});});
+ const server=http.createServer((req,res)=>{route(req,res).catch(e=>{if(res.headersSent)return res.destroy();if(e instanceof HttpError){if(e.status===429)res.setHeader('Retry-After','900');json(res,e.status,{error:req.url?.startsWith('/api/applications')?contentMessage(contentServices?.store.getPublished().content??initialContent,e.message):e.message,code:e.code,...(e.locations?{locations:e.locations}:{})});}else json(res,500,{error:'Сервис временно недоступен. Повторите попытку позже.',code:'INTERNAL_ERROR'});if(!req.complete)req.resume();});});
  server.requestTimeout=60000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxHeadersCount=50;server.setTimeout(65000,socket=>socket.destroy());
  return {server,getContentServices,get contentStore(){return contentServices?.store??null;},get contentMedia(){return contentServices?.media??null;},close(){if(appClosePromise)return appClosePromise;closing=true;clearInterval(timer);sessions.clear();preauth.clear();appClosePromise=(async()=>{await contentPromise?.catch(()=>{});await contentServices?.media.close();await contentServices?.store.close();await scanner.close();store?.close();})();return appClosePromise;}};
 }

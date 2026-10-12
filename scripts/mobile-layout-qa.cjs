@@ -1,10 +1,11 @@
+const qaBase=process.env.QA_BASE_URL||'http://127.0.0.1:3000';
 const path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE||path.join(os.homedir(),'AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'),headless:true});let checks=0;const check=(value,label)=>{assert.ok(value,label);checks++;};try{
  const {courses:catalog}=await import('../public/assets/js/courses.js');
  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  for(const width of [320,360,390,414,540,699,700,768,1440]){
-  await page.setViewportSize({width,height:900});await page.goto('http://127.0.0.1:3000/',{waitUntil:'networkidle'});
+  await page.setViewportSize({width,height:900});await page.goto(qaBase+'/',{waitUntil:'networkidle'});
   if(await page.locator('#cookie-banner').isVisible()){await page.locator('#cookie-acknowledge').click();await page.waitForTimeout(250);}
   const geometry=await page.evaluate(()=>{
    const rect=el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};

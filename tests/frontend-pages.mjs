@@ -43,7 +43,10 @@ test('Pages artifact contains only the public website with working prefixed rout
     assert.equal(config.enabled, false);
     const site = await readFile(path.join(outputDir, 'assets/js/site.js'), 'utf8');
     assert.match(site, /\/apkagro\/assets\/pages-config.json/);
-    assert.ok(site.includes('`/apkagro/assets/images/${course.image}.webp`'));
+    const bootstrap=await readFile(path.join(outputDir,'assets/js/site-content.js'),'utf8');
+    assert.ok(bootstrap.includes('`/apkagro/assets/images/${p.image}.webp`'));
+    assert.match(main,/href="\/apkagro\/assets\/content\/theme.css"/);
+    assert.ok((await stat(path.join(outputDir,'assets/content/theme.css'))).size>100);
     assert.ok(site.includes('Предпросмотр дизайна'));
     assert.ok(!site.includes('/api/'));
     const admin = await readFile(path.join(outputDir, 'assets/js/admin.js'), 'utf8');

@@ -190,7 +190,7 @@ test('consent changes require confirmation and publish creates a server-authored
   await store.saveDraft(policy.content,policy.revision);
   await assert.rejects(store.publish(store.getDraft().revision),error=>error.code==='DOCUMENTS_CONFIRMATION_REQUIRED');
   await store.publish(store.getDraft().revision,{documentsConfirmed:true});
-  assert.equal(store.getPublished().content.settings.intake.consentVersion,published.content.settings.intake.consentVersion);
+  assert.notEqual(store.getPublished().content.settings.intake.consentVersion,published.content.settings.intake.consentVersion);
   const contact=store.getDraft();contact.content.settings.contacts.email='updated@example.test';
   await store.saveDraft(contact.content,contact.revision);
   await assert.rejects(store.publish(store.getDraft().revision),error=>error.code==='DOCUMENTS_CONFIRMATION_REQUIRED');

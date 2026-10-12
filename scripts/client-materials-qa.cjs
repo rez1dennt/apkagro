@@ -1,3 +1,4 @@
+const qaBase=process.env.QA_BASE_URL||'http://127.0.0.1:3000';
 const path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
@@ -20,7 +21,7 @@ const wineDetails=image=>{
   for(const width of [1440,768,360,320]){
    await page.setViewportSize({width,height:900});
    for(const route of ['/','/privacy/','/consent/','/operator/']){
-    await page.goto('http://127.0.0.1:3000'+route,{waitUntil:'networkidle'});
+    await page.goto(qaBase+''+route,{waitUntil:'networkidle'});
     if(await page.locator('#cookie-banner').isVisible()){await page.locator('#cookie-acknowledge').click();await page.waitForTimeout(250);}
     const footer=page.locator('.footer__organization'),text=await footer.innerText();
     check(text.includes('1207700044310')&&text.includes('7707437711')&&text.includes('Л035-01298-77/07267658'),`organization and license ${route}/${width}`);
@@ -73,7 +74,7 @@ const wineDetails=image=>{
     }
    }
   }
-  await page.goto('http://127.0.0.1:3000/',{waitUntil:'networkidle'});
+  await page.goto(qaBase+'/',{waitUntil:'networkidle'});
   for(const width of [360,390,414,540,699,700,768]){
    await page.setViewportSize({width,height:900});
    const card=page.locator('.program-card[data-course="wine"]');
@@ -87,7 +88,7 @@ const wineDetails=image=>{
    if(width===414)await page.locator('#course-dialog').screenshot({path:'output/qa/client-modal-wine-414.png'});
    await page.keyboard.press('Escape');await page.waitForTimeout(270);
   }
-  await page.goto('http://127.0.0.1:3000/consent/',{waitUntil:'networkidle'});
+  await page.goto(qaBase+'/consent/',{waitUntil:'networkidle'});
   for(const file of ['consent.pdf','consent.docx','privacy-policy.pdf']){
    const [download]=await Promise.all([page.waitForEvent('download'),page.locator(`.document-downloads a[href="/documents/${file}"]`).click()]);
    check(await download.failure()===null,`public download ${file}`);

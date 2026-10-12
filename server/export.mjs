@@ -11,7 +11,7 @@ const dateTime = value => {
 };
 const birthDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value.split('-').reverse().join('.') : '';
 
-export function createApplicationsWorkbook(applications) {
+export function createApplicationsWorkbook(applications, {programs=[]}={}) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Кадры в АПК';
   workbook.title = 'Заявки на обучение';
@@ -28,7 +28,7 @@ export function createApplicationsWorkbook(applications) {
     const row = sheet.addRow({
       ...Object.fromEntries(['id', 'lastName', 'firstName', 'middleName', 'phone', 'email', 'snils', 'consentVersion'].map(key => [key, String(application[key] ?? '')])),
       createdAt: dateTime(application.createdAt), consentAt: dateTime(application.consentAt), birthDate: birthDate(application.birthDate),
-      status: statuses[application.status] || 'Не указан', course: courses[application.courseId]?.title || 'Не указана',
+      status: statuses[application.status] || 'Не указан', course: application.courseSnapshot?.title || programs.find(p=>p.id===application.courseId)?.title || courses[application.courseId]?.title || application.courseId || 'Не указана',
       education: education[application.education] || 'Не указан'
     });
     row.height = 54;

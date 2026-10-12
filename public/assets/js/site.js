@@ -1,6 +1,6 @@
 import './cookie-notice.js?v=20261009-working';
-import { courses } from './courses.js?v=20261012-course-materials';
-import { CONSENT_VERSION } from './organization.js?v=20261011-materials';
+import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js';
+import {renderMarkdown} from './content-format.js';
 import { validSnils, savedApplication } from './form-logic.js';
 import { attachMask, formatPhone, formatSnils } from './input-masks.js';
 
@@ -17,10 +17,10 @@ function setMenu(open) {
   if (!menu || !menuButton) return;
   clearTimeout(menuTimer); menuOpen = open;
   menuButton.setAttribute('aria-expanded', String(open));
-  menuButton.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+  menuButton.setAttribute('aria-label', translate(open ? 'Закрыть меню' : 'Открыть меню'));
   menu.classList.toggle('is-open', open); menu.inert = !open;
   document.querySelector('main').inert = open; document.querySelector('footer').inert = open;
-  if (open) { lockScroll('menu'); menu.querySelector('a').focus({ preventScroll: true }); }
+  if (open) { lockScroll('menu'); menu.querySelector('a')?.focus({ preventScroll: true }); }
   else { menuTimer = setTimeout(() => unlockScroll('menu'), delay()); menuButton.focus({ preventScroll: true }); }
 }
 menuButton?.addEventListener('click', () => setMenu(!menuOpen));
@@ -87,48 +87,52 @@ document.querySelectorAll('.accordion details').forEach(details => {
 
 const courseDialog = document.querySelector('#course-dialog');
 let displayedCourse, selectedCourseId;
-document.querySelectorAll('.program-card[data-course]').forEach(button => button.addEventListener('click', () => {
+document.addEventListener('click', event => {
+  const button=event.target.closest('.program-card[data-course]');if(!button)return;
   const id = button.dataset.course, course = courses[id]; if (!course || !courseDialog) return;
   displayedCourse = id;
-  courseDialog.dataset.course = id;
+  courseDialog.dataset.course = id;courseDialog.dataset.originalFrame=String(Boolean(course.originalFrame));
   document.querySelector('#dialog-title').textContent = course.title;
-  document.querySelector('#dialog-description').textContent = course.description;
-  const image = document.querySelector('#dialog-image'); image.src = `/assets/images/${course.image}.webp`; image.alt = course.title;
+  const description=document.querySelector('#dialog-description');if(description.tagName==='P'){const block=document.createElement('div');block.id=description.id;description.replaceWith(block);}if(course.preserveDescription)document.querySelector('#dialog-description').textContent=course.description;else document.querySelector('#dialog-description').innerHTML=renderMarkdown(course.description);
+  const image = document.querySelector('#dialog-image'); image.src = course.modalImage; image.alt = course.alt;
   const topics = document.querySelector('#dialog-topics');
   topics.replaceChildren(...course.topics.map(topic => { const item = document.createElement('li'); item.textContent = topic; return item; }));
   topics.hidden = course.topics.length === 0;
   document.querySelector('#dialog-topics-heading').hidden = topics.hidden;
-  document.querySelector('.course-dialog__disclaimer').hidden = Boolean(course.suppliedAnnotation);
+  const disclaimer=document.querySelector('.course-dialog__disclaimer');disclaimer.textContent=course.disclaimer;disclaimer.hidden=!course.disclaimer||course.hideDefaultDisclaimer;
+  document.querySelectorAll('.course-meta > span').forEach((node,i)=>node.textContent=[`${course.hours} часа`,course.format,course.priceText][i]);
+  const choose=document.querySelector('#choose-course');choose.textContent=course.status==='closed'?translate(closedMessage):course.buttonLabel;choose.disabled=!canSelect(id)||!document.querySelector('#application');
   openDialog(courseDialog, button);
-}));
+});
 function selectCourse(id) {
-  if (!courses[id]) return;
+  if (!canSelect(id)||!document.querySelector('#course-id')) return;
   selectedCourseId = id;
   document.querySelector('#course-id').value = id;
   document.querySelector('#selected-course-label').textContent = courses[id].title;
-  document.querySelector('#change-course').textContent = 'Изменить';
+  document.querySelector('#change-course').textContent = translate('Изменить');
   document.querySelectorAll('.program-card[data-course]').forEach(button => {
     const selected = button.dataset.course === id; button.classList.toggle('is-selected', selected);
     button.querySelector('.program-card__badge').hidden = !selected;
   });
 }
 document.querySelector('#choose-course')?.addEventListener('click', () => {
-  selectCourse(displayedCourse); closeDialog(courseDialog, false);
+  if(!canSelect(displayedCourse))return;selectCourse(displayedCourse); closeDialog(courseDialog, false);
   setTimeout(() => {
     document.querySelector('#application').scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth' });
     document.querySelector('#last-name').focus({ preventScroll: true });
   }, delay() + 10);
 });
 document.querySelector('#change-course')?.addEventListener('click', () => {
-  document.querySelector('#programs').scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth' });
+  document.querySelector('#programs')?.scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth' });
   document.querySelector('[data-course]')?.focus({ preventScroll: true });
 });
 
 const form = document.querySelector('#application-form');
-if (form) form.elements.consentVersion.value = CONSENT_VERSION;
+if (form) form.elements.consentVersion.value = consentVersion;
 let csrfToken = null;
 let config = { enabled: false };
 async function refreshConfig() {
+  if(siteContent?.preview){config={enabled:false};if(form)showStatus(previewMessage);return;}
   try {
     const response = await fetch('/api/config', { credentials: 'same-origin', cache: 'no-store' });
     if (response.ok) config = await response.json();
@@ -138,9 +142,10 @@ async function refreshConfig() {
 if (form) refreshConfig();
 function showStatus(message, error = false) {
   const status = document.querySelector('#form-status'); if (!status) return;
-  status.hidden = false; status.textContent = message; status.classList.toggle('is-error', error);
+  status.hidden = false; status.textContent = translate(message); status.classList.toggle('is-error', error);
 }
 function setFieldError(input, message) {
+  message=translate(message);
   const target = document.getElementById(`${input.id}-error`);
   input.setAttribute('aria-invalid', message ? 'true' : 'false');
   if (target) { target.textContent = message; input.setAttribute('aria-describedby', target.id); }
@@ -188,10 +193,10 @@ document.querySelectorAll('.upload-zone').forEach(zone => {
 form?.addEventListener('submit', async event => {
   event.preventDefault();
   if (!config.enabled) { showStatus('Приём заявок ещё не подключён. Ваши данные и документы не отправлены. Свяжитесь с координатором: sacracorona@yandex.ru.'); return; }
-  if (!courses[form.elements.courseId.value]) { showStatus('Сначала выберите программу обучения.',true); document.querySelector('#change-course').focus(); return; }
+  if (!canSelect(form.elements.courseId.value)) { showStatus('Сначала выберите программу обучения.',true); document.querySelector('#change-course').focus(); return; }
   const invalid = [...form.querySelectorAll('[required],#middle-name')].filter(input => !validate(input));
   if (invalid.length) { showStatus('Проверьте отмеченные поля формы.',true); invalid[0].focus(); return; }
-  const button = document.querySelector('#submit-application'); button.disabled = true; button.setAttribute('aria-busy','true'); button.querySelector('span').textContent = 'Отправляем…';
+  const button = document.querySelector('#submit-application'); button.disabled = true; button.setAttribute('aria-busy','true'); button.querySelector('span').textContent = translate('Отправляем…');
   try {
     const csrfResponse = await fetch('/api/csrf',{ credentials:'same-origin',cache:'no-store' });
     if (!csrfResponse.ok) throw new Error('Не удалось установить защищённое соединение. Попробуйте ещё раз.');
@@ -201,15 +206,15 @@ form?.addEventListener('submit', async event => {
     if (!response.ok) throw new Error(result.error || 'Не удалось отправить заявку. Попробуйте ещё раз.');
     if (!savedApplication(response.status, result)) throw new Error('Сервер не подтвердил сохранение заявки. Перед повторной отправкой свяжитесь с координатором.');
     form.hidden = true; const success = document.querySelector('#application-success'); success.hidden = false;
-    document.querySelector('#success-reference').textContent = `Номер заявки: ${result.reference}`;
+    document.querySelector('#success-reference').textContent = translate('Номер заявки: {reference}',{reference:result.reference});
     success.tabIndex = -1; success.focus({preventScroll:true}); success.scrollIntoView({behavior:motion.matches ? 'instant' : 'smooth',block:'center'});
   } catch (error) { showStatus(error.message || 'Проверьте соединение и попробуйте снова.',true); }
-  finally { button.disabled = false; button.removeAttribute('aria-busy'); button.querySelector('span').textContent = 'Отправить заявку'; }
+  finally { button.disabled = false; button.removeAttribute('aria-busy'); button.querySelector('span').textContent = translate('Отправить заявку'); }
 });
 document.querySelector('#new-application')?.addEventListener('click', () => {
   form.reset(); form.hidden = false; document.querySelector('#application-success').hidden = true;
   form.querySelectorAll('[required],#middle-name').forEach(input => setFieldError(input,''));
-  form.querySelectorAll('.upload-zone strong').forEach(label => label.textContent='Выберите файл или перетащите');
+  form.querySelectorAll('.upload-zone strong').forEach(label => label.textContent=translate('Выберите файл или перетащите'));
   const status = document.querySelector('#form-status'); status.hidden = true; status.textContent = ''; status.classList.remove('is-error');
   if (selectedCourseId) selectCourse(selectedCourseId);
   document.querySelector('#last-name').focus({preventScroll:true}); refreshConfig();

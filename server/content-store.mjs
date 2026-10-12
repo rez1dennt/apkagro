@@ -10,7 +10,7 @@ const error=(status,message,code)=>new HttpError(status,message,code);
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])])):value;
 const digest=value=>createHash('sha256').update(JSON.stringify(stable(value))).digest('hex');
 const legal=(content,slug)=>{const page=content.pages.find(page=>page.slug===slug);return {title:page.title,intro:page.intro,body:page.body};};
-const consentDigest=content=>digest({page:legal(content,'consent'),pdf:content.documents.consentPdf,word:content.documents.consentWord,organization:content.settings.organization});
+const consentDigest=content=>digest({page:legal(content,'consent'),pdf:content.documents.consentPdf,word:content.documents.consentWord,policyPdf:content.documents.policyPdf,organization:content.settings.organization});
 const documentDigest=content=>digest({consent:consentDigest(content),policy:legal(content,'privacy'),policyPdf:content.documents.policyPdf,contacts:content.settings.contacts,organization:content.settings.organization});
 function envelope(content,revision,time,publishedRevision=revision,publishedAt=time,dirty=false){return {revision,content,updatedAt:time,publishedRevision,publishedAt,dirty};}
 function validateState(value){

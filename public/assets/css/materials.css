@@ -88,6 +88,15 @@
 .course-dialog[data-course="cider"] .course-dialog__image { object-position: var(--cider-modal-focus); }
 .program-card__footer { margin-top: auto; }
 #dialog-description { white-space: pre-line; }
+/* New/changed photos share the 290px frame; original three supplied crops retain their approved frames. */
+.course-dialog[data-course]:not([data-original-frame="true"]) .course-dialog__image { height: auto; max-height: var(--course-dialog-photo-max); aspect-ratio: var(--program-photo-ratio); object-fit: cover; }
+.cms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--footer-details-gap); }
+.cms-section .container > img { display: block; max-width: 100%; height: auto; }
+.cms-section figure { margin: 0; }
+.cms-section .benefit { min-width: 0; }
+.cms-section :is(h2,h3,p,a,figcaption) { overflow-wrap: anywhere; }
+.cms-section .body-copy { margin-bottom: 1em; }
+#dialog-description p { margin-block: 0 1em; }
 .consent-text p { overflow-wrap: anywhere; }
 @media (max-width: 699px) {
   :root { --footer-details-gap: 18px; --footer-details-copy: 11px; }
