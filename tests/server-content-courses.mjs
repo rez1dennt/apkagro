@@ -7,6 +7,8 @@ import {createApplicationsWorkbook} from '../server/export.mjs';
 import {renderMarkdown,replaceLiterals} from '../public/assets/js/content-format.js';
 import {openContentStore} from '../server/content-store.mjs';
 import {mkdtemp,rm} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {createApp} from '../server/app.mjs';
@@ -29,8 +31,19 @@ test('canonical contact snapshots preserve exact Markdown URL and visible email'
  assert.equal(snapshotDom.querySelector('a[href^="mailto:"]').getAttribute('href'),'mailto:new@example.test');assert.equal(snapshotDom.querySelector('a[href^="mailto:"]').textContent,'new@example.test');
 });
 
+test('rollover fixture runs from a cold working directory without QA output parents',async()=>{
+ const cold=await mkdtemp(path.join(process.cwd(),'.server-test-cold-parent-'));
+ try{
+  const childEnv={...process.env};delete childEnv.NODE_TEST_CONTEXT;
+  const result=spawnSync(process.execPath,['--test','--test-name-pattern=^cached HTML',fileURLToPath(import.meta.url)],{cwd:cold,env:childEnv,encoding:'utf8',timeout:30000,windowsHide:true});
+  assert.equal(result.error,undefined);
+  assert.match(result.stdout,/# tests 1\b/,'the isolated child must actually execute the rollover case');
+  assert.equal(result.status,0,(result.stdout+result.stderr).slice(-3000));
+ }finally{await rm(cold,{recursive:true,force:true});}
+});
+
 test('cached HTML closes at Moscow rollover and real restart retains publications and draft',async t=>{
- const dir=await mkdtemp(path.resolve('output/content-admin/rollover-')),key=randomBytes(32);
+ const dir=await mkdtemp(path.join(process.cwd(),'.server-test-rollover-')),key=randomBytes(32);
  await setupAdmin(dir,key,'rollover-editor','synthetic-rollover-password!',randomBytes(20));
  let app;
  const start=async()=>{app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+app.server.address().port;};
