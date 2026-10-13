@@ -40,7 +40,7 @@ export function renderContentIcon(wrapper, value, {resolveUrl = url => url, inli
  node.classList.remove('content-icon', 'content-icon--text', 'content-icon--original');
  node.style.removeProperty('--content-icon-url');
  if (custom) {
-  const fileClass = 'content-icon-file-' + custom.url.split('/').at(-1).slice(0, -5);
+  const fileClass = 'content-icon-file-' + custom.url.slice('/media/'.length, -'.webp'.length);
   node.classList.add('content-icon', 'content-icon--' + custom.mode, fileClass);
   const url = resolveUrl(custom.url);
   if (custom.mode === 'text' && inlineStyle) {
