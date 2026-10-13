@@ -190,3 +190,10 @@
 @media(prefers-reduced-motion:reduce){.field textarea{transition:none}}
 .form-grid:not(:has(.field)){display:none}
 @media(max-width:768px){.form-grid--custom{grid-template-columns:minmax(0,1fr)}.form-grid--custom>.field{grid-column:1/-1}.form-grid--custom .field>label:first-child{font-size:var(--form-text)}}
+/* Configured file hints can use the full allowed text length. Let their
+   target grow while retaining the existing minimum touch target. */
+.field--upload > .upload-zone{height:auto}
+@media(max-width:699px){.field--upload{grid-template-rows:minmax(var(--mobile-upload-label),auto) minmax(var(--mobile-upload-target),auto) auto}}
+
+/* Authored upload captions and selected names remain readable in full. */
+.upload-zone--authored strong{-webkit-line-clamp:unset}

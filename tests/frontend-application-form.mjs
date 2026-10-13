@@ -111,3 +111,17 @@ test('radio hint and existing descriptions survive invalid valid clear and reset
   input.checked=false;f.event(f.document.querySelector('form'),'reset');widget.clearErrors();description();assert.equal(group.getAttribute('aria-invalid'),'false');widget.dispose();
  }finally{f.close();}
 });
+test('authored upload captions opt out of mobile clamping while defaults retain it',async()=>{
+ const content=await loadDefaultContent(),template=await readFile(new URL('../public/index.html',import.meta.url),'utf8'),meta=formBuiltinMetadata().find(f=>f.id==='snilsFile');
+ let document=parseHTML(renderContentPage({content,template,revision:2})).document;
+ assert.equal(document.querySelector('[data-field-id=snilsFile] .upload-zone').classList.contains('upload-zone--authored'),false);
+ content.fields[meta.aliases.uploadLabel]='Ж'.repeat(500);content.fields[meta.aliases.hint]='Ж'.repeat(2000);
+ document=parseHTML(renderContentPage({content,template,revision:3})).document;
+ assert.equal(document.querySelector('[data-field-id=snilsFile] .upload-zone').classList.contains('upload-zone--authored'),true);
+ assert.equal(document.querySelector('[data-field-id=snilsFile] strong').textContent.length,500);
+ assert.equal(document.querySelectorAll('.form-grid--custom').length,0);
+});
+test('form editor keeps settings and field actions in separate groups',async()=>{
+ const f=fixture(),content=await loadDefaultContent(),definitions=await contentDefinitions();
+ try{renderFormEditor(f.document.querySelector('#editor'),{state:{content},definitions,onChange(){}});const card=f.document.querySelector('[data-form-id=lastName]'),enabled=card.querySelector('[data-form-role=enabled]'),required=card.querySelector('[data-form-role=required]'),above=[...card.querySelectorAll('button')].find(b=>b.textContent==='Выше'),below=[...card.querySelectorAll('button')].find(b=>b.textContent==='Ниже');assert.equal(enabled.closest('.cms-actions'),required.closest('.cms-actions'));assert.equal(above.parentElement,below.parentElement);assert.ok(enabled.closest('.cms-actions')!==above.parentElement,'settings and reorder actions have distinct groups');}finally{f.close();}
+});

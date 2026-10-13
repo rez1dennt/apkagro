@@ -1,10 +1,11 @@
-import {resolveFormFields,defaultApplicationForm} from './application-form.mjs';
+import {resolveFormFields,defaultApplicationForm,formBuiltinMetadata} from './application-form.mjs';
 
 export function renderApplicationForm({document:d,content,preview=false}){
  const form=d.querySelector('#application-form');if(!form)return;
  const fields=resolveFormFields(content),grids=[...form.querySelectorAll('.form-grid')],original=new Map();
  for(const field of defaultApplicationForm().fields){const node=form.querySelector('[name="'+field.id+'"]')?.closest('.field');if(node)original.set(field.id,node);}
  const make=(tag,cls,text)=>{const n=d.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+ const builtinMap=new Map(formBuiltinMetadata().map(meta=>[meta.id,meta]));
  const modelUpload=original.get('snilsFile')?.cloneNode(true);
  const isOriginal=fields.length===10&&fields.every((f,i)=>f.id===defaultApplicationForm().fields[i].id);
  if(!isOriginal){for(const n of original.values())n.remove();grids[0]?.classList.remove('form-grid--three');grids[0]?.classList.add('form-grid--two','form-grid--custom');}
@@ -44,6 +45,7 @@ export function renderApplicationForm({document:d,content,preview=false}){
   if(type!=='radio'){control.name=id;if(required)control.setAttribute('required','');else control.removeAttribute('required');}
   control.dataset.fieldId=id;
   if(definition.kind==='builtin'&&definition.hint&&!node.querySelector('small,.field-hint')){const hint=make('small','field-hint',definition.hint);hint.id=domId+'-hint';node.append(hint);control.setAttribute('aria-describedby',hint.id);}
+  if(type==='file')node.querySelector('.upload-zone')?.classList.toggle('upload-zone--authored',definition.kind==='custom'||definition.uploadLabel!==builtinMap.get(id)?.defaultUploadLabel);
   if(type==='file')control.setAttribute('accept',definition.rules.accept.flatMap(ext=>ext==='jpg'?['.jpg','.jpeg']:['.'+ext]).join(','));
   else if(!['select','radio','checkbox'].includes(type)&&definition.placeholder)control.setAttribute('placeholder',definition.placeholder);
   if(definition.rules.maxLength!==undefined)control.setAttribute('maxlength',definition.rules.maxLength);
