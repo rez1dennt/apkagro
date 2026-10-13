@@ -1,3 +1,4 @@
+import { createContentAdmin } from './admin-content.js';
 import { courses } from './courses.js?v=20261012-course-materials';
 import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261009-controls';
 let csrfToken = null, applications = [], currentId = null, opener = null;
@@ -14,6 +15,7 @@ function startPolling() {
 const statuses = { new: 'Новая', review: 'На проверке', accepted: 'Подтверждена', rejected: 'Отклонена' };
 const $ = selector => document.querySelector(selector);
 enhanceStatusSelects();
+const contentAdmin=createContentAdmin({api,onUnauthorized:()=>setScreen(false)});
 const formatDate = value => value ? new Date(value).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
 function showError(selector,message) { const box=$(selector); box.textContent=message; box.hidden=!message; }
 function setScreen(authenticated) {
@@ -21,6 +23,7 @@ function setScreen(authenticated) {
   authGeneration++;
   for(const controller of pendingRequests)controller.abort();
   pendingRequests.clear();loading=false;
+  contentAdmin.setAuthenticated(authenticated);
   $('#login-screen').hidden=authenticated; $('#dashboard-screen').hidden=!authenticated;
   if(authenticated)startPolling();
   else { stopPolling();applications=[];programOptions=[];$('#program-filter').replaceChildren(programOption('Все программы','all')); $('#applications-table-body').replaceChildren(); $('#detail-fields').replaceChildren(); $('#detail-documents').replaceChildren(); }
@@ -29,9 +32,9 @@ async function api(url, options = {}) {
   const generation=authGeneration,controller=new AbortController();pendingRequests.add(controller);
   try{
     const response = await fetch(url,{credentials:'same-origin',cache:'no-store',...options,signal:controller.signal,headers:{...(options.body instanceof FormData ? {} : options.body ? {'Content-Type':'application/json'} : {}),...(options.method && options.method!=='GET' && csrfToken ? {'X-CSRF-Token':csrfToken} : {}),...options.headers}});
-    const result = await response.json().catch(()=>({}));
+    const result = options.responseType==='blob'&&response.ok ? await response.blob() : await response.json().catch(()=>({}));
     if(generation!==authGeneration)throw new DOMException('Устаревший запрос отменён.','AbortError');
-    if (!response.ok) { if (response.status===401 && url!=='/api/admin/login') { closeDetail(); csrfToken=null; setScreen(false); showError('#login-error','Сессия завершена. Войдите ещё раз.'); } throw new Error(result.error || 'Не удалось выполнить запрос. Попробуйте ещё раз.'); }
+    if (!response.ok) { if (response.status===401 && url!=='/api/admin/login') { closeDetail(); csrfToken=null; setScreen(false); showError('#login-error','Сессия завершена. Войдите ещё раз.'); } const error=new Error(result.error || 'Не удалось выполнить запрос. Попробуйте ещё раз.'); error.status=response.status; error.code=result.code; error.locations=result.locations; throw error; }
     return result;
   }finally{pendingRequests.delete(controller);}
 }
@@ -43,7 +46,7 @@ $('#admin-login-form').addEventListener('submit',async event=>{
   catch(error){$('#admin-password').value='';$('#admin-otp').value='';showError('#login-error',error.message);}
   finally{button.disabled=false;button.removeAttribute('aria-busy');button.querySelector('span').textContent='Войти в кабинет';}
 });
-$('#logout-button').addEventListener('click',async()=>{try{await api('/api/admin/logout',{method:'POST',body:JSON.stringify({})});csrfToken=null;setScreen(false);await preauth();}catch(error){showError('#dashboard-error',error.message);}});
+$('#logout-button').addEventListener('click',async()=>{if(!await contentAdmin.confirmLeave())return;setScreen(false);try{await api('/api/admin/logout',{method:'POST',body:JSON.stringify({})});csrfToken=null;await preauth();}catch(error){showError('#login-error',error.message);}});
 function textElement(tag,text,className){const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;}
 function programOption(text,value){const option=textElement('option',text);option.value=value;return option;}
 function renderApplications(){
@@ -86,7 +89,7 @@ window.addEventListener('pagehide',stopPolling);
 window.addEventListener('pageshow',()=>{if(!$('#dashboard-screen').hidden)startPolling();});
 $('#export-button').addEventListener('click',async()=>{
   const button=$('#export-button');button.disabled=true;button.setAttribute('aria-busy','true');showError('#dashboard-error','');
-  try{const response=await fetch('/api/admin/export',{credentials:'same-origin',cache:'no-store'});if(!response.ok){const result=await response.json().catch(()=>({}));if(response.status===401){setScreen(false);await preauth();}throw new Error(result.error||'Не удалось выгрузить таблицу.');}const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`Заявки-Кадры-в-АПК-${new Date().toISOString().slice(0,10)}.xlsx`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){showError($('#login-screen').hidden ? '#dashboard-error' : '#login-error',error.message);}finally{button.disabled=false;button.removeAttribute('aria-busy');}
+  try{const blob=await api('/api/admin/export',{responseType:'blob'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`Заявки-Кадры-в-АПК-${new Date().toISOString().slice(0,10)}.xlsx`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){showError($('#login-screen').hidden ? '#dashboard-error' : '#login-error',error.message);}finally{button.disabled=false;button.removeAttribute('aria-busy');}
 });
 function svgIcon(id){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('icon');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href',`/assets/icons-v2.svg#${id}`);svg.append(use);return svg;}
 async function openDetail(id,button){

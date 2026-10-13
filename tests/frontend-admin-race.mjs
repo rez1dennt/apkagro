@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 const source = (await readFile(new URL('../public/assets/js/admin.js', import.meta.url), 'utf8'))
   .replace(/import \{ courses \} from '[^']+';/, 'const courses = {};')
   .replace(/import \{ enhanceStatusSelects, syncStatusSelect, closeStatusSelects \} from '[^']+';/, 'const enhanceStatusSelects = () => {}; const syncStatusSelect = () => {}; const closeStatusSelects = () => {};')
+  .replace(/import \{ createContentAdmin \} from '[^']+';/, 'const createContentAdmin=()=>({setAuthenticated(){},confirmLeave:async()=>true});')
   .replace(/restoreSession\(\);\s*$/, '');
 
 function fixture() {
@@ -65,4 +66,9 @@ test('late unauthorized admin poll cannot invalidate a newer authenticated UI', 
   assert.equal(f.document.querySelector('#dashboard-screen').hidden, false, 'Old 401 hid the newly authenticated dashboard');
   assert.equal(f.run('csrfToken'), 'synthetic-new-session', 'Old 401 cleared the new session token');
   assert.equal(f.document.querySelector('#login-error').textContent, '', 'Old request wrote an obsolete login error');
+});
+test('Excel uses the shared request lifecycle and rejects a late private blob after logout',async()=>{
+ const f=fixture();f.run('setScreen(true); globalThis.pendingExport = api("/api/admin/export",{responseType:"blob"}); setScreen(false);');
+ f.settle({ok:true,status:200,blob:async()=>new Blob(['synthetic workbook'])});
+ await assert.rejects(f.context.pendingExport,{name:'AbortError'});
 });
