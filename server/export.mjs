@@ -1,3 +1,4 @@
+import {formatFieldValue} from '../public/assets/js/application-fields.js';
 import ExcelJS from 'exceljs';
 import { courses } from '../public/assets/js/courses.js';
 
@@ -23,13 +24,25 @@ export function createApplicationsWorkbook(applications, {programs=[]}={}) {
     ['Электронная почта', 'email', 32], ['СНИЛС', 'snils', 20], ['Уровень образования', 'education', 38],
     ['Версия согласия', 'consentVersion', 20], ['Дата согласия (МСК)', 'consentAt', 22]
   ].map(([header, key, width]) => ({ header, key, width }));
+  const extras=new Map();
+  for(const application of [...applications].sort((a,b)=>String(a.createdAt??'').localeCompare(String(b.createdAt??''))))for(const field of application.formSnapshot?.fields??[])if(field.kind==='custom'||field.id.startsWith('field-'))extras.set(field.id,field);
+  const normalized=extras.size>256,extraFields=[...extras.values()];
+  if(normalized)sheet.columns=[...sheet.columns.map(c=>({header:c.header,key:c.key,width:c.width})),{header:'Дополнительные ответы',key:'additionalAnswers',width:32}];
+  else sheet.columns=[...sheet.columns.map(c=>({header:c.header,key:c.key,width:c.width})),...extraFields.map(f=>({header:f.label,key:f.id,width:30}))];
+  const additional=normalized?workbook.addWorksheet('Дополнительные ответы'):null;
+  if(additional){additional.columns=[['Номер заявки','applicationId',38],['ID поля','fieldId',45],['Подпись','label',40],['Тип','type',18],['Значение','value',60]].map(([header,key,width])=>({header,key,width}));additional.views=[{state:'frozen',ySplit:1}];}
   for (const application of applications) {
+    const definitions=application.formSnapshot?.fields??[],values=application.formValues??{};
+    const answers=definitions.filter(f=>extras.has(f.id)&&Object.hasOwn(values,f.id)).map(f=>[f,formatFieldValue(f,values[f.id])]);
+    if(additional)for(const [field,value]of answers){const r=additional.addRow({applicationId:String(application.id??''),fieldId:field.id,label:field.label,type:field.type,value});r.eachCell(cell=>{cell.numFmt='@';cell.alignment={vertical:'top',wrapText:true};});}
+    const educationField=definitions.find(f=>f.id==='education');
     // Plain string cells preserve leading zeroes and never become executable formulas.
     const row = sheet.addRow({
       ...Object.fromEntries(['id', 'lastName', 'firstName', 'middleName', 'phone', 'email', 'snils', 'consentVersion'].map(key => [key, String(application[key] ?? '')])),
       createdAt: dateTime(application.createdAt), consentAt: dateTime(application.consentAt), birthDate: birthDate(application.birthDate),
       status: statuses[application.status] || 'Не указан', course: application.courseSnapshot?.title || programs.find(p=>p.id===application.courseId)?.title || courses[application.courseId]?.title || application.courseId || 'Не указана',
-      education: education[application.education] || 'Не указан'
+      education: educationField?formatFieldValue(educationField,values.education):education[application.education] || 'Не указан',
+      ...(normalized?{additionalAnswers:answers.length?'См. лист «Дополнительные ответы»':''}:Object.fromEntries(answers.map(([f,value])=>[f.id,value])))
     });
     row.height = 54;
     row.alignment = { vertical: 'middle', wrapText: true };
@@ -42,6 +55,7 @@ export function createApplicationsWorkbook(applications, {programs=[]}={}) {
   header.alignment = { vertical: 'middle', wrapText: true };
   header.eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF20351A' } }; });
   sheet.views = [{ state: 'frozen', ySplit: 1 }];
-  sheet.autoFilter = { from: 'A1', to: `N${Math.max(1, sheet.rowCount)}` };
+  sheet.autoFilter = { from: 'A1', to: sheet.getColumn(sheet.columnCount).letter+Math.max(1,sheet.rowCount) };
+  if(additional)additional.autoFilter={from:'A1',to:'E'+Math.max(1,additional.rowCount)};
   return workbook;
 }

@@ -1,3 +1,5 @@
+import {formBuiltinMetadata,formManagedBindingIds} from './application-form.mjs';
+import {FORM_LIMITS,FIELD_TYPES} from '../public/assets/js/application-fields.js';
 import Busboy from 'busboy';
 import {readFile} from 'node:fs/promises';
 import {HttpError} from './intake.mjs';
@@ -27,7 +29,7 @@ function parseUpload(req){return new Promise((resolve,reject)=>{
 export function contentDefinitions(){
  const labels={navigation:'Навигация',benefits:'Преимущества',steps:'Шаги поступления',faqs:'Вопросы и ответы',programs:'Программы обучения',pages:'Информационные страницы',extraSections:'Дополнительные секции'};
  const limits={navigation:30,benefits:50,steps:50,faqs:100,programs:100,pages:100,extraSections:50};
- return {schemaVersion:1,fields:structuredClone(bindings),groups:[...new Set(bindings.map(b=>b.group))].map(id=>({id,label:id})),collections:Object.fromEntries(Object.entries(labels).map(([key,label])=>[key,{label,maxItems:limits[key],fields:Object.keys(key==='navigation'?seed.navigation.desktop[0]:seed[key][0]??{id:'',type:'',title:'',body:'',image:'',alt:'',imageFocus:{},buttonLabel:'',buttonUrl:'',items:[]}),...(key==='programs'?{statuses:['published','draft','closed','archived']}:{})}])),settings:structuredClone(seed.settings),documents:Object.keys(seed.documents),seo:Object.keys(seed.seo),messages:Object.keys(seed.messages),sectionTemplates:['text','image','cta','faq','cards','gallery'],limits:{jsonBytes:512*1024,fileBytes:10*1024*1024,imagePixels:24_000_000,history:20}};
+ return {schemaVersion:1,fields:structuredClone(bindings).map(b=>formManagedBindingIds().has(b.id)?{...b,managedBy:'applicationForm'}:b),applicationForm:{version:1,builtins:formBuiltinMetadata(),types:FIELD_TYPES,limits:FORM_LIMITS},groups:[...new Set(bindings.map(b=>b.group))].map(id=>({id,label:id})),collections:Object.fromEntries(Object.entries(labels).map(([key,label])=>[key,{label,maxItems:limits[key],fields:Object.keys(key==='navigation'?seed.navigation.desktop[0]:seed[key][0]??{id:'',type:'',title:'',body:'',image:'',alt:'',imageFocus:{},buttonLabel:'',buttonUrl:'',items:[]}),...(key==='programs'?{statuses:['published','draft','closed','archived']}:{})}])),settings:structuredClone(seed.settings),documents:Object.keys(seed.documents),seo:Object.keys(seed.seo),messages:Object.keys(seed.messages),sectionTemplates:['text','image','cta','faq','cards','gallery'],limits:{jsonBytes:512*1024,fileBytes:10*1024*1024,imagePixels:24_000_000,history:20}};
 }
 
 // App enforces trusted proxy/Host checks before dispatch. Guards are repeated here

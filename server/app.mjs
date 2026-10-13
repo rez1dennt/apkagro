@@ -1,3 +1,4 @@
+import {resolveFormFields} from './application-form.mjs';
 import http from 'node:http';
 import {isIP} from 'node:net';
 import path from 'node:path';
@@ -8,7 +9,7 @@ import {Readable} from 'node:stream';
 import {createApplicationsWorkbook} from './export.mjs';
 import {loadAdmin,passwordHash,decrypt,saveAdmin,verifyTotp,token,hash,safeEqual} from './security.mjs';
 import {openStore} from './storage.mjs';
-import {HttpError,parseMultipart,validateFields,createScannerGuard} from './intake.mjs';
+import {HttpError,parseMultipart,validateSubmission,createScannerGuard} from './intake.mjs';
 import {openContentStore} from './content-store.mjs';
 import {openContentMedia} from './content-media.mjs';
 import {handleContentRoute} from './content-routes.mjs';
@@ -76,7 +77,7 @@ export async function createApp(options={}){
   const backgroundPoll=req.method==='GET'&&pathname==='/api/admin/applications'&&new URL(req.url,origin).searchParams.get('poll')==='1';
   const s=session(req,!backgroundPoll);const isAdmin=pathname.startsWith('/api/admin/');
   if(pathname.startsWith('/api/'))res.setHeader('Cache-Control','no-store');
-   if(req.method==='GET'&&pathname==='/api/config'){const {content,revision}=await published();return json(res,200,{enabled:enabled&&contentIntakeEnabled(content),consentVersion:content.settings.intake.consentVersion,contentRevision:revision});}
+   if(req.method==='GET'&&pathname==='/api/config'){const {content,revision}=await published();return json(res,200,{enabled:enabled&&contentIntakeEnabled(content),consentVersion:content.settings.intake.consentVersion,contentRevision:revision,applicationForm:{version:1,fields:resolveFormFields(content)}});}
   if(req.method==='GET'&&pathname==='/api/csrf'){
    rate('csrf:'+ip,120,60000);if(s)return json(res,200,{token:s.csrf});cleanup();const existing=preauth.get(hash(cookies(req).csrf_session??''));if(existing)return json(res,200,{token:existing.csrf});if(preauth.size>=5000)throw new HttpError(429,'Слишком много запросов.');const id=token(),csrf=token();preauth.set(hash(id),{csrf,expires:Date.now()+30*60*1000});res.setHeader('Set-Cookie',cookie('csrf_session',id,1800));return json(res,200,{token:csrf});
   }
@@ -94,7 +95,7 @@ export async function createApp(options={}){
   if(req.method==='POST'&&pathname==='/api/preview-applications')throw new HttpError(403,previewSubmissionMessage,'PREVIEW_INTAKE_DISABLED');
   if(req.method==='POST'&&pathname==='/api/applications'){
    const current=await published();if(!enabled||!contentIntakeEnabled(current.content))throw new HttpError(503,contentMessage(current.content,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.'),'INTAKE_DISABLED');checkOrigin(req);if(req.headers['x-csrf-token'])checkCsrf(req,s);else if(!preauth.has(hash(cookies(req).csrf_session??''))&&!s)checkCsrf(req,s);rate('intake:'+ip,10,60*60*1000);
-   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req);checkCsrf(req,s,fields._csrf);let accepted=await published();let validated=validateFields(fields,{programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});if(scannerCommand){await scanner.scan(scannerCommand,Buffer.from(JSON.stringify(validated)));for(const file of files)await scanner.scan(scannerCommand,file.data);}const id=await (await getContentServices()).media.withMutation(async()=>{accepted=await published();if(!contentIntakeEnabled(accepted.content))throw new HttpError(503,contentMessage(accepted.content,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.'),'INTAKE_DISABLED');validated=validateFields(fields,{programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});return await store.save({...validated,...applicationSnapshots(accepted.content,validated.courseId,{revision:accepted.revision})},files);});return json(res,201,{id,reference:id,message:contentMessage(accepted.content,'Заявка получена. Организатор свяжется с вами.')});}finally{uploadBusy--;}
+   if(uploadBusy>=2)throw new HttpError(429,'Сервис занят. Повторите отправку немного позже.','RATE_LIMIT');uploadBusy++;try{const {fields,files}=await parseMultipart(req,{form:resolveFormFields(current.content),contentRevision:current.revision});checkCsrf(req,s,fields._csrf);let accepted=await published();let validated=validateSubmission(fields,files,{form:resolveFormFields(accepted.content),programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});if(scannerCommand){await scanner.scan(scannerCommand,Buffer.from(JSON.stringify(validated.fields)));for(const file of validated.files)await scanner.scan(scannerCommand,file.data);}const id=await (await getContentServices()).media.withMutation(async()=>{accepted=await published();if(!contentIntakeEnabled(accepted.content))throw new HttpError(503,contentMessage(accepted.content,'Приём заявок ещё не открыт. Пожалуйста, свяжитесь с организатором.'),'INTAKE_DISABLED');validated=validateSubmission(fields,files,{form:resolveFormFields(accepted.content),programs:contentPrograms(accepted.content),consentVersion:accepted.content.settings.intake.consentVersion,contentRevision:accepted.revision});return await store.save({...validated.fields,...applicationSnapshots(accepted.content,validated.fields.courseId,{revision:accepted.revision})},validated.files);});return json(res,201,{id,reference:id,message:contentMessage(accepted.content,'Заявка получена. Организатор свяжется с вами.')});}finally{uploadBusy--;}
   }
   if(isAdmin){
    if(!s)throw new HttpError(401,'Войдите в кабинет администратора.','AUTH_REQUIRED');if(!['GET','HEAD'].includes(req.method)){checkOrigin(req);checkCsrf(req,s);}

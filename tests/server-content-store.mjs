@@ -299,7 +299,8 @@ test('consent-file change and restoration author fresh versions, corrupted state
 test('seed extractor is reproducible and every public text surface is bound or typed', async () => {
   const {extractDefaultContent}=await import('../scripts/build-content-defaults.mjs');
   const extracted=await extractDefaultContent();const api=await modules();
-  assert.deepEqual(extracted.content,await api.loadDefaultContent());
+  // The extractor retains the legacy seed; the optional form is normalized in memory.
+  assert.deepEqual(api.validateContent(extracted.content),api.validateContent(await api.loadDefaultContent()));
   assert.deepEqual(extracted.bindings,JSON.parse(await readFile(path.join(root,'content/content-bindings.json'),'utf8')));
   const typed='.nav a,.mobile-menu nav a,.footer__nav a,.benefit,.step-list li,.accordion details,.program-card,.legal-body,.legal-container > h1,.legal-intro,.application__deadline';
   for(const file of ['index.html','privacy/index.html','consent/index.html','operator/index.html']){

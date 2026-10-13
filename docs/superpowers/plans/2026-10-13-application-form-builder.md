@@ -19,7 +19,7 @@
 
 ### Task 1: Model, compatibility, SSR, intake and historical export
 
-**Files:** create `public/assets/js/application-fields.js`, `server/application-form.mjs`, `server/application-form-render.mjs`, `tests/server-application-form.mjs`; modify `content/site.json`, `server/content-schema.mjs`, `server/content-store.mjs`, `server/content-render.mjs`, `server/content-routes.mjs`, `server/intake.mjs`, `server/app.mjs`, `server/storage.mjs`, `server/export.mjs`; focused changes to existing tests if their contract expands.
+**Files:** create `public/assets/js/application-fields.js`, `server/application-form.mjs`, `server/application-form-render.mjs`, `tests/server-application-form.mjs`; modify `server/content-schema.mjs`, `server/content-store.mjs`, `server/content-render.mjs`, `server/content-routes.mjs`, `server/intake.mjs`, `server/app.mjs`, `server/storage.mjs`, `server/export.mjs`; focused changes to existing tests if their contract expands. The actual legacy seed is `content/site-defaults.json`; keep it unchanged. Add deterministic in-memory normalization through `loadDefaultContent`/`validateContent`.
 
 **Interfaces:**
 - Public `FORM_LIMITS`, `createCustomField(type,{id,label}={})`, `validateFieldValue(definition,value,{today}={})`→`{ok:true,value}|{ok:false,message}`, `formatFieldValue(definition,value)`→plain string. Resolved definitions have id,type,label,hint,placeholder,enabled,required,rules, plus readonly builtin DOM/autocomplete metadata.

@@ -1,3 +1,4 @@
+import {defaultApplicationForm,validateApplicationForm,validateFormAliases} from './application-form.mjs';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {parseCustomIcon} from '../public/assets/js/content-icons.js';
@@ -76,14 +77,16 @@ function seo(value,where,main=false){
   enumValue(value.robots,robotsChoices.map(([value])=>value),where+'.robots');
 }
 
-export async function loadDefaultContent(){return structuredClone(defaults);}
+export async function loadDefaultContent(){return {...structuredClone(defaults),applicationForm:defaultApplicationForm()};}
 export function validateContent(content,{forPublication=false}={}){
-  object(content,Object.keys(defaults),'content');if(content.schemaVersion!==1)fail('schemaVersion');
+  object(content,[...Object.keys(defaults),...(Object.hasOwn(content??{},'applicationForm')?['applicationForm']:[])],'content');
+  const applicationForm=validateApplicationForm(content.applicationForm??defaultApplicationForm(),{forPublication});if(content.schemaVersion!==1)fail('schemaVersion');
   list(content.hiddenSections,'hiddenSections',57);const hidden=new Set(content.hiddenSections);
   object(content.fields,bindings.map(binding=>binding.id),'fields');
   for(const binding of bindings){const value=content.fields[binding.id],where='fields.'+binding.id;string(value,where,binding.maxLength,binding.minLength);if(binding.kind==='icon')icon(value,where);else if(['image','background'].includes(binding.kind))url(value,where,{image:true});else if(binding.kind==='url')url(value,where);
     const allowed=[...new Set(binding.targets.flatMap(target=>target.variables??[]))];const variables=[...value.matchAll(/\{\{([^}]+)\}\}/g)].map(match=>match[1]);if(variables.some(source=>!allowed.includes(source))||allowed.some(source=>!variables.includes(source)))fail(where,'Сохраните обязательные подстановки общих реквизитов');
   }
+  validateFormAliases(content);
   object(content.navigation,['desktop','mobile','footer'],'navigation');
   for(const name of ['desktop','mobile','footer'])records(content.navigation[name],'navigation.'+name,30,['id','label','url'],(item,where)=>{string(item.label,where+'.label',200,1);url(item.url,where+'.url');});
   records(content.benefits,'benefits',50,['id','title','body','icon','image','alt','imageFocus'],(item,where)=>{const visible=forPublication&&!hidden.has('about');string(item.title,where+'.title',500,visible?1:0);prose(item.body,where+'.body',20000);icon(item.icon,where+'.icon');url(item.image,where+'.image',{image:true,empty:!visible});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');});
@@ -132,7 +135,7 @@ export function validateContent(content,{forPublication=false}={}){
   object(content.documents,Object.keys(defaults.documents),'documents');for(const [key,value] of Object.entries(content.documents))url(value,'documents.'+key,{document:true});
   seo(content.seo,'seo',true);object(content.messages,Object.keys(defaults.messages),'messages');for(const [key,value] of Object.entries(content.messages))string(value,'messages.'+key,2000);
   const json=JSON.stringify(content);if(Buffer.byteLength(json)>2*1024*1024)fail('content','Размер контента превышает 2 МиБ');
-  const canonical=JSON.parse(json);canonical.settings.organization.email=canonical.settings.contacts.email;canonical.settings.organization.phone=canonical.settings.contacts.phone;return canonical;
+  const canonical=JSON.parse(json);canonical.applicationForm=applicationForm;canonical.settings.organization.email=canonical.settings.contacts.email;canonical.settings.organization.phone=canonical.settings.contacts.phone;return canonical;
 }
 
 export function publicPrograms(content){return structuredClone(content.programs.filter(program=>['published','closed'].includes(program.status)));}
