@@ -4,6 +4,8 @@ import {readFile,mkdir,open,rename,unlink,realpath,stat} from 'node:fs/promises'
 import {randomUUID,createHash} from 'node:crypto';
 import {inflateRawSync,inflateSync} from 'node:zlib';
 import sharp from 'sharp';
+import {prepareStaticSvg} from './content-svg.mjs';
+import {parseCustomIcon} from '../public/assets/js/content-icons.js';
 import {PDFDocument} from 'pdf-lib';
 import {SaxesParser} from 'saxes';
 import {HttpError,createScannerGuard} from './intake.mjs';
@@ -12,7 +14,7 @@ import {referencedMedia,validateContent} from './content-schema.mjs';
 sharp.cache(false);sharp.concurrency(1);
 const MAX_FILE=10*1024*1024,MAX_PIXELS=24_000_000,MAX_RECORDS=1000,MAX_BYTES=512*1024*1024;
 const idPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const types={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',avif:'image/avif',pdf:'application/pdf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
+const types={svg:'image/svg+xml',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',avif:'image/avif',pdf:'application/pdf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
 const bindings=JSON.parse(await readFile(new URL('../content/content-bindings.json',import.meta.url),'utf8'));
 const owners=new Set(),sharedScanner=createScannerGuard();
 const fail=(message='Некорректный медиафайл.',code='INVALID_MEDIA')=>{throw new HttpError(400,message,code);};
@@ -194,8 +196,13 @@ async function prepare(input,scannerCommand,scanner){
  if(typeof name!=='string'||!name||name.length>200||name!==path.basename(name)||/[\\/\x00-\x1f\x7f]/.test(name))fail('Некорректное имя файла.');const ext=path.extname(name).slice(1).toLowerCase();if(!Object.hasOwn(types,ext)||types[ext]!==mime)fail('Формат файла не соответствует содержимому.');
  if(scannerCommand)await scanner.scan(scannerCommand,data);
  try{
+  if(ext==='svg'){const safe=prepareStaticSvg(data),settings={limitInputPixels:2048*2048,failOn:'warning',density:72,animated:false};const result=await sharp(safe,settings).resize({width:512,height:512,fit:'inside',withoutEnlargement:true}).webp({quality:90,effort:4}).toBuffer({resolveWithObject:true});return {data:result.data,ext:'webp',mime:'image/webp',kind:'image',width:result.info.width,height:result.info.height};}
   if(ext==='pdf'){await pdf(data);return {data,ext,mime,kind:'document',width:null,height:null};}
   if(ext==='docx'){docx(data);return {data,ext,mime,kind:'document',width:null,height:null};}
+  // Check raster magic before Sharp: an SVG disguised as PNG must never enter
+  // libvips' SVG decoder, including before metadata format checks.
+  const signature=ext==='png'?data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):ext==='webp'?data.subarray(0,4).toString()==='RIFF'&&data.subarray(8,12).toString()==='WEBP':['jpg','jpeg'].includes(ext)?data[0]===255&&data[1]===216&&data[2]===255:ext==='avif'?data.subarray(4,8).toString()==='ftyp'&&data.subarray(8,64).includes(Buffer.from('avif')):false;
+  if(!signature)fail('Формат файла не соответствует содержимому.');
   const settings={limitInputPixels:MAX_PIXELS,failOn:'warning',animated:false};const metadata=await sharp(data,settings).metadata();const expected=ext==='jpg'?'jpeg':ext;
   if((ext==='avif'?metadata.format!=='heif'||metadata.compression!=='av1':metadata.format!==expected)||!metadata.width||!metadata.height||metadata.width*metadata.height>MAX_PIXELS||(metadata.pages??1)>1)fail();
   // Explicit full raw decode prevents a resize/shrink-on-load from hiding corrupt source pixels.
@@ -204,10 +211,13 @@ async function prepare(input,scannerCommand,scanner){
   if(result.data.length>MAX_FILE)fail();return {data:result.data,ext:'webp',mime:'image/webp',kind:'image',width:result.info.width,height:result.info.height};
  }catch(e){if(e instanceof HttpError)throw e;fail('Не удалось декодировать файл.');}
 }
-function contentLocations(content){const found=new Map();const add=(url,p)=>{if(!found.has(url))found.set(url,[]);found.get(url).push(p);};function visit(value,p){if(typeof value==='string'){if(value.startsWith('/media/'))add(value,p);for(const match of value.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1],p);}else if(Array.isArray(value))value.forEach((item,i)=>visit(item,p+'['+i+']'));else if(value&&typeof value==='object')for(const [key,item]of Object.entries(value))visit(item,p?p+'.'+key:key);}visit(content,'');return found;}
+function contentLocations(content){const found=new Map();const add=(url,p)=>{if(!found.has(url))found.set(url,[]);found.get(url).push(p);};function visit(value,p){if(typeof value==='string'){const custom=parseCustomIcon(value);if(custom)add(custom.url,p);else if(value.startsWith('/media/'))add(value,p);for(const match of value.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1],p);}else if(Array.isArray(value))value.forEach((item,i)=>visit(item,p+'['+i+']'));else if(value&&typeof value==='object')for(const [key,item]of Object.entries(value))visit(item,p?p+'.'+key:key);}visit(content,'');return found;}
 function publicationResources(content){
  const live=referencedMedia(content,{publicOnly:true}),resources=new Map([...live].map(url=>[url,null])),hidden=new Set(content.hiddenSections);
  const add=(url,kind)=>{if(url)resources.set(url,kind);};
+ const addIcon=value=>{const custom=parseCustomIcon(value);if(custom)add(custom.url,'image');};
+ // Every saved custom icon must name an image, including currently hidden records.
+ function iconResources(value){if(typeof value==='string')addIcon(value);else if(value&&typeof value==='object')Object.values(value).forEach(iconResources);}iconResources(content);
  for(const binding of bindings.filter(b=>!b.source))if(['image','background','url'].includes(binding.kind)&&binding.targets.some(t=>(t.sections??[t.section]).some(section=>section===null||!hidden.has(section)))){const url=content.fields[binding.id];if(['image','background'].includes(binding.kind))add(url,'image');else if(/^\/(assets|documents)\//.test(url))add(url,null);}
  if(!hidden.has('about'))content.benefits.forEach(b=>add(b.image,'image'));
  if(!hidden.has('programs'))content.programs.filter(p=>['published','closed'].includes(p.status)).forEach(p=>{add(p.image,'image');add(p.modalImage,'image');});

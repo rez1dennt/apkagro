@@ -1,5 +1,6 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {parseCustomIcon} from '../public/assets/js/content-icons.js';
 import {HttpError} from './intake.mjs';
 import {contentFieldContract,richTextEntries,robotsChoices} from '../public/assets/js/content-field-contract.js';
 
@@ -24,7 +25,7 @@ function list(value,where,max){if(!Array.isArray(value)||value.length>max)fail(w
 function enumValue(value,allowed,where){if(!allowed.includes(value))fail(where);}
 function color(value,where){if(typeof value!=='string'||!/^#[a-f0-9]{6}$/i.test(value))fail(where);}
 function focus(value,where){object(value,['x','y'],where);number(value.x,where+'.x',0,100);number(value.y,where+'.y',0,100);}
-function icon(value,where){if(!icons.has(value))fail(where,'Неизвестный значок');}
+function icon(value,where){if(!icons.has(value)&&!parseCustomIcon(value))fail(where,'Неизвестный значок');}
 function url(value,where,{image=false,document=false,empty=false}={}){
   string(value,where,2048,empty?0:1);if(empty&&value==='')return;
   if(value!==value.trim()||/[\s\\<>"'`\u007f]/.test(value)||value.startsWith('//'))fail(where,'Недопустимая ссылка');
@@ -140,11 +141,11 @@ export function referencedMedia(content,{publicOnly=false}={}){
   const value=validateContent(content),references=new Set();
   const hidden=new Set(value.hiddenSections);
   if(publicOnly){value.programs=hidden.has('programs')?[]:value.programs.filter(program=>['published','closed'].includes(program.status));value.pages=value.pages.filter(page=>page.status==='published');value.benefits=hidden.has('about')?[]:value.benefits;value.steps=hidden.has('steps')?[]:value.steps;value.faqs=hidden.has('faq')?[]:value.faqs;value.extraSections=value.extraSections.filter(section=>!hidden.has(section.id));}
-  const add=url=>{if(url?.startsWith('/media/'))references.add(url);};
+  const add=url=>{const custom=parseCustomIcon(url);if(custom)references.add(custom.url);else if(url?.startsWith('/media/'))references.add(url);};
   const visible=binding=>binding.targets.some(target=>(target.sections??[target.section]).some(section=>section===null||!hidden.has(section)));
-  for(const binding of bindings)if(['image','background','url'].includes(binding.kind)&&(!publicOnly||visible(binding)))add(value.fields[binding.id]);
+  for(const binding of bindings)if(['image','background','url','icon'].includes(binding.kind)&&(!publicOnly||visible(binding)))add(value.fields[binding.id]);
   for(const group of Object.values(value.navigation))group.forEach(item=>add(item.url));
-  value.benefits.forEach(item=>add(item.image));value.programs.forEach(item=>{add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);item.items.forEach(entry=>{add(entry.image);add(entry.buttonUrl);});});
+  value.benefits.forEach(item=>{add(item.image);add(item.icon);});value.steps.forEach(item=>add(item.icon));value.programs.forEach(item=>{add(item.icon);add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);item.items.forEach(entry=>{add(entry.icon);add(entry.image);add(entry.buttonUrl);});});
   Object.values(value.documents).forEach(add);add(value.seo.icon);add(value.seo.ogImage);add(value.settings.organization.registryUrl);
   for(const page of value.pages)add(page.seo.ogImage);
   for(const [,body] of richTextEntries(value))for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);

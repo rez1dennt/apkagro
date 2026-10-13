@@ -1,8 +1,8 @@
-import './cookie-notice.js?v=20261013-content-admin';
-import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261013-content-admin';
-import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261013-content-admin';
-import { validSnils, savedApplication } from './form-logic.js?v=20261013-content-admin';
-import { attachMask, formatPhone, formatSnils } from './input-masks.js?v=20261013-content-admin';
+import './cookie-notice.js?v=20261013-custom-icons';
+import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261013-custom-icons';
+import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261013-custom-icons';
+import { validSnils, savedApplication } from './form-logic.js?v=20261013-custom-icons';
+import { attachMask, formatPhone, formatSnils } from './input-masks.js?v=20261013-custom-icons';
 
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const delay = () => motion.matches ? 0 : 220;

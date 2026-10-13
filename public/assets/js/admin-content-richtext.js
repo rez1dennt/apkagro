@@ -1,5 +1,5 @@
-import {renderMarkdown,safeContentUrl} from './content-format.js?v=20261013-content-admin';
-import {el,button,dialog} from './admin-content-ui.js?v=20261013-content-admin';
+import {renderMarkdown,safeContentUrl} from './content-format.js?v=20261013-custom-icons';
+import {el,button,dialog} from './admin-content-ui.js?v=20261013-custom-icons';
 export function formatSelection(value,start,end,format,url=''){
  const selected=value.slice(start,end)||'Текст';let text=selected;
  if(format==='bold')text='**'+selected+'**';

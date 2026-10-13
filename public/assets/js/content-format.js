@@ -1,5 +1,5 @@
 // Pure shared formatting used by SSR, the public dialogs and editor previews.
-import {contentFieldContract} from './content-field-contract.js?v=20261013-content-admin';
+import {contentFieldContract} from './content-field-contract.js?v=20261013-custom-icons';
 export function renderContentField(value, path) {
   return contentFieldContract(path).format === 'markdown' ? renderMarkdown(value) : escapeHtml(value);
 }
@@ -16,7 +16,7 @@ export function replaceCaption(node, text) {
   if (!node) return;
   const captions = [...node.childNodes].filter(child => child.nodeType === 3);
   if (captions.length) {
-    captions[0].textContent = text + (node.querySelector('svg') ? ' ' : '');
+    captions[0].textContent = text + (node.querySelector('svg,.content-icon') ? ' ' : '');
     captions.slice(1).forEach(child => child.remove());
   } else node.prepend(node.ownerDocument.createTextNode(text + ' '));
 }

@@ -1,5 +1,5 @@
-import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js?v=20261013-content-admin';
-import {labels,sectionLabels} from './admin-content-fields.js?v=20261013-content-admin';
+import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js?v=20261013-custom-icons';
+import {labels,sectionLabels} from './admin-content-fields.js?v=20261013-custom-icons';
 
 export function describeUsage(location,content){
  const parts=location.path.replace(/\[(\d+)\]/g,'.$1').split('.');
@@ -77,11 +77,11 @@ export function createMediaLibrary({api,isActive,onError=()=>{},onDirtyChange=()
   const run=++viewGeneration,life=sessionGeneration;
   const readVersions=new Map([...drafts].map(([id,draft])=>[id,draft.version]));
   host.replaceChildren();
-  const intro=el('p','Фотографии PNG, JPEG, WebP, AVIF — до 10 МиБ и 24 мегапикселей. Документы PDF и Word — до 10 МиБ. Новые файлы доступны только после публикации.','cms-hint');
+  const intro=el('p','Иконки PNG, WebP и статический SVG — SVG до 2 МиБ и 2048 × 2048, контуры path, группы, прямоугольники, окружности, эллипсы, линии и многоугольники; цвета HEX или базовые black/white/red/green/blue. Текст, CSS, ссылки, defs, градиенты, маски и эффекты не поддерживаются. Фотографии PNG, JPEG, WebP, AVIF — до 10 МиБ и 24 мегапикселей. Документы PDF и Word — до 10 МиБ. Новые файлы доступны только после публикации.','cms-hint');
   const explanation=el('p','Подписи файлов сохраняются отдельно кнопкой «Сохранить подписи». Несохранённые подписи остаются при поиске и переходе между разделами.','cms-hint');
   const search=el('input'),upload=el('form','','cms-upload'),file=el('input'),title=el('input'),alt=el('input'),send=button('Загрузить файл'),status=el('p','','cms-hint'),grid=el('div','','cms-media-grid');
   status.setAttribute('role','status');search.type='search';search.placeholder='Найти файл по названию или описанию';search.setAttribute('aria-label','Поиск в медиатеке');
-  file.type='file';file.required=true;file.accept=kind==='image'?'.png,.jpg,.jpeg,.webp,.avif':kind==='document'?'.pdf,.docx':'.png,.jpg,.jpeg,.webp,.avif,.pdf,.docx';file.setAttribute('aria-label','Файл для загрузки');
+  file.type='file';file.required=true;file.accept=kind==='icon'?'.png,.webp,.svg':kind==='image'?'.png,.jpg,.jpeg,.webp,.avif':kind==='document'?'.pdf,.docx':'.png,.jpg,.jpeg,.webp,.avif,.svg,.pdf,.docx';file.setAttribute('aria-label','Файл для загрузки');
   title.placeholder='Название файла';title.setAttribute('aria-label','Название файла');title.maxLength=500;
   alt.placeholder='Описание изображения для доступности';alt.setAttribute('aria-label','Описание файла');alt.maxLength=500;send.type='submit';
   upload.append(file,title,alt,send);host.append(intro,explanation,upload,status,search,grid);
@@ -157,7 +157,7 @@ export function createMediaLibrary({api,isActive,onError=()=>{},onDirtyChange=()
     let item=cards.get(record.id);
     if(!item){item=createCard(record);cards.set(record.id,item);grid.append(item.card);}
     const draft=drafts.get(record.id);
-    item.card.hidden=Boolean((kind&&record.kind!==kind)||![record.title,record.alt,draft.title,draft.alt,record.ext].join(' ').toLocaleLowerCase('ru').includes(term));
+    item.card.hidden=Boolean((kind&&record.kind!==(kind==='icon'?'image':kind))||![record.title,record.alt,draft.title,draft.alt,record.ext].join(' ').toLocaleLowerCase('ru').includes(term));
     if(!item.card.hidden)shown++;
    }
    empty.hidden=shown>0;if(!empty.isConnected)grid.append(empty);
@@ -185,7 +185,7 @@ export function createMediaLibrary({api,isActive,onError=()=>{},onDirtyChange=()
 
  function choose(kind){
   return new Promise(resolve=>{
-   const d=dialog(kind==='document'?'Выбрать документ':'Выбрать изображение',{wide:true});
+   const d=dialog(kind==='document'?'Выбрать документ':kind==='icon'?'Выбрать свою иконку':'Выбрать изображение',{wide:true});
    d.node.addEventListener('close',()=>resolve(null));mount(d.body,{kind,onSelect:record=>{resolve(record);d.close();}});
   });
  }
