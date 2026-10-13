@@ -13,10 +13,10 @@ function fixture() {
   const nodes = new Map();
   const element = () => ({
     hidden: false, open: false, value: '', textContent: '', dataset: {}, children: [],
-    classList: { add() {}, remove() {} },
-    addEventListener() {}, append(...items) { this.children.push(...items); },
+    classList: { add() {}, remove() {} }, listeners: {}, attributes: {},
+    addEventListener(name,handler) { this.listeners[name]=handler; }, click() { return this.listeners.click?.(); }, append(...items) { this.children.push(...items); },
     replaceChildren(...items) { this.children = items; },
-    setAttribute() {}, removeAttribute() {}, querySelector() { return element(); },
+    setAttribute(name,value) { this.attributes[name]=value; }, removeAttribute(name) { delete this.attributes[name]; }, querySelector() { return element(); },
     focus() {}, close() { this.open = false; }
   });
   const document = {
@@ -71,4 +71,13 @@ test('Excel uses the shared request lifecycle and rejects a late private blob af
  const f=fixture();f.run('setScreen(true); globalThis.pendingExport = api("/api/admin/export",{responseType:"blob"}); setScreen(false);');
  f.settle({ok:true,status:200,blob:async()=>new Blob(['synthetic workbook'])});
  await assert.rejects(f.context.pendingExport,{name:'AbortError'});
+});
+
+test('actual Excel click handler cannot write errors or clear a newer export busy state',async()=>{
+ const f=fixture(),resolvers=[];f.context.fetch=()=>new Promise(resolve=>resolvers.push(resolve));const button=f.document.querySelector('#export-button');
+ f.run('setScreen(true)');const oldExport=button.click();f.run('setScreen(false);setScreen(true)');assert.equal(button.disabled,false,'new session resets its export control');
+ const newExport=button.click();assert.equal(button.disabled,true);assert.equal(button.attributes['aria-busy'],'true');
+ resolvers[0]({ok:true,status:200,blob:async()=>new Blob(['old synthetic export'])});await oldExport;
+ assert.equal(f.document.querySelector('#dashboard-error').textContent,'','old callback must not show an obsolete cancellation error');assert.equal(f.document.querySelector('#login-error').textContent,'');assert.equal(button.disabled,true,'old finally must not re-enable the new request');assert.equal(button.attributes['aria-busy'],'true');
+ resolvers[1]({ok:false,status:500,json:async()=>({error:'Current export failed'})});await newExport;assert.equal(f.document.querySelector('#dashboard-error').textContent,'Current export failed');assert.equal(button.disabled,false);assert.equal(button.attributes['aria-busy'],undefined);
 });

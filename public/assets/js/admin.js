@@ -23,6 +23,7 @@ function setScreen(authenticated) {
   authGeneration++;
   for(const controller of pendingRequests)controller.abort();
   pendingRequests.clear();loading=false;
+  $('#export-button').disabled=false;$('#export-button').removeAttribute('aria-busy');
   contentAdmin.setAuthenticated(authenticated);
   $('#login-screen').hidden=authenticated; $('#dashboard-screen').hidden=!authenticated;
   if(authenticated)startPolling();
@@ -88,8 +89,19 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#dash
 window.addEventListener('pagehide',stopPolling);
 window.addEventListener('pageshow',()=>{if(!$('#dashboard-screen').hidden)startPolling();});
 $('#export-button').addEventListener('click',async()=>{
-  const button=$('#export-button');button.disabled=true;button.setAttribute('aria-busy','true');showError('#dashboard-error','');
-  try{const blob=await api('/api/admin/export',{responseType:'blob'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`Заявки-Кадры-в-АПК-${new Date().toISOString().slice(0,10)}.xlsx`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){showError($('#login-screen').hidden ? '#dashboard-error' : '#login-error',error.message);}finally{button.disabled=false;button.removeAttribute('aria-busy');}
+  const generation=authGeneration,button=$('#export-button');
+  button.disabled=true;button.setAttribute('aria-busy','true');showError('#dashboard-error','');
+  try{
+    const blob=await api('/api/admin/export',{responseType:'blob'});
+    if(generation!==authGeneration)return;
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='Заявки-Кадры-в-АПК-'+new Date().toISOString().slice(0,10)+'.xlsx';
+    document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){
+    if(generation===authGeneration&&error.name!=='AbortError')showError($('#login-screen').hidden?'#dashboard-error':'#login-error',error.message);
+  }finally{
+    if(generation===authGeneration){button.disabled=false;button.removeAttribute('aria-busy');}
+  }
 });
 function svgIcon(id){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('icon');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href',`/assets/icons-v2.svg#${id}`);svg.append(use);return svg;}
 async function openDetail(id,button){
