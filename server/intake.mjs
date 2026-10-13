@@ -6,7 +6,8 @@ import {spawn} from 'node:child_process';
 import {CONSENT_VERSION} from '../public/assets/js/organization.js';
 import {courses} from '../public/assets/js/courses.js';
 import {refreshRequiredMessage,previewSubmissionMessage} from '../public/assets/js/content-format.js';
-export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
+import {HttpError} from './http-error.mjs';
+export {HttpError} from './http-error.mjs';
 const invalid=message=>new HttpError(400,message);
 const fieldInvalid=(definition,message)=>Object.assign(invalid(message),{fieldErrors:{[definition.id]:message}});
 const allowed=new Set(['courseId','contentRevision','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
@@ -83,6 +84,9 @@ export function parseMultipart(req,{form,contentRevision}={}){const definitions=
    if (error) return;
    try {
     const data = Buffer.concat(chunks);
+    // Native FormData represents an untouched file control with this empty part.
+    // Known/enabled names, duplicate and part/size accounting already ran above.
+    if (!info.filename && size === 0 && info.mimeType === 'application/octet-stream') return;
     const [mime, ext] = identify(data);
     const sourceExt = path.extname(info.filename ?? '').toLowerCase();
     const extensions = mime === 'image/jpeg' ? ['.jpg', '.jpeg'] : [ext];

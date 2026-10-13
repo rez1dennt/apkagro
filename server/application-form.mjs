@@ -1,3 +1,4 @@
+import {HttpError} from './http-error.mjs';
 import {readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {FIELD_TYPES,FORM_LIMITS,validDate,resolveFormDefinitions,formConsentShape} from '../public/assets/js/application-fields.js';
@@ -25,7 +26,7 @@ const builtinMap=new Map(builtins.map(f=>[f.id,f]));
 export function defaultApplicationForm(){return {version:1,fields:builtins.map(f=>({id:f.id,kind:'builtin',enabled:true,required:f.defaultRequired}))};}
 export function formBuiltinMetadata(){return structuredClone(builtins);}
 export function formManagedBindingIds(){return new Set(builtins.flatMap(f=>Object.values(f.aliases)));}
-const invalid=()=>{const e=new Error('Некорректная конфигурация формы.');e.status=400;e.code='INVALID_CONTENT';throw e;};
+const invalid=()=>{throw new HttpError(400,'Некорректная конфигурация формы.','INVALID_CONTENT');};
 function exact(value,keys,optional=[]){if(!value||typeof value!=='object'||Array.isArray(value)||Object.getPrototypeOf(value)!==Object.prototype||keys.some(k=>!Object.hasOwn(value,k))||Object.keys(value).some(k=>!keys.includes(k)&&!optional.includes(k)))invalid();}
 function text(value,max,min=0){if(typeof value!=='string'||value.length>max||value.trim().length<min||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)||/<\/?[a-z][^>]*>/i.test(value))invalid();}
 const uuid=prefix=>new RegExp('^'+prefix+'-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$');
@@ -36,7 +37,7 @@ export function validateApplicationForm(form,{forPublication=false}={}){
    exact(field,['id','kind','enabled','required'],['hint']);const meta=builtinMap.get(field.id);if(!meta)invalid();
    if(Object.hasOwn(field,'hint')){if(meta.aliases.hint)invalid();text(field.hint,FORM_LIMITS.hint);}if(field.enabled&&meta.type==='file')files++;
   }else{
-   exact(field,['id','kind','type','label','hint','placeholder','enabled','required','rules']);if(field.kind!=='custom'||!uuid('field').test(field.id)||!FIELD_TYPES.includes(field.type))invalid();
+   exact(field,['id','kind','type','label','hint','placeholder','enabled','required','rules']);if(field.kind!=='custom'||typeof field.id!=='string'||!uuid('field').test(field.id)||!FIELD_TYPES.includes(field.type))invalid();
    text(field.label,FORM_LIMITS.label,1);text(field.hint,FORM_LIMITS.hint);text(field.placeholder,FORM_LIMITS.placeholder);
    const r=field.rules;
    if(['text','textarea'].includes(field.type)){
@@ -45,7 +46,7 @@ export function validateApplicationForm(form,{forPublication=false}={}){
    }else if(['date','number'].includes(field.type)){
     exact(r,['min','max']);for(const bound of [r.min,r.max])if(bound!==null&&(field.type==='date'?!validDate(bound):typeof bound!=='number'||!Number.isFinite(bound)||Math.abs(bound)>FORM_LIMITS.number))invalid();if(r.min!==null&&r.max!==null&&r.min>r.max)invalid();
    }else if(['select','radio'].includes(field.type)){
-    exact(r,['options']);if(!Array.isArray(r.options)||r.options.length>FORM_LIMITS.options||forPublication&&field.enabled&&!r.options.length)invalid();const options=new Set();for(const o of r.options){exact(o,['id','label']);if(!uuid('option').test(o.id)||options.has(o.id))invalid();options.add(o.id);text(o.label,FORM_LIMITS.optionLabel,1);}
+    exact(r,['options']);if(!Array.isArray(r.options)||r.options.length>FORM_LIMITS.options||forPublication&&field.enabled&&!r.options.length)invalid();const options=new Set();for(const o of r.options){exact(o,['id','label']);if(typeof o.id!=='string'||!uuid('option').test(o.id)||options.has(o.id))invalid();options.add(o.id);text(o.label,FORM_LIMITS.optionLabel,1);}
    }else if(field.type==='file'){
     exact(r,['accept']);if(!Array.isArray(r.accept)||!r.accept.length||new Set(r.accept).size!==r.accept.length||r.accept.some(ext=>!['pdf','jpg','png'].includes(ext)))invalid();if(field.enabled)files++;
    }else exact(r,[]);
@@ -58,8 +59,13 @@ export function resolveFormFields(content,options={}){
  const applicationForm=validateApplicationForm(content.applicationForm??defaultApplicationForm());
  return resolveFormDefinitions({...content,fields:{...defaults.fields,...content.fields},applicationForm},builtins,options);
 }
-export function validateFormAliases(content){
- for(const meta of builtins)for(const [role,id]of Object.entries(meta.aliases))text(content.fields[id],role==='hint'?FORM_LIMITS.hint:FORM_LIMITS.label);
+export function validateFormAliases(content,aliasBaseline){
+ // Only the store/read caller supplies this trusted baseline, never request JSON.
+ // Unchanged legacy aliases retain their original registry bound; edits use new bounds.
+ for(const meta of builtins)for(const [role,id]of Object.entries(meta.aliases)){
+  const limit=role==='hint'?FORM_LIMITS.hint:FORM_LIMITS.label;
+  text(content.fields[id],aliasBaseline?.fields?.[id]===content.fields[id]?10000:limit);
+ }
 }
 export function formCollectionSignature(content){return formConsentShape(resolveFormFields(content));}
 

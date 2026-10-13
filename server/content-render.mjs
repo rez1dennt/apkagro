@@ -43,7 +43,7 @@ export function applicationSnapshots(content,courseId,{revision=null}={}) {
   return {courseSnapshot:structuredClone({...program,revision}),consentSnapshot:structuredClone({version:content.settings.intake.consentVersion,revision,title:consent.title,intro:consent.intro,body:consent.body,organization:content.settings.organization,documents:content.documents})};
 }
 export function renderContentCss({content,preview=false,file=null}) {
-  const c=validateContent(content),hidden=new Set(c.hiddenSections);
+  const c=validateContent(content,{aliasBaseline:content}),hidden=new Set(c.hiddenSections);
   if(file){if(!Object.hasOwn(sourceCss,file))return null;let occurrence=0;const targets=bindings.flatMap(b=>b.targets.filter(t=>t.mode==='css-url'&&t.file===file).map(t=>({binding:b,...t})));
     const css=sourceCss[file].replace(/url\(\s*(['"]?)([^)'"\s]+)\1\s*\)/g,(full,quote,url)=>{if(/\.(?:woff2?|ttf|otf)(?:[?#]|$)/.test(url))return full;const index=occurrence++;const target=targets.find(t=>t.occurrence===index);if(!target)return full;const value=visible(target,hidden)?c.fields[target.binding.id]:'';return value?'url('+JSON.stringify(value)+')':'none';});return preview?previewMedia(css):css;
   }
@@ -101,7 +101,7 @@ function programBootstrap(content, program, preview) {
 }
 
 export function renderContentPage({content,template,route='/',preview=false,consentVersion,revision=null,historyRevision=null,themeUrl,cssPrefix}) {
-  const c=validateContent(content),hidden=new Set(c.hiddenSections),main=route==='/'||route==='/index.html';
+  const c=validateContent(content,{aliasBaseline:content}),hidden=new Set(c.hiddenSections),main=route==='/'||route==='/index.html';
   const slug=route.replace(/^\/+|\/+$/g,'').replace(/\/index\.html$/,'');const page=main?null:c.pages.find(p=>p.slug===slug&&(p.status==='published'||preview&&p.status==='draft'));if(!main&&!page)return null;
   const file=main?'index.html':['privacy','consent','operator'].includes(slug)?slug+'/index.html':'privacy/index.html';
   const {document:d}=parseHTML(template),q=s=>d.querySelector(s),make=(tag,cls,text)=>{const n=d.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};

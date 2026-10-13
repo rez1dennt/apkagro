@@ -18,7 +18,7 @@ function validateState(value){
   if(!value||value.format!==1||Object.keys(value).sort().join()!=='draft,format,history,published'||!Array.isArray(value.history)||value.history.length<1||value.history.length>20)throw error(500,'Повреждено хранилище контента.','CONTENT_STORE_CORRUPT');
   const check=(snapshot,published=false)=>{
     if(!snapshot||Object.keys(snapshot).sort().join()!=='content,dirty,publishedAt,publishedRevision,revision,updatedAt'||!Number.isSafeInteger(snapshot.revision)||snapshot.revision<1||!Number.isSafeInteger(snapshot.publishedRevision)||snapshot.publishedRevision<1||snapshot.publishedRevision>snapshot.revision||typeof snapshot.dirty!=='boolean'||!Number.isFinite(Date.parse(snapshot.updatedAt))||!Number.isFinite(Date.parse(snapshot.publishedAt)))throw error(500,'Повреждено хранилище контента.','CONTENT_STORE_CORRUPT');
-    return {...snapshot,content:validateContent(snapshot.content,{forPublication:published})};
+    return {...snapshot,content:validateContent(snapshot.content,{forPublication:published,aliasBaseline:snapshot.content})};
   };
   const state={format:1,draft:check(value.draft),published:check(value.published,true),history:value.history.map(item=>check(item,true))};
   if(state.published.dirty||state.published.revision!==state.published.publishedRevision||state.draft.publishedRevision!==state.published.revision||state.draft.revision<state.published.revision||state.history.some((item,index)=>item.dirty||item.publishedRevision!==item.revision||index>0&&item.revision<=state.history[index-1].revision)||contentDigest(state.history.at(-1).content)!==contentDigest(state.published.content)||state.history.at(-1).revision!==state.published.revision||state.draft.dirty!==(contentDigest(state.draft.content)!==contentDigest(state.published.content)))throw error(500,'Повреждено хранилище контента.','CONTENT_STORE_CORRUPT');
@@ -53,8 +53,8 @@ export async function openContentStore({dir,defaults,persist=true}){
   // Publication uses this same ordering; never acquire media from inside queue().
   const referenceQueue=operation=>referenceGuard?referenceGuard.run(()=>queue(operation)):queue(operation);
   const promote=async next=>{await write(next);state=next;};
-  const save=async(content,expected)=>{
-    revision(expected);const canonical=validateContent(content);canonical.settings.intake.consentVersion=state.published.content.settings.intake.consentVersion;
+  const save=async(content,expected,aliasBaseline=state.draft.content)=>{
+    revision(expected);const canonical=validateContent(content,{aliasBaseline});canonical.settings.intake.consentVersion=state.published.content.settings.intake.consentVersion;
     await referenceGuard?.validate(canonical);
     const draft=envelope(canonical,state.draft.revision+1,new Date().toISOString(),state.published.revision,state.published.publishedAt,contentDigest(canonical)!==contentDigest(state.published.content));
     await promote({...state,draft});return clone(draft);
@@ -71,10 +71,10 @@ export async function openContentStore({dir,defaults,persist=true}){
     history(){active();return clone(state.history).reverse();},
     version(value){active();return clone(state.history.find(item=>item.revision===value)??null);},
     references(){active();return new Set([state.draft,state.published,...state.history].flatMap(item=>[...referencedMedia(item.content)]));},
-    async saveDraft(content,expectedRevision){const captured=validateContent(content);return referenceQueue(()=>save(captured,expectedRevision));},
+    async saveDraft(content,expectedRevision){const captured=clone(content);return referenceQueue(()=>save(captured,expectedRevision));},
     publish(expectedRevision,{documentsConfirmed=false}={}){return queue(async()=>{
       revision(expectedRevision);if(typeof documentsConfirmed!=='boolean')throw error(400,'Некорректное подтверждение документов.','INVALID_CONTENT');
-      const content=validateContent(state.draft.content,{forPublication:true});
+      const content=validateContent(state.draft.content,{forPublication:true,aliasBaseline:state.draft.content});
       if(documentDigest(content)!==documentDigest(state.published.content)&&!documentsConfirmed)throw error(400,'Подтвердите соответствие текста политики и согласия опубликованным файлам.','DOCUMENTS_CONFIRMATION_REQUIRED');
       if(state.draft.revision===state.published.revision)return clone(state.published);
       if(consentDigest(content)!==consentDigest(state.published.content))content.settings.intake.consentVersion=new Date().toISOString().slice(0,10)+'-r'+state.draft.revision+'-'+consentDigest(content).slice(0,12);
@@ -82,7 +82,7 @@ export async function openContentStore({dir,defaults,persist=true}){
       const published=envelope(content,state.draft.revision,new Date().toISOString());
       await promote({format:1,draft:clone(published),published,history:[...state.history,clone(published)].slice(-20)});return clone(published);
     });},
-    restore(value,expectedRevision){return referenceQueue(async()=>{revision(expectedRevision);const version=state.history.find(item=>item.revision===value);if(!version)throw error(404,'Версия контента не найдена.','CONTENT_VERSION_NOT_FOUND');return save(version.content,expectedRevision);});},
+    restore(value,expectedRevision){return referenceQueue(async()=>{revision(expectedRevision);const version=state.history.find(item=>item.revision===value);if(!version)throw error(404,'Версия контента не найдена.','CONTENT_VERSION_NOT_FOUND');return save(version.content,expectedRevision,version.content);});},
     async close(){if(closed)return tail;closed=true;await tail;if(claimed){owners.delete(owner);claimed=false;}}
   };
 }

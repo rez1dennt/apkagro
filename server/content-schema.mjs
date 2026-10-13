@@ -78,7 +78,7 @@ function seo(value,where,main=false){
 }
 
 export async function loadDefaultContent(){return {...structuredClone(defaults),applicationForm:defaultApplicationForm()};}
-export function validateContent(content,{forPublication=false}={}){
+export function validateContent(content,{forPublication=false,aliasBaseline}={}){
   object(content,[...Object.keys(defaults),...(Object.hasOwn(content??{},'applicationForm')?['applicationForm']:[])],'content');
   const applicationForm=validateApplicationForm(content.applicationForm??defaultApplicationForm(),{forPublication});if(content.schemaVersion!==1)fail('schemaVersion');
   list(content.hiddenSections,'hiddenSections',57);const hidden=new Set(content.hiddenSections);
@@ -86,7 +86,7 @@ export function validateContent(content,{forPublication=false}={}){
   for(const binding of bindings){const value=content.fields[binding.id],where='fields.'+binding.id;string(value,where,binding.maxLength,binding.minLength);if(binding.kind==='icon')icon(value,where);else if(['image','background'].includes(binding.kind))url(value,where,{image:true});else if(binding.kind==='url')url(value,where);
     const allowed=[...new Set(binding.targets.flatMap(target=>target.variables??[]))];const variables=[...value.matchAll(/\{\{([^}]+)\}\}/g)].map(match=>match[1]);if(variables.some(source=>!allowed.includes(source))||allowed.some(source=>!variables.includes(source)))fail(where,'Сохраните обязательные подстановки общих реквизитов');
   }
-  validateFormAliases(content);
+  validateFormAliases(content,aliasBaseline);
   object(content.navigation,['desktop','mobile','footer'],'navigation');
   for(const name of ['desktop','mobile','footer'])records(content.navigation[name],'navigation.'+name,30,['id','label','url'],(item,where)=>{string(item.label,where+'.label',200,1);url(item.url,where+'.url');});
   records(content.benefits,'benefits',50,['id','title','body','icon','image','alt','imageFocus'],(item,where)=>{const visible=forPublication&&!hidden.has('about');string(item.title,where+'.title',500,visible?1:0);prose(item.body,where+'.body',20000);icon(item.icon,where+'.icon');url(item.image,where+'.image',{image:true,empty:!visible});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');});
@@ -141,7 +141,7 @@ export function validateContent(content,{forPublication=false}={}){
 export function publicPrograms(content){return structuredClone(content.programs.filter(program=>['published','closed'].includes(program.status)));}
 export function selectablePrograms(content){return structuredClone(content.programs.filter(program=>program.status==='published'));}
 export function referencedMedia(content,{publicOnly=false}={}){
-  const value=validateContent(content),references=new Set();
+  const value=validateContent(content,{aliasBaseline:content}),references=new Set();
   const hidden=new Set(value.hiddenSections);
   if(publicOnly){value.programs=hidden.has('programs')?[]:value.programs.filter(program=>['published','closed'].includes(program.status));value.pages=value.pages.filter(page=>page.status==='published');value.benefits=hidden.has('about')?[]:value.benefits;value.steps=hidden.has('steps')?[]:value.steps;value.faqs=hidden.has('faq')?[]:value.faqs;value.extraSections=value.extraSections.filter(section=>!hidden.has(section.id));}
   const add=url=>{const custom=parseCustomIcon(url);if(custom)references.add(custom.url);else if(url?.startsWith('/media/'))references.add(url);};
@@ -155,4 +155,4 @@ export function referencedMedia(content,{publicOnly=false}={}){
   return references;
 }
 function stable(value){if(Array.isArray(value))return value.map(stable);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])]));return value;}
-export function contentDigest(content){return createHash('sha256').update(JSON.stringify(stable(validateContent(content)))).digest('hex');}
+export function contentDigest(content){return createHash('sha256').update(JSON.stringify(stable(validateContent(content,{aliasBaseline:content})))).digest('hex');}

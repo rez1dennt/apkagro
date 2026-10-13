@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,mkdtemp,rm,writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,createHash} from 'node:crypto';
 import {parseHTML} from 'linkedom';
 import {loadDefaultContent,validateContent,contentDigest} from '../server/content-schema.mjs';
 import {openContentStore} from '../server/content-store.mjs';
@@ -172,4 +172,60 @@ test('semantic text formats cannot configure impossible name or SNILS lengths',(
  for(const rules of [{format:'name',minLength:81,maxLength:2000},{format:'snils',minLength:12,maxLength:14},{format:'snils',minLength:0,maxLength:10}])assert.throws(()=>model.validateApplicationForm({version:1,fields:[{...custom(),rules}]}),invalid);
  assert.throws(()=>model.validateApplicationForm({version:1,fields:[{...custom(),required:true,rules:{format:'plain',minLength:0,maxLength:0}}]},{forPublication:true}),invalid);
  const f=custom();f.rules={format:'snils',minLength:11,maxLength:11};model.validateApplicationForm({version:1,fields:[f]});assert.deepEqual(pure.validateFieldValue(f,'112-233-445 95'),{ok:true,value:'11223344595'});assert.deepEqual(pure.validateFieldValue(f,'11223344595'),{ok:true,value:'11223344595'});
+});
+
+test('empty browser file placeholders are absence with strict field accounting',async t=>{
+ const f=custom('file'),c=await config([f]);
+ const empty=(name=id,bytes=[],filename='')=>{const data=new FormData();data.append(name,new Blob(bytes,{type:'application/octet-stream'}),filename);return data;};
+ const parsed=await multipart(empty(),[f]);assert.deepEqual(parsed.files,[]);
+ const accepted=intake.validateSubmission(system,parsed.files,options(c));assert.equal(accepted.fields.formValues[id],false);
+ const dir=await mkdtemp(path.join('output','form-empty-')),key=randomBytes(32),store=await openStore(dir,key);
+ t.after(async()=>{store.close();await rm(dir,{recursive:true,force:true});});const saved=await store.save(accepted.fields,accepted.files);assert.equal(store.get(saved).formValues[id],false);
+ await assert.rejects(multipart(empty(),[{...f,required:true}]),invalid);
+ assert.throws(()=>intake.validateSubmission(system,[],{...options(c),form:[{...f,required:true}]}),invalid);
+ await assert.rejects(multipart(empty('unknown'),[f]),invalid);await assert.rejects(multipart(empty(),[{...f,enabled:false}]),invalid);
+ const duplicate=empty();duplicate.append(id,new Blob([],{type:'application/octet-stream'}),'');await assert.rejects(multipart(duplicate,[f]),invalid);
+ await assert.rejects(multipart(empty(id,[],'named.pdf'),[f]),invalid);await assert.rejects(multipart(empty(id,[pdf(id).data]),[f]),invalid);
+});
+
+test('malformed non-string field and option IDs never change store revisions',async t=>{
+ const store=await openContentStore({dir:'output/form-id-memory',persist:false});t.after(()=>store.close());
+ for(const type of ['select','radio'])for(const position of ['field','option'])for(const bad of [[position==='field'?id:option],{},null,42]){
+  const d=store.getDraft(),f=custom(type);f.required=true;f.rules.options=[{id:option,label:'Valid choice'}];
+  if(position==='field')f.id=bad;else f.rules.options[0].id=bad;d.content.applicationForm.fields=[f];
+  assert.throws(()=>validateContent(d.content,{forPublication:true}),invalid);
+  await assert.rejects(store.saveDraft(d.content,d.revision),invalid);assert.equal(store.getDraft().revision,d.revision);assert.equal(store.getPublished().revision,1);
+ }
+ for(const position of ['field','option']){const d=store.getDraft(),f=custom('select');f.rules.options=[{id:[option],label:'A'},{id:[option],label:'B'}];if(position==='field'){f.id=[id];f.rules.options=[{id:option,label:'A'}];d.content.applicationForm.fields=[f,structuredClone(f)];}else d.content.applicationForm.fields=[f];await assert.rejects(store.saveDraft(d.content,d.revision),invalid);}
+ for(const type of ['select','radio']){const d=store.getDraft(),f=custom(type);f.required=true;f.rules.options=[{id:option,label:'Choice'}];d.content.applicationForm.fields=[f];const saved=await store.saveDraft(d.content,d.revision);await store.publish(saved.revision,{documentsConfirmed:true});assert.equal(pure.validateFieldValue(model.resolveFormFields(store.getPublished().content)[0],option).ok,true);}
+});
+
+test('legacy long aliases survive stored snapshots reads unrelated saves publication reopen and restore',async t=>{
+ const dir=await mkdtemp(path.join('output','form-legacy-long-')),file=path.join(dir,'content-state.json');let store=await openContentStore({dir});
+ t.after(async()=>{await store?.close();await rm(dir,{recursive:true,force:true});});await store.close();store=null;
+ const raw=JSON.parse(await readFile(file,'utf8')),metadata=model.formBuiltinMetadata(),aliases=[['label',501],['hint',2001],['placeholder',501]].map(([role,length])=>({id:metadata.find(f=>f.aliases[role]).aliases[role],value:'Ж'.repeat(length)}));
+ const set=(snapshot,suffix)=>{delete snapshot.content.applicationForm;for(const alias of aliases)snapshot.content.fields[alias.id]=alias.value+suffix;};
+ set(raw.history[0],' history');raw.published=structuredClone(raw.history[0]);set(raw.published,' published');raw.published.revision=2;raw.published.publishedRevision=2;raw.history.push(structuredClone(raw.published));
+ raw.draft=structuredClone(raw.published);set(raw.draft,' draft');raw.draft.revision=3;raw.draft.dirty=true;
+ const before=JSON.stringify(raw),hash=value=>createHash('sha256').update(value).digest('hex');await writeFile(file,before);store=await openContentStore({dir});
+ assert.equal(hash(await readFile(file)),hash(before));assert.equal(await readFile(file,'utf8'),before);assert.equal(store.getDraft().revision,3);assert.equal(store.getPublished().revision,2);assert.equal(store.history().length,2);
+ for(const [snapshot,suffix]of [[store.getDraft(),' draft'],[store.getPublished(),' published'],[store.version(1),' history']]){assert.equal(snapshot.content.applicationForm.fields.length,10);for(const alias of aliases)assert.equal(snapshot.content.fields[alias.id],alias.value+suffix);renderContentPage({content:snapshot.content,template:await readFile('public/index.html','utf8')});}
+ let d=store.getDraft();d.content.settings.intake.deadline='';d=await store.saveDraft(d.content,d.revision);
+ const {openContentMedia}=await import('../server/content-media.mjs'),media=await openContentMedia({dir:path.join(dir,'media'),store,publicDir:path.resolve('public')});try{await media.publish(d.revision,{documentsConfirmed:true});}finally{await media.close();}
+ for(const alias of aliases){const bad=store.getDraft();bad.content.fields[alias.id]+=' changed';await assert.rejects(store.saveDraft(bad.content,bad.revision),invalid);assert.equal(store.getDraft().revision,d.revision);}
+ await store.close();store=null;const savedBytes=await readFile(file,'utf8');store=await openContentStore({dir});assert.equal(hash(await readFile(file)),hash(savedBytes));assert.equal(await readFile(file,'utf8'),savedBytes);assert.equal(store.getPublished().revision,d.revision);
+ d=await store.restore(1,d.revision);for(const alias of aliases)assert.equal(d.content.fields[alias.id],alias.value+' history');await store.publish(d.revision,{documentsConfirmed:true});
+ await store.close();store=null;const restoredBytes=await readFile(file,'utf8');store=await openContentStore({dir});assert.equal(hash(await readFile(file)),hash(restoredBytes));assert.equal(await readFile(file,'utf8'),restoredBytes);for(const alias of aliases)assert.equal(store.getPublished().content.fields[alias.id],alias.value+' history');
+});
+
+test('authenticated malformed form returns safe INVALID_CONTENT 400 without changing draft',async t=>{
+ const dir=await mkdtemp(path.join('output','form-invalid-http-')),key=randomBytes(32),secret=randomBytes(20);await setupAdmin(dir,key,'invalid-editor','synthetic-invalid-password!',secret);
+ const app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+app.server.address().port;let cookie='',csrf='';
+ t.after(async()=>{await new Promise(r=>app.server.close(r));await app.close();await rm(dir,{recursive:true,force:true});});
+ const req=async(url,opts={})=>{const res=await fetch(origin+url,{...opts,headers:{cookie,origin,'x-csrf-token':csrf,...opts.headers}});if(res.headers.getSetCookie().length)cookie=res.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');return res;};
+ csrf=(await(await req('/api/csrf')).json()).token;const login=await req('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'invalid-editor',password:'synthetic-invalid-password!',otp:totp(secret)})});assert.equal(login.status,200);csrf=(await login.json()).csrfToken;
+ const {store}=await app.getContentServices(),before=store.getDraft();for(const bad of [{...custom(),label:'<b>private-invalid-value</b>'},{...custom(),id:[id]}]){const content=structuredClone(before.content);content.applicationForm.fields=[bad];const res=await req('/api/admin/content',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({content,expectedRevision:before.revision})});assert.equal(res.status,400);const body=await res.json();assert.equal(body.code,'INVALID_CONTENT');assert.equal(body.error,'Некорректная конфигурация формы.');assert.ok(!JSON.stringify(body).includes('private-invalid-value'));assert.ok(!JSON.stringify(body).includes(id));assert.deepEqual(store.getDraft(),before);}
+ // Arbitrary status/code properties must never be trusted by the HTTP boundary.
+ store.saveDraft=async()=>{throw Object.assign(new Error('private-arbitrary-value'),{status:400,code:'INVALID_CONTENT'});};
+ const res=await req('/api/admin/content',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({content:before.content,expectedRevision:before.revision})});assert.equal(res.status,500);const body=await res.json();assert.equal(body.code,'INTERNAL_ERROR');assert.ok(!JSON.stringify(body).includes('private-arbitrary-value'));assert.deepEqual(store.getDraft(),before);
 });

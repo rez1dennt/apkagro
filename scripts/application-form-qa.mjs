@@ -1,3 +1,4 @@
+import {monitorBrowser} from './browser-resource-monitor.mjs';
 /** Synthetic form-builder stress QA. No .env, live server or participant data. */
 import assert from 'node:assert/strict';
 import {mkdir,mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
@@ -30,7 +31,7 @@ const stop=async()=>{if(app?.server.listening)await new Promise(r=>app.server.cl
 const publish=async content=>{const draft=store.getDraft();const saved=await store.saveDraft(content,draft.revision);return media.publish(saved.revision,{documentsConfirmed:true});};
 const snap=async(name,p=page,locator=null)=>{const file=path.join(output,name+'.png');await(locator||p).screenshot({path:file});result.screenshots.push(file);};
 const geometry=async(p,scope,label)=>{const m=await p.evaluate(measureContent,scope);m.intentionalOverflow=m.issues.filter(x=>x.node==='div.cms-preview-viewport'&&x.own&&!x.outside&&!x.verticalClip&&!x.textOutside);m.issues=m.issues.filter(x=>!m.intentionalOverflow.includes(x));if(m.intentionalOverflow.length)check(await p.locator('.cms-preview-frame').evaluate(n=>n.getBoundingClientRect().width<=n.parentElement.clientWidth+1),label+' scaled preview visually fits');result.cases.push({name:label,geometry:m});await persist();if(m.issues.length)await snap(label+'-geometry-failure',p,p.locator(scope));check(m.documentWidth<=m.viewport,label+' document fits');check(!m.issues.length,label+' nested geometry '+JSON.stringify(m.issues.slice(0,3)));};
-const monitor=p=>{p.setDefaultTimeout(12000);p.on('pageerror',e=>result.runtimeErrors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))result.consoleErrors.push(m.text());});p.on('requestfailed',r=>{if(!r.failure()?.errorText.includes('ERR_ABORTED'))result.failedRequests.push({url:r.url(),error:r.failure()?.errorText});});};
+const monitors=[];const monitor=p=>{p.setDefaultTimeout(12000);const monitoring=monitorBrowser(p,result);monitors.push(monitoring);return monitoring;};
 const tab=async id=>{if(await admin.locator('#cms-mobile-navigation').isVisible())await admin.locator('#cms-mobile-navigation').selectOption(id);else await admin.locator('#cms-navigation button').nth(['applications','content','programs','form','media','pages','settings','history'].indexOf(id)).click();};
 const ready=async()=>{await page.goto(origin,{waitUntil:'networkidle'});if(await page.locator('#cookie-banner').isVisible())await page.locator('#cookie-acknowledge').click();await page.locator('[data-course=flowers]').click();await page.locator('#choose-course').click();await page.locator('#consent').check();};
 const pdf=Buffer.from('%PDF-1.4\nsynthetic QA fixture\n%%EOF');
@@ -64,7 +65,13 @@ async function fillTypes(definitions){
 try{
  await setupAdmin(dir,key,'stress-editor','synthetic-stress-password!',secret);await start();const original=structuredClone(store.getDraft().content);original.settings.intake.deadline='';
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE||path.join(os.homedir(),'AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe')});
- const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});admin=await context.newPage();page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});monitor(admin);monitor(page);
+ // Inject failures in a separate owned browser page to verify the monitor itself.
+ const probePage=await browser.newPage(),probeResult={runtimeErrors:[],consoleErrors:[],failedRequests:[],httpErrors:[]},probeMonitor=monitorBrowser(probePage,probeResult);
+ await probePage.goto(origin);await probePage.route(origin+'/__qa-monitor/**',route=>route.fulfill({status:route.request().url().endsWith('/api500')?500:route.request().url().endsWith('/probe')?403:404,body:'Synthetic monitor probe'}));
+ probeMonitor.expectHttpError({url:origin+'/__qa-monitor/probe',method:'POST',status:403});
+ await probePage.evaluate(async()=>{for(const [url,method]of [['/asset.js','GET'],['/api404','GET'],['/api500','GET'],['/probe','POST'],['/probe','GET']])await fetch('/__qa-monitor'+url,{method});});
+ probeMonitor.finish();check(probeResult.httpErrors.length===4,'monitor catches injected asset/API 404/500 and wrong-method probe');check(probeResult.consoleErrors.length===0,'monitor reconciles only observed resource console duplicates');await probePage.close();
+ const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});admin=await context.newPage();page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});const adminMonitor=monitor(admin);monitor(page);
  await admin.goto(origin+'/admin/');await admin.locator('#admin-username').fill('stress-editor');await admin.locator('#admin-password').fill('synthetic-stress-password!');await admin.locator('#admin-otp').fill(totp(secret));await admin.locator('#login-submit').click();await admin.locator('#dashboard-screen').waitFor({state:'visible'});await tab('form');await admin.getByText('Черновик загружен.',{exact:true}).waitFor();
  // Real confirmation layers at every width, including protected preview POST.
  if(!functionalOnly){
@@ -74,7 +81,7 @@ try{
    await admin.setViewportSize({width,height:900});await tab('form');
    const opener=admin.getByRole('button',{name:'Добавить поле',exact:true});await opener.scrollIntoViewIfNeeded();const beforeScroll=await admin.evaluate(()=>scrollY);await opener.click();await geometry(admin,'.cms-dialog','add-dialog-'+width);await snap('add-dialog-'+width,admin);await admin.keyboard.press('Escape');check(await opener.evaluate(n=>n===document.activeElement),'add cancel returns focus '+width);check(Math.abs(await admin.evaluate(()=>scrollY)-beforeScroll)<=1,'add cancel restores scroll '+width);
    const card=admin.locator('[data-form-id=lastName]');if(!await card.evaluate(n=>n.open))await card.locator(':scope>summary').click();await card.getByRole('button',{name:'Удалить поле',exact:true}).click();await geometry(admin,'.cms-dialog','delete-dialog-'+width);await snap('delete-dialog-'+width,admin);await admin.keyboard.press('Escape');check(await card.count()===1,'delete cancellation keeps field '+width);
-   await admin.getByRole('button',{name:'Предпросмотр',exact:true}).click();await admin.frameLocator('.cms-preview-frame').locator('#application-form').waitFor();await geometry(admin,'.cms-dialog','preview-dialog-'+width);await snap('preview-dialog-'+width,admin);const preview=admin.frames().find(f=>f.url().includes('/admin/preview/'));check(await preview.evaluate(async()=>{const r=await fetch('/api/preview-applications',{method:'POST'});return r.status;})===403,'actual preview POST denied '+width);await admin.getByRole('dialog').getByRole('button',{name:'Закрыть',exact:true}).click();
+   await admin.getByRole('button',{name:'Предпросмотр',exact:true}).click();await admin.frameLocator('.cms-preview-frame').locator('#application-form').waitFor();await geometry(admin,'.cms-dialog','preview-dialog-'+width);await snap('preview-dialog-'+width,admin);const preview=admin.frames().find(f=>f.url().includes('/admin/preview/'));adminMonitor.expectHttpError({url:origin+'/api/preview-applications',method:'POST',status:403});check(await preview.evaluate(async()=>{const r=await fetch('/api/preview-applications',{method:'POST'});return r.status;})===403,'actual preview POST denied '+width);await admin.getByRole('dialog').getByRole('button',{name:'Закрыть',exact:true}).click();
    await admin.getByRole('button',{name:'Опубликовать',exact:true}).click();check(await admin.getByRole('dialog').locator('input[type=checkbox]').count()===1,'data change publication checkbox '+width);await geometry(admin,'.cms-dialog','publication-dialog-'+width);await snap('publication-dialog-'+width,admin);await admin.keyboard.press('Escape');
   }
  }
@@ -132,6 +139,16 @@ try{
   for(const [i,f]of c.applicationForm.fields.entries())await page.locator('#'+f.id).setInputFiles(files[['pdf','png','jpg'][i%3]]);
   await geometry(page,'#application-form','files-'+count+'-320');await snap('files-'+count+'-320');const pending=page.waitForResponse(r=>r.url().endsWith('/api/applications'));await page.locator('#submit-application').click();check((await pending).status()===201,'browser accepts '+count+' configured files and per-field rules');
  }
+ // Untouched native file controls: one optional, mixed required/optional, all optional.
+ for(const mode of ['one-optional','mixed','several-optional']){
+  const c=structuredClone(original),optional=()=>createCustomField('file',{label:'Необязательный документ'});
+  c.applicationForm.fields=mode==='one-optional'?[optional()]:mode==='mixed'?[{id:'snilsFile',kind:'builtin',enabled:true,required:true},optional(),optional(),optional()]:[{id:'snilsFile',kind:'builtin',enabled:true,required:false},{id:'educationFile',kind:'builtin',enabled:true,required:false},optional(),optional()];
+  await publish(c);await ready();const defs=resolveFormFields(c);if(mode==='mixed')await page.locator('[name="snilsFile"]').setInputFiles(files.pdf);
+  const untouched=await page.locator('input[type=file]').evaluateAll(nodes=>nodes.filter(node=>node.files.length===0).length);check(untouched===defs.filter(f=>!f.required).length,mode+' optional controls untouched');
+  const pending=page.waitForResponse(r=>r.url().endsWith('/api/applications')&&r.request().method()==='POST');await page.locator('#submit-application').click();const response=await pending;check(response.status()===201,mode+' ordinary site.js submission '+await response.text());await page.locator('#application-success').waitFor({state:'visible'});
+  const appId=(await response.json()).id,acceptedStore=await openStore(dir,key);try{const saved=acceptedStore.get(appId);for(const f of defs)check(saved.formValues[f.id]===f.required,mode+' stored file presence '+f.id);check(saved.documents.length===defs.filter(f=>f.required).length,mode+' stored attachment count');}finally{acceptedStore.close();}
+  await snap('untouched-'+mode+'-320');
+ }
  // Actual local file errors with native file selection: mismatch and size bound.
  const fileContent=structuredClone(original),f=createCustomField('file',{label:'Только PDF'});f.required=true;f.rules.accept=['pdf'];fileContent.applicationForm.fields=[f];await publish(fileContent);await ready();await page.locator('#'+f.id).setInputFiles(files.png);await page.locator('#submit-application').click();check(await page.locator('#'+f.id).getAttribute('aria-invalid')==='true','browser rejects configured PNG mismatch');await snap('file-format-error-320');
  const huge=Buffer.alloc(FORM_LIMITS.fileBytes+1,32);huge.write('%PDF-1.4');huge.write('%%EOF',huge.length-5);await page.locator('#'+f.id).setInputFiles({name:'oversize.pdf',mimeType:'application/pdf',buffer:huge});await page.locator('#submit-application').click();check(await page.locator('#'+f.id).getAttribute('aria-invalid')==='true','browser rejects 10 MiB plus one');await snap('file-size-error-320');
@@ -161,8 +178,8 @@ try{
  // History length limit through service; no public/store rewrites outside owned fixture.
  for(let i=0;i<21;i++){const c=structuredClone(original);c.applicationForm.fields=[createCustomField('text',{label:'История '+i})];await publish(c);}check(store.history().length===20,'form publications retain exactly 20 history versions');
  }
- check(!result.runtimeErrors.length,'no runtime errors');check(!result.consoleErrors.length,'no unexpected console errors');check(!result.failedRequests.length,'no failed resource requests');
- console.log(JSON.stringify({checks:result.checks.length,cases:result.cases.length,screenshots:result.screenshots.length,runtimeErrors:result.runtimeErrors,consoleErrors:result.consoleErrors,failedRequests:result.failedRequests},null,2));
+ for(const monitoring of monitors)monitoring.finish();check(!result.httpErrors?.length,'no unexpected HTTP errors '+JSON.stringify(result.httpErrors));check(!result.runtimeErrors.length,'no runtime errors');check(!result.consoleErrors.length,'no unexpected console errors');check(!result.failedRequests.length,'no failed resource requests');
+ console.log(JSON.stringify({checks:result.checks.length,cases:result.cases.length,screenshots:result.screenshots.length,runtimeErrors:result.runtimeErrors,consoleErrors:result.consoleErrors,failedRequests:result.failedRequests,httpErrors:result.httpErrors},null,2));
 }catch(error){result.failure={message:error.message,stack:error.stack};if(page)await snap('failure-public').catch(()=>{});if(admin)await snap('failure-admin',admin).catch(()=>{});throw error;
 }finally{
  await browser?.close();await stop();key.fill(0);secret.fill(0);const resolved=path.resolve(dir);assert.equal(path.dirname(resolved),output);assert.ok(path.basename(resolved).startsWith('owned-fixture-'));await rm(resolved,{recursive:true,force:true});result.cleanup=true;result.cleanedPath=resolved;await persist();
