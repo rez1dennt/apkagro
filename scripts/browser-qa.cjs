@@ -21,7 +21,7 @@ async function run(){
   page.on('response',response=>{if(response.status()>=400&&!response.url().includes('/api/'))broken.push(`${response.status()} ${response.url()}`);});
   let fixtureDir,app;
   try{
-    const preview='http://127.0.0.1:3000';
+    const preview=process.env.QA_BASE_URL||'http://127.0.0.1:3000';
     const previewIntake=(await(await context.request.get(preview+'/api/config')).json()).enabled;
     for(const route of ['/','/privacy/','/consent/','/operator/','/admin']){
       for(const width of [1440,1024,768,360,320]){

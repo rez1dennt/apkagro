@@ -125,3 +125,52 @@
   .footer__organization .footer__documents { flex-direction: column; align-items: flex-start; gap: 6px; }
   .document-downloads .button { min-width: 0; white-space: normal; text-align: left; }
 }
+
+/* Editable display copy must contribute a bounded intrinsic width in flex/grid layouts. */
+.program-card, .program-card__body > span:last-child, .program-card__footer > span,
+.application__form-wrap, .course-meta > span, .footer__main > *, .footer__contacts a { min-width: 0; }
+.program-card__body > span:last-child { flex: 1; }
+.program-card__body, .program-card__footer, .program-category, .course-dialog__body,
+.selected-course, .accordion, .footer, .mobile-menu { overflow-wrap: anywhere; }
+.program-card__footer { align-items: flex-start; }
+.program-card__footer > span { flex: 1; }
+.program-card__footer > span:last-child { justify-content: flex-end; }
+.program-card__footer .icon, .program-category .icon { flex-shrink: 0; }
+.program-category { max-width: calc(100% - 24px); }
+.program-category__caption { min-width: 0; }
+.program-card .program-category--flow { position: static; max-width: none; align-self: stretch; margin: 12px 20px 0; background: var(--cream); backdrop-filter: none; }
+.category-fit-probe { visibility: hidden; pointer-events: none; }
+.course-dialog .button { min-width: 0; max-width: 100%; white-space: normal; }
+.course-meta > span { max-width: 100%; }
+.application__grid { grid-template-columns: minmax(0, 290px) minmax(0, 1fr); }
+.footer__main { flex-wrap: wrap; }
+.footer__nav { flex-wrap: wrap; flex: 1 1 18rem; }
+.footer__nav a { min-width: 0; max-width: 100%; }
+.footer__contacts { max-width: 100%; }
+.footer__contacts a { max-width: 100%; }
+.mobile-menu { justify-content: flex-start; }
+.mobile-menu nav, .mobile-menu > p { flex-shrink: 0; min-width: 0; }
+.mobile-menu a { max-width: 100%; min-width: 0; white-space: normal; }
+.header__cta { min-width: 0; max-width: clamp(120px, 20vw, 240px); flex-shrink: 1; }
+.header__caption { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.header.header--compact .nav { display: none; }
+.header.header--compact .menu-toggle { display: flex; flex-shrink: 0; }
+.header.header--compact .nav.nav-fit-probe, .header .nav.nav-fit-probe { position: fixed; visibility: hidden; pointer-events: none; display: flex; width: max-content; max-width: none; margin: 0; }
+@media (max-width: 1199px) and (min-width: 960px) { .application__grid { grid-template-columns: minmax(0,250px) minmax(0,1fr); } }
+@media (max-width: 959px) and (min-width: 700px) { .application__grid { grid-template-columns: minmax(0,200px) minmax(0,1fr); } }
+@media (max-width: 699px) {
+  .application__grid { grid-template-columns: minmax(0,1fr); }
+  .program-card .program-category--flow { margin-inline: var(--mobile-card-padding); }
+  .header__cta { padding-inline: 10px; gap: 6px; }
+}
+.application__form-wrap { overflow-wrap: anywhere; }
+/* The same prose contract applies to editable headings and supporting public blocks. */
+.hero, .about, .steps, .application__intro, .closing, .legal-main { overflow-wrap: anywhere; }
+.about__intro > *, .section-heading > *, .closing__inner > *, .step-list li { min-width: 0; }
+.hero .button, .closing .button, .cms-section .button { white-space: normal; max-width: 100%; min-width: 0; }
+.closing__inner { flex-wrap: wrap; }
+.closing__inner > div { flex: 1 1 20rem; }
+.closing__inner > .button { flex: 0 1 auto; }
+.section-heading { overflow-wrap: anywhere; flex-wrap: wrap; }
+.section-heading > div { flex: 1 1 18rem; }
+.section-heading .text-link { flex-shrink: 0; max-width: 100%; white-space: normal; }

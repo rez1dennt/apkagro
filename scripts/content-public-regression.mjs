@@ -14,11 +14,11 @@ const dir=await mkdtemp(path.join(output,'public-regression-')),key=randomBytes(
 let app;
 try {
  await setupAdmin(dir,key,'public-qa','synthetic-public-qa-password!',randomBytes(20));
- app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:3000'});
- await new Promise((resolve,reject)=>{app.server.once('error',reject);app.server.listen(3000,'127.0.0.1',resolve);});
+ app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});
+ await new Promise((resolve,reject)=>{app.server.once('error',reject);app.server.listen(0,'127.0.0.1',resolve);});
  for(const script of ['browser-qa.cjs','ui-fixes-qa.cjs','client-materials-qa.cjs']) {
   await new Promise((resolve,reject)=>{
-   const child=spawn(process.execPath,['scripts/'+script],{stdio:'inherit',env:{...process.env,CHROMIUM_EXECUTABLE:process.env.CHROMIUM_EXECUTABLE||chromium.executablePath()}});
+   const child=spawn(process.execPath,['scripts/'+script],{stdio:'inherit',env:{...process.env,QA_BASE_URL:'http://127.0.0.1:'+app.server.address().port,CHROMIUM_EXECUTABLE:process.env.CHROMIUM_EXECUTABLE||chromium.executablePath()}});
    child.once('error',reject);child.once('exit',code=>code===0?resolve():reject(new Error(script+' exited '+code)));
   });
  }

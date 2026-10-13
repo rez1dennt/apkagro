@@ -24,7 +24,13 @@ export function renderContentIcon(wrapper, value, {resolveUrl = url => url, inli
  const custom = parseCustomIcon(value);
  const node = custom ? document.createElement('span') : document.createElementNS('http://www.w3.org/2000/svg', 'svg');
  for (const attr of wrapper.attributes) {
-  if (attr.name !== 'data-custom-icon') node.setAttribute(attr.name, attr.value);
+  if (!['data-custom-icon', 'style'].includes(attr.name)) node.setAttribute(attr.name, attr.value);
+ }
+ // Setting the style attribute reparses inline CSS and is blocked by style-src 'self'.
+ // Copy individual DOM properties instead, preserving presentation and priorities.
+ for (const property of Array.from(wrapper.style)) {
+  const priority = typeof wrapper.style.getPropertyPriority === 'function' ? wrapper.style.getPropertyPriority(property) : '';
+  node.style.setProperty(property, wrapper.style.getPropertyValue(property), priority);
  }
  node.setAttribute('aria-hidden', 'true');
  node.setAttribute('focusable', 'false');

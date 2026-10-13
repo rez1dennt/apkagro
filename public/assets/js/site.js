@@ -1,3 +1,4 @@
+import {initResponsiveContent} from './content-responsive.js?v=20261013-custom-icons';
 import './cookie-notice.js?v=20261013-custom-icons';
 import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261013-custom-icons';
 import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261013-custom-icons';
@@ -40,7 +41,7 @@ document.addEventListener('keydown', event => {
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 });
-matchMedia('(min-width: 960px)').addEventListener('change', event => { if (event.matches && menuOpen) setMenu(false); });
+initResponsiveContent({onHeaderModeChange: compact => { if (!compact && menuOpen) setMenu(false); }});
 
 const dialogOpeners = new WeakMap();
 function openDialog(dialog, opener) {
