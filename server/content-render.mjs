@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {validateContent,loadDefaultContent} from './content-schema.mjs';
-import {renderMarkdown,replaceLiterals,lookupMessage,formatHours,replaceCaption,previewPhotoPlaceholder} from '../public/assets/js/content-format.js';
+import {replaceLiterals,lookupMessage,formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from '../public/assets/js/content-format.js';
 
 const bindings=JSON.parse(readFileSync(new URL('../content/content-bindings.json',import.meta.url),'utf8'));
 const defaults=await loadDefaultContent();
@@ -13,7 +13,15 @@ const browserMessageKeys={...sourceKeys,...Object.fromEntries(Object.entries(def
 const get=(obj,path)=>path.split('.').reduce((o,k)=>o?.[k],obj);
 const visible=(target,hidden)=>(target.sections??[target.section]).some(section=>section===null||!hidden.has(section));
 const variables=(text,content)=>String(text).replace(/\{\{(settings\.organization\.\w+)\}\}/g,(_,key)=>get(content,key)??'');
-function replacement(binding,target,content){let value=get(content,binding.source);if(value===binding.defaultValue)return target.sourceText;if(target.transform==='footer-name')value=value.replace(/[„“]/g,'');return (target.prefix??'')+value;}
+function replacement(binding,target,content){
+  let value=get(content,binding.source);
+  if(value===binding.defaultValue)return target.sourceText;
+  if(target.transform==='footer-name')value=value.replace(/[„“]/g,'');
+  // Attribute targets replace the bare value inside an existing href. Markdown
+  // URL targets include the scheme in sourceText, so replace the whole URL there.
+  const prefix=target.mode==='markdown-alias'?(target.prefix??''):'';
+  return prefix+value;
+}
 function aliasPairs(content,filter){return bindings.filter(b=>b.source).flatMap(b=>b.targets.filter(filter).map(t=>[t.sourceText,replacement(b,t,content)]));}
 export function effectivePage(content,page){return {...page,body:replaceLiterals(variables(page.body,content),aliasPairs(content,t=>t.mode==='markdown-alias'&&t.pageId===page.id))};}
 export function resolvedMessages(content){return Object.fromEntries(Object.entries(content.messages).map(([key,value])=>[key,replaceLiterals(value,aliasPairs(content,t=>t.mode==='message-alias'&&t.messageKey===key))]));}
@@ -45,7 +53,18 @@ export function renderContentCss({content,preview=false,file=null}) {
 }
 function multiline(document,node,text){if(!node)return;node.replaceChildren();String(text).split('\n').forEach((part,i)=>{if(i){node.append(document.createTextNode(' '),document.createElement('br'));}node.append(document.createTextNode(part.trim()));});}
 const replaceText = replaceCaption;
-function rich(node,text){if(!node)return;const html=renderMarkdown(text);if(node.tagName==='P'&&/^<p>(?:(?!<\/?p>|<(?:ul|ol|h[2-6])>)[\s\S])*<\/p>$/.test(html)){node.innerHTML=html.slice(3,-4);return;}if(node.tagName==='P'){const block=node.ownerDocument.createElement('div');for(const attr of node.attributes)block.setAttribute(attr.name,attr.value);node.replaceWith(block);node=block;}node.innerHTML=html;}
+function rich(node,text,fieldPath){
+  if(!node)return;
+  const html=renderContentField(text,fieldPath);
+  const singleParagraph=/^<p>(?:(?!<\/?p>|<(?:ul|ol|h[2-6])>)[\s\S])*<\/p>$/.test(html);
+  if(node.tagName==='P'&&singleParagraph){node.innerHTML=html.slice(3,-4);return;}
+  if(node.tagName==='P'){
+    const block=node.ownerDocument.createElement('div');
+    for(const attribute of node.attributes)block.setAttribute(attribute.name,attribute.value);
+    node.replaceWith(block);node=block;
+  }
+  node.innerHTML=html;
+}
 
 function programBootstrap(content, program, preview) {
   const original = defaults.programs.find(item => item.id === program.id);
@@ -61,6 +80,7 @@ function programBootstrap(content, program, preview) {
     priceText: common('priceText', 'a3d0eae4c33c'),
     buttonLabel: common('buttonLabel', '083dd138ad9a'),
     disclaimer: common('disclaimer', 'a94ec463c8ec'),
+    disclaimerPlain: program.disclaimer.trim() === standard.disclaimer.trim(),
     originalFrame: ['flowers','wine','cider'].includes(program.id) && original?.modalImage === program.modalImage,
     preserveDescription: original?.description === program.description,
     hideDefaultDisclaimer: original?.disclaimer === program.disclaimer && field('a94ec463c8ec') === defaults.fields['other.text-a94ec463c8ec']
@@ -85,9 +105,9 @@ export function renderContentPage({content,template,route='/',preview=false,cons
   for(const [name,selector]of Object.entries({desktop:'.header .nav',mobile:'#mobile-menu nav',footer:'.footer__nav'})){const nav=q(selector);if(!nav)continue;const original=[...nav.children];nav.replaceChildren();for(const [i,item]of c.navigation[name].entries()){if(hidden.has(item.url.replace(/^\/?#/,'')))continue;const a=(original[i]??original[0])?.cloneNode(true)??make('a');a.href=!main&&item.url.startsWith('#')?'/'+item.url:item.url;replaceText(a,item.label+(a.querySelector('svg')?' ':''));nav.append(a);}}
   const icon=(node,value)=>node?.querySelector('use')?.setAttribute('href','/assets/icons-v2.svg#'+value);
   if(main){
-    const benefit=q('.benefit'),parent=benefit?.parentNode;if(parent){const model=benefit.cloneNode(true);parent.querySelectorAll('.benefit').forEach(n=>n.remove());for(const item of c.benefits){const n=model.cloneNode(true);n.dataset.contentId=item.id;multiline(d,n.querySelector('h3'),item.title);rich(n.querySelector('p'),item.body);icon(n,item.icon);const img=n.querySelector('img');img.src=item.image;img.alt=item.alt;parent.append(n);}}
-    const list=q('.step-list'),step=list?.firstElementChild?.cloneNode(true);if(list&&step){list.replaceChildren();for(const [i,item]of c.steps.entries()){const n=step.cloneNode(true);n.querySelector('.step-number').textContent=i+1;multiline(d,n.querySelector('h3'),item.title);rich(n.querySelector('p'),item.body);icon(n,item.icon);list.append(n);}}
-    const faq=q('#faq .accordion'),faqModel=faq?.firstElementChild?.cloneNode(true);if(faq&&faqModel){faq.replaceChildren();for(const item of c.faqs){const n=faqModel.cloneNode(true);replaceText(n.querySelector('summary'),item.question);rich(n.querySelector('.accordion__content'),item.answer);faq.append(n);}}
+    const benefit=q('.benefit'),parent=benefit?.parentNode;if(parent){const model=benefit.cloneNode(true);parent.querySelectorAll('.benefit').forEach(n=>n.remove());for(const item of c.benefits){const n=model.cloneNode(true);n.dataset.contentId=item.id;multiline(d,n.querySelector('h3'),item.title);rich(n.querySelector('p'),item.body,'benefits.'+item.id+'.body');icon(n,item.icon);const img=n.querySelector('img');img.src=item.image;img.alt=item.alt;parent.append(n);}}
+    const list=q('.step-list'),step=list?.firstElementChild?.cloneNode(true);if(list&&step){list.replaceChildren();for(const [i,item]of c.steps.entries()){const n=step.cloneNode(true);n.querySelector('.step-number').textContent=i+1;multiline(d,n.querySelector('h3'),item.title);rich(n.querySelector('p'),item.body,'steps.'+item.id+'.body');icon(n,item.icon);list.append(n);}}
+    const faq=q('#faq .accordion'),faqModel=faq?.firstElementChild?.cloneNode(true);if(faq&&faqModel){faq.replaceChildren();for(const item of c.faqs){const n=faqModel.cloneNode(true);replaceText(n.querySelector('summary'),item.question);rich(n.querySelector('.accordion__content'),item.answer,'faqs.'+item.id+'.answer');faq.append(n);}}
     const cards = [...d.querySelectorAll('.program-card')];
     const grid = cards[0]?.parentNode, models = new Map(cards.map(node => [node.dataset.course, node]));
     if (grid) {
@@ -109,16 +129,34 @@ export function renderContentPage({content,template,route='/',preview=false,cons
     }
     const deadline=q('.application__deadline');if(deadline)deadline.textContent=c.settings.intake.deadlineLabel;
     const sectionNodes=new Map(['hero','about','programs','steps','application','faq','closing'].map(id=>[id,q(['hero','closing'].includes(id)?'.'+id:'#'+id)]));
-    for(const section of c.extraSections){const n=make('section','section cms-section');n.id=section.id;const container=make('div','container');n.append(container);container.append(make('h2','',section.title));const body=make('div','body-copy');rich(body,section.body);container.append(body);
+    for(const section of c.extraSections){const n=make('section','section cms-section');n.id=section.id;const container=make('div','container');n.append(container);container.append(make('h2','',section.title));const body=make('div','body-copy');rich(body,section.body,'extraSections.'+section.id+'.body');container.append(body);
       const photo=(item,cls='')=>{const img=make('img',cls);img.src=item.image;img.alt=item.alt;img.loading='lazy';return img;};const button=item=>{const a=make('a','button button--green',item.buttonLabel);a.href=item.buttonUrl;return a;};
       if(section.type==='image'&&section.image)container.append(photo(section));if(section.type==='cta')container.append(button(section));
-      if(section.type==='faq'){const accordion=make('div','accordion');for(const item of section.items){const detail=make('details'),summary=make('summary','',item.title),answer=make('div','accordion__content');rich(answer,item.body);detail.append(summary,answer);accordion.append(detail);}container.append(accordion);}
-      if(['cards','gallery'].includes(section.type)){const group=make('div','cms-grid');for(const item of section.items){const entry=make(section.type==='gallery'?'figure':'article','benefit');entry.dataset.contentId=item.id;if(item.image)entry.append(photo(item));const body=make('div','benefit__content');if(section.type==='gallery')body.append(make('figcaption','',item.caption));else{body.append(make('h3','',item.title));const copy=make('div');rich(copy,item.body);body.append(copy);if(item.icon){const svg=d.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=d.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','/assets/icons-v2.svg#'+item.icon);svg.append(use);body.prepend(svg);}if(item.buttonUrl)body.append(button(item));}entry.append(body);group.append(entry);}container.append(group);}sectionNodes.set(section.id,n);
+      if(section.type==='faq'){const accordion=make('div','accordion');for(const item of section.items){const detail=make('details'),summary=make('summary','',item.title),answer=make('div','accordion__content');rich(answer,item.body,'extraSections.'+section.id+'.items.'+item.id+'.body');detail.append(summary,answer);accordion.append(detail);}container.append(accordion);}
+      if(['cards','gallery'].includes(section.type)){const group=make('div','cms-grid');for(const item of section.items){const entry=make(section.type==='gallery'?'figure':'article','benefit');entry.dataset.contentId=item.id;if(item.image)entry.append(photo(item));const body=make('div','benefit__content');if(section.type==='gallery')body.append(make('figcaption','',item.caption));else{body.append(make('h3','',item.title));const copy=make('div');rich(copy,item.body,'extraSections.'+section.id+'.items.'+item.id+'.body');body.append(copy);if(item.icon){const svg=d.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=d.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','/assets/icons-v2.svg#'+item.icon);svg.append(use);body.prepend(svg);}if(item.buttonUrl)body.append(button(item));}entry.append(body);group.append(entry);}container.append(group);}sectionNodes.set(section.id,n);
     }
     const mainNode=q('main');for(const id of c.sectionOrder){const n=sectionNodes.get(id);if(n){if(hidden.has(id))n.remove();else mainNode.append(n);}}
     if(hidden.has('programs'))q('#course-dialog')?.remove();
     if(!q('h1')){const h=make('h1','visually-hidden',c.seo.title);mainNode.prepend(h);}
-  }else{q('h1').textContent=page.title;q('.legal-intro').textContent=page.intro;const body=q('.legal-body');if(page.body===defaults.pages.find(p=>p.id===page.id)?.body){const pairs=aliasPairs(c,t=>(t.mode==='markdown-alias'&&t.pageId===page.id)||(t.file===file&&['attribute','text-node'].includes(t.mode)));const visit=node=>{for(const child of node.childNodes){if(child.nodeType===3)child.textContent=replaceLiterals(child.textContent,pairs);else visit(child);}};visit(body);for(const a of body.querySelectorAll('a[href]'))a.href=replaceLiterals(a.getAttribute('href'),pairs);}else rich(body,effectivePage(c,page).body);}
+  } else {
+    q('h1').textContent=page.title;
+    rich(q('.legal-intro'),page.intro,'pages.'+page.id+'.intro');
+    const body=q('.legal-body');
+    if(page.body===defaults.pages.find(item=>item.id===page.id)?.body){
+      // Plain text and URLs have independent replacement maps. Never insert a
+      // URL scheme into a visible email caption in the preserved legal layout.
+      const textPairs=aliasPairs(c,target=>target.mode==='markdown-alias'&&target.pageId===page.id&&!target.prefix);
+      const urlPairs=aliasPairs(c,target=>target.mode==='markdown-alias'&&target.pageId===page.id);
+      const visit=node=>{
+        for(const child of node.childNodes){
+          if(child.nodeType===3)child.textContent=replaceLiterals(child.textContent,textPairs);
+          else visit(child);
+        }
+      };
+      visit(body);
+      for(const link of body.querySelectorAll('a[href]'))link.href=replaceLiterals(link.getAttribute('href'),urlPairs);
+    }else rich(body,effectivePage(c,page).body,'pages.'+page.id+'.body');
+  }
   // Project visibility onto known site navigation and CTA controls, never legal prose.
   for (const link of d.querySelectorAll('a[href]')) {
     if (link.closest('.legal-body')) continue;

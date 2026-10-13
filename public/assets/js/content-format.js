@@ -1,4 +1,8 @@
 // Pure shared formatting used by SSR, the public dialogs and editor previews.
+import {contentFieldContract} from './content-field-contract.js?v=20261013-content-admin';
+export function renderContentField(value, path) {
+  return contentFieldContract(path).format === 'markdown' ? renderMarkdown(value) : escapeHtml(value);
+}
 // System copy for authenticated unfinished drafts; never part of the public message schema.
 export const previewPhotoPlaceholder = 'Фото не добавлено';
 export function formatHours(hours) {

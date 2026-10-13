@@ -2,6 +2,7 @@ import {el,button,confirmAction,privateUrl} from './admin-content-ui.js?v=202610
 import {richText} from './admin-content-richtext.js?v=20261013-content-admin';
 import {createRecord,cloneRecord,moveRecord,removeRecord,splitTemplate} from './admin-content-state.js?v=20261013-content-admin';
 import {safeContentUrl} from './content-format.js?v=20261013-content-admin';
+import {contentFieldContract,robotsChoices} from './content-field-contract.js?v=20261013-content-admin';
 export const labels={title:'Заголовок',label:'Подпись ссылки',url:'Адрес ссылки',body:'Основной текст',question:'Вопрос',answer:'Ответ',icon:'Пиктограмма',image:'Изображение',modalImage:'Фото в подробном описании',alt:'Описание изображения',imageFocus:'Фокус изображения',modalFocus:'Фокус фото в описании',cardTitle:'Короткое название на карточке',category:'Категория',hours:'Продолжительность, часы',format:'Формат обучения',priceText:'Стоимость / бесплатное обучение',description:'Описание',topics:'Темы обучения — каждая с новой строки',disclaimer:'Условия и дополнительное пояснение',buttonLabel:'Текст кнопки',buttonUrl:'Адрес кнопки',status:'Статус',slug:'Адрес страницы',intro:'Вводный текст',seo:'Поиск и социальные сети',items:'Элементы раздела',caption:'Подпись фотографии',email:'Электронная почта',phone:'Телефон для звонка',phoneLabel:'Телефон для отображения',name:'Полное название организации',shortName:'Краткое название организации',address:'Адрес организации',ogrn:'ОГРН',inn:'ИНН',license:'Номер лицензии',licenseDate:'Дата лицензии',licensingAuthority:'Лицензирующий орган',registryUrl:'Ссылка на реестр лицензий',enabled:'Приём заявок открыт',deadline:'Последний день приёма (до 23:59 по Москве)',deadlineLabel:'Подпись срока приёма',consentVersion:'Действующая версия согласия',consentPdf:'Согласие — PDF',consentWord:'Согласие — Word',policyPdf:'Политика конфиденциальности — PDF',ogTitle:'Заголовок при отправке ссылки',ogDescription:'Описание при отправке ссылки',ogType:'Тип сайта',ogImage:'Изображение при отправке ссылки',robots:'Индексация поисковиками',themeColor:'Цвет интерфейса браузера',contacts:'Контакты',organization:'Организация и реквизиты',colors:'Фирменные цвета',intake:'Приём заявок',ink:'Основной текст',muted:'Второстепенный текст',forest:'Основной зелёный', 'forest-deep':'Тёмный зелёный',olive:'Оливковый',gold:'Золотой','gold-light':'Светлый золотой','gold-dark':'Тёмный золотой',paper:'Фон страницы',cream:'Дополнительный фон',white:'Светлая поверхность',line:'Границы',input:'Фон полей',danger:'Ошибки',success:'Успешные действия','icon-secondary':'Второй цвет пиктограмм'};
 export const templateLabels={text:'Текст',image:'Текст с фотографией',cta:'Призыв к действию',faq:'Вопросы и ответы',cards:'Карточки',gallery:'Галерея'};
 export const sectionLabels={hero:'Первый экран',about:'Почему это важно',programs:'Программы',steps:'Как поступить',application:'Заявка',faq:'Вопросы и ответы',closing:'Заключительный блок'};
@@ -18,7 +19,7 @@ export function fieldControl({value,label,path,kind='text',onChange,chooseMedia,
  }
  if(kind==='boolean'){input=el('input');input.type='checkbox';input.checked=value;input.addEventListener('change',()=>changed(input.checked));wrap.classList.add('cms-field--check');}
  else if(choices||kind==='icon'||kind==='status'){
-  input=el('select');const entries=choices||Object.entries(kind==='icon'?{'':'Без пиктограммы',...icons}:statuses);for(const [key,name] of entries){const option=el('option',name);option.value=key;input.append(option);}input.value=value;input.addEventListener('change',()=>changed(input.value));
+  input=el('select');const entries=choices||Object.entries(kind==='icon'?{...(contentFieldContract(path).optionalIcon?{'':'Без пиктограммы'}:{}),...icons}:statuses);for(const [key,name] of entries){const option=el('option',name);option.value=key;input.append(option);}input.value=value;input.addEventListener('change',()=>changed(input.value));
  }else{
   input=el(['rich','multiline','topics'].includes(kind)?'textarea':'input');if(input.tagName==='INPUT')input.type=kind==='number'?'number':kind==='color'?'color':kind==='date'?'date':'text';input.value=kind==='topics'?value.join('\n'):value;input.maxLength=maxLength;input.minLength=minLength;if(kind==='number'){input.min=path.endsWith('.hours')?'1':'0';input.max=String(maxLength);input.step='1';}if(input.tagName==='TEXTAREA')input.rows=kind==='rich'?8:3;input.addEventListener('input',()=>{const next=kind==='number'?input.valueAsNumber:kind==='topics'?input.value.split('\n'):input.value;input.setCustomValidity('');if(typeof next==='string'&&/<\/?[a-z][^>]*>/i.test(next))input.setCustomValidity('Используйте текст и доступные кнопки оформления вместо HTML.');if(kind==='url'&&next&&!safeContentUrl(next))input.setCustomValidity('Проверьте адрес ссылки.');changed(next);});
  }
@@ -29,13 +30,38 @@ export function fieldControl({value,label,path,kind='text',onChange,chooseMedia,
  if(kind==='icon'){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),use=document.createElementNS('http://www.w3.org/2000/svg','use');svg.classList.add('icon','cms-icon-preview');svg.setAttribute('aria-hidden','true');svg.append(use);const update=()=>use.setAttribute('href','/assets/icons-v2.svg#'+input.value);input.addEventListener('change',update);update();wrap.append(svg);}
  if(readOnly)wrap.append(el('small','Формируется автоматически.','cms-hint'));return wrap;
 }
-function propertyKind(key,value,path){if(typeof value==='boolean')return'boolean';if(typeof value==='number')return'number';if(key==='imageFocus'||key==='modalFocus')return'focus';if(['image','modalImage','ogImage'].includes(key)||(path==='seo.icon'))return'image';if(key==='icon')return'icon';if(key==='status')return'status';if(['description','body','answer','intro','disclaimer'].includes(key))return'rich';if(key==='topics')return'topics';if(key==='deadline')return'date';if(key==='themeColor'||path.startsWith('settings.colors.'))return'color';if(/Url$/.test(key)||key==='url')return'url';return'text';}
+function propertyKind(key,value,path){
+ if(contentFieldContract(path).format==='markdown')return 'rich';
+ if(typeof value==='boolean')return 'boolean';
+ if(typeof value==='number')return 'number';
+ if(key==='imageFocus'||key==='modalFocus')return 'focus';
+ if(['image','modalImage','ogImage'].includes(key)||path==='seo.icon')return 'image';
+ if(key==='icon')return 'icon';
+ if(key==='status')return 'status';
+ if(key==='topics')return 'topics';
+ if(key==='deadline')return 'date';
+ if(key==='themeColor'||path.startsWith('settings.colors.'))return 'color';
+ if(/Url$/.test(key)||key==='url')return 'url';
+ return 'text';
+}
 export function objectFields(record,path,ctx,{builtin=false}={}){
- const box=el('div','','cms-fields');for(const [key,value]of Object.entries(record)){
+ const box=el('div','','cms-fields');
+ for(const [key,value] of Object.entries(record)){
   if(['id','type','items'].includes(key)||(path==='settings.organization'&&['email','phone'].includes(key)))continue;
-  if(key==='seo'){const group=el('details','','cms-subgroup');group.append(el('summary',labels.seo),objectFields(value,path+'.seo',ctx));box.append(group);continue;}
-  const kind=propertyKind(key,value,path+'.'+key);box.append(fieldControl({value,label:labels[key]||'Текст',path:path+'.'+key,kind,content:ctx.content,chooseMedia:ctx.chooseMedia,onChange:next=>{record[key]=next;ctx.change();},maxLength:key==='hours'?10000:key==='body'?100000:['rich','topics'].includes(kind)?20000:kind==='color'?7:2048,readOnly:['consentVersion','ogType'].includes(key)||(builtin&&['slug','status'].includes(key)),choices:key==='robots'?[['index,follow','Разрешить индексацию'],['noindex,nofollow','Скрыть от поисковиков']]:key==='status'&&path.startsWith('pages')?Object.entries(statuses).filter(([key])=>key!=='closed'):null}));
- }return box;
+  if(key==='seo'){
+   const group=el('details','','cms-subgroup');
+   group.append(el('summary',labels.seo),objectFields(value,path+'.seo',ctx));box.append(group);continue;
+  }
+  const fieldPath=path+'.'+key,contract=contentFieldContract(fieldPath),kind=propertyKind(key,value,fieldPath);
+  const choices=key==='robots'?robotsChoices:key==='status'&&path.startsWith('pages')?Object.entries(statuses).filter(([status])=>status!=='closed'):null;
+  const maxLength=contract.maxLength??(key==='hours'?10000:key==='topics'?20000:kind==='color'?7:2048);
+  box.append(fieldControl({
+   value,label:labels[key]||'Текст',path:fieldPath,kind,content:ctx.content,chooseMedia:ctx.chooseMedia,
+   onChange:next=>{record[key]=next;ctx.change();},maxLength,
+   readOnly:['consentVersion','ogType'].includes(key)||(builtin&&['slug','status'].includes(key)),choices
+  }));
+ }
+ return box;
 }
 export function collectionEditor(list,kind,path,ctx,{title,limit=100,template=null}={}){
  const section=el('section','','cms-collection'),heading=el('div','','cms-section-heading'),listBox=el('div','','cms-record-list'),add=button('Добавить '+({programs:'программу',pages:'страницу',navigation:'ссылку',benefits:'преимущество',steps:'шаг',faqs:'вопрос',faq:'вопрос',cards:'карточку',gallery:'фотографию'}[kind]||'элемент'),()=>{const record=createRecord(kind,template);list.push(record);ctx.change();render(record.id);listBox.lastElementChild?.querySelector('input,textarea')?.focus({preventScroll:true});});heading.append(el('h3',title||''),add);section.append(heading,listBox);

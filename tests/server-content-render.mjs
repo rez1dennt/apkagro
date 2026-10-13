@@ -7,6 +7,24 @@ import {lookupMessage} from '../public/assets/js/content-format.js';
 import * as format from '../public/assets/js/content-format.js';
 const renderer = await import('../server/content-render.mjs').catch(()=>({}));
 const template=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
+test('canonical contacts keep exact hrefs and plain labels in all legal render modes',async()=>{
+ const c=await loadDefaultContent();c.settings.contacts.email='new@example.test';c.settings.contacts.phone='+79991234567';c.settings.contacts.phoneLabel='+7 999 123-45-67';
+ for(const route of ['/','/privacy/','/operator/','/consent/'])for(const edited of [false,true])for(const preview of [false,true]){
+  const copy=structuredClone(c),slug=route.split('/')[1];if(edited&&slug)copy.pages.find(p=>p.slug===slug).body+='\n\nДополнительный абзац.';
+  const source=route==='/'?template:await readFile(new URL('../public/'+slug+'/index.html',import.meta.url),'utf8');
+  const d=parseHTML(renderer.renderContentPage({content:copy,template:source,route,preview})).document;
+  const emails=[...d.querySelectorAll('a[href^="mailto:"]')];assert.ok(emails.length);
+  for(const a of emails){assert.equal(a.getAttribute('href'),'mailto:new@example.test');assert.ok(!a.textContent.includes('mailto:'));}
+  for(const a of d.querySelectorAll('a[href^="tel:"]'))assert.equal(a.getAttribute('href'),'tel:+79991234567');
+  assert.equal(d.querySelector('.footer__contacts a[href^="mailto:"]').textContent.trim(),'new@example.test');
+  assert.equal(d.querySelector('.footer__contacts a[href^="tel:"]').textContent.trim(),'+7 999 123-45-67');
+ }
+});
+test('legal intro has the same safe structured rendering as its editor',async()=>{
+ const c=await loadDefaultContent();c.pages[0].intro='**Важное** [Условия](/consent/)\n\n- Первый пункт';
+ const source=await readFile(new URL('../public/privacy/index.html',import.meta.url),'utf8');
+ for(const preview of [true,false]){const d=parseHTML(renderer.renderContentPage({content:c,template:source,route:'/privacy/',preview})).document;assert.equal(d.querySelector('.legal-intro strong')?.textContent,'Важное');assert.equal(d.querySelector('.legal-intro li')?.textContent,'Первый пункт');assert.match(d.querySelector('.legal-intro a')?.getAttribute('href'),/consent\//);}
+});
 test('private preview system copy does not change the persisted public message schema',async()=>{
  const oldDocument=await loadDefaultContent();delete oldDocument.messages['site-b2625983c82a'];
  assert.doesNotThrow(()=>validateContent(oldDocument));

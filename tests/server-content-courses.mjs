@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {validateFields} from '../server/intake.mjs';
-import {loadDefaultContent} from '../server/content-schema.mjs';
+import {loadDefaultContent,validateContent} from '../server/content-schema.mjs';
 import {applicationSnapshots,effectivePage} from '../server/content-render.mjs';
 import {createApplicationsWorkbook} from '../server/export.mjs';
 import {renderMarkdown,replaceLiterals} from '../public/assets/js/content-format.js';
@@ -16,6 +16,18 @@ import {openStore} from '../server/storage.mjs';
 import {parseHTML} from 'linkedom';
 import {renderContentCss} from '../server/content-render.mjs';
 const fields={courseId:'brand-new',lastName:'Иванов',firstName:'Иван',middleName:'',birthDate:'1990-01-01',phone:'+79267908090',email:'person@example.test',snils:'11223344595',education:'professional',consent:'true',consentVersion:'new-version'};
+test('canonical contact snapshots preserve exact Markdown URL and visible email',async()=>{
+ const c=await loadDefaultContent();c.settings.contacts.email='new@example.test';c.settings.contacts.phone='+79991234567';
+ const page=c.pages.find(p=>p.slug==='privacy'),resolved=effectivePage(c,page),{parseHTML}=await import('linkedom');
+ const d=parseHTML('<html><body>'+renderMarkdown(resolved.body)+'</body></html>').document;
+ for(const a of d.querySelectorAll('a[href^="mailto:"]')){assert.equal(a.getAttribute('href'),'mailto:new@example.test');assert.equal(a.textContent,'new@example.test');}
+ for(const a of d.querySelectorAll('a[href^="tel:"]'))assert.equal(a.getAttribute('href'),'tel:+79991234567');
+ const consent=c.pages.find(p=>p.slug==='consent');consent.body+='\n\n[new@example.test](mailto:new@example.test)';
+ const snapshot=applicationSnapshots(validateContent(c),c.programs[0].id);
+ assert.equal(snapshot.consentSnapshot.organization.email,'new@example.test');assert.equal(snapshot.consentSnapshot.organization.phone,'+79991234567');
+ const snapshotDom=parseHTML('<html><body>'+renderMarkdown(snapshot.consentSnapshot.body)+'</body></html>').document;
+ assert.equal(snapshotDom.querySelector('a[href^="mailto:"]').getAttribute('href'),'mailto:new@example.test');assert.equal(snapshotDom.querySelector('a[href^="mailto:"]').textContent,'new@example.test');
+});
 
 test('cached HTML closes at Moscow rollover and real restart retains publications and draft',async t=>{
  const dir=await mkdtemp(path.resolve('output/content-admin/rollover-')),key=randomBytes(32);

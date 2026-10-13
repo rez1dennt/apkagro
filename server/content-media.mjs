@@ -216,14 +216,14 @@ function publicationResources(content){
  const generic=url=>{if(/^\/(assets|documents|media)\//.test(url)&&!resources.has(url))add(url,null);};
  Object.values(content.navigation).flat().forEach(item=>generic(item.url));generic(content.settings.organization.registryUrl);
  const sections=content.extraSections.filter(s=>!hidden.has(s.id));sections.forEach(s=>{generic(s.buttonUrl);s.items.forEach(item=>generic(item.buttonUrl??''));});
- const bodies=[...content.pages.filter(p=>p.status==='published').map(p=>p.body),...(!hidden.has('about')?content.benefits.map(b=>b.body):[]),...(!hidden.has('steps')?content.steps.map(s=>s.body):[]),...(!hidden.has('faq')?content.faqs.map(f=>f.answer):[]),...(!hidden.has('programs')?content.programs.filter(p=>['published','closed'].includes(p.status)).map(p=>p.description):[]),...sections.flatMap(s=>[s.body,...s.items.map(item=>item.body)])];
+ const bodies=[...content.pages.filter(p=>p.status==='published').flatMap(p=>[p.body,p.intro]),...(!hidden.has('about')?content.benefits.map(b=>b.body):[]),...(!hidden.has('steps')?content.steps.map(s=>s.body):[]),...(!hidden.has('faq')?content.faqs.map(f=>f.answer):[]),...(!hidden.has('programs')?content.programs.filter(p=>['published','closed'].includes(p.status)).flatMap(p=>[p.description,p.disclaimer]):[]),...sections.flatMap(s=>[s.body,...s.items.map(item=>item.body)])];
  for(const body of bodies.filter(b=>typeof b==='string'))for(const match of body.matchAll(/\]\(([^)]+)\)/g))generic(match[1]);
  return resources;
 }
 
 export async function openContentMedia({dir,store,scannerCommand='',scanner=sharedScanner,publicDir=fileURLToPath(new URL('../public/',import.meta.url))}={}){
  const directory=path.resolve(dir),filename=path.join(directory,'media.json');await mkdir(directory,{recursive:true,mode:0o700});const canonical=await realpath(directory),owner=process.platform==='win32'?canonical.toLowerCase():canonical;if(owners.has(owner))throw new HttpError(409,'Медиатека уже открыта.','MEDIA_OWNED');owners.add(owner);
- const mutation=queue(8),uploads=new Set();let records=[],closed=false,closePromise=null;
+ const mutation=queue(8),uploads=new Set();let records=[],closed=false,closePromise=null,detachReferenceGuard;
  const write=async(next)=>{const temporary=filename+'.'+randomUUID()+'.tmp';let handle;try{handle=await open(temporary,'wx',0o600);await handle.writeFile(JSON.stringify({format:1,media:next}));await handle.sync();await handle.close();handle=null;await rename(temporary,filename);}finally{await handle?.close().catch(()=>{});await unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e;});}};
  try{
   const raw=await readFile(filename);if(raw.length>8*1024*1024)fail();const data=JSON.parse(raw);if(data.format!==1||Object.keys(data).sort().join()!=='format,media'||!Array.isArray(data.media)||data.media.length>MAX_RECORDS)fail();const seen=new Set();let total=0;
@@ -239,20 +239,47 @@ export async function openContentMedia({dir,store,scannerCommand='',scanner=shar
  const referenceIndex=()=>{const draft=store.getDraft(),published=store.getPublished(),key=draft.revision+':'+published.revision;if(referenceCache?.key===key)return referenceCache;const snapshots=[{source:'draft',...draft},{source:'published',...published},...store.history().map(v=>({source:'history',...v}))],all=new Map(),publicUrls=new Set();for(const snapshot of snapshots){for(const [url,paths]of contentLocations(snapshot.content)){if(!all.has(url))all.set(url,[]);all.get(url).push(...paths.map(p=>({source:snapshot.source,revision:snapshot.revision,path:p})));}if(snapshot.source!=='draft')for(const url of referencedMedia(snapshot.content,{publicOnly:true}))publicUrls.add(url);}return referenceCache={key,all,publicUrls};};
  const usages=url=>structuredClone(referenceIndex().all.get(url)??[]);
  const publiclyReferenced=url=>referenceIndex().publicUrls.has(url);
- const read=async(value,{publicOnly=false}={})=>{active();const meta=get(value);if(!meta||publicOnly&&!publiclyReferenced(meta.url))return null;let data;try{data=await readFile(path.join(directory,meta.id+'.'+meta.ext));}catch(e){if(e.code==='ENOENT')return null;throw e;}if(data.length!==meta.size||createHash('sha256').update(data).digest('hex')!==meta.sha256)throw new HttpError(500,'Повреждено содержимое медиатеки.','MEDIA_CORRUPT');return {meta:structuredClone(meta),data};};
+ const readStored=async(value,{publicOnly=false}={})=>{const meta=get(value);if(!meta||publicOnly&&!publiclyReferenced(meta.url))return null;let data;try{data=await readFile(path.join(directory,meta.id+'.'+meta.ext));}catch(e){if(e.code==='ENOENT')return null;throw e;}if(data.length!==meta.size||createHash('sha256').update(data).digest('hex')!==meta.sha256)throw new HttpError(500,'Повреждено содержимое медиатеки.','MEDIA_CORRUPT');return {meta:structuredClone(meta),data};};
+ const read=async(...args)=>{active();return readStored(...args);};
  const api={
   list(){active();const index=referenceIndex();return structuredClone(records).map(meta=>({...meta,locations:structuredClone(index.all.get(meta.url)??[]),public:index.publicUrls.has(meta.url)}));},
   usage(value){active();const meta=get(value);return meta?usages(meta.url):[];},
   upload(input){active();if(Buffer.isBuffer(input?.data)&&input.data.length>MAX_FILE)return Promise.reject(new HttpError(413,'Размер файла превышает 10 МиБ.','MEDIA_TOO_LARGE'));const captured={...input,data:Buffer.isBuffer(input?.data)?Buffer.from(input.data):input?.data};const job=processing.run(async()=>{const prepared=await prepare(captured,scannerCommand,scanner);return mutation.run(async()=>{if(records.length>=MAX_RECORDS||records.reduce((sum,m)=>sum+m.size,0)+prepared.data.length>MAX_BYTES)throw new HttpError(413,'Достигнут лимит медиатеки.','MEDIA_CAPACITY');const id=randomUUID(),meta={id,url:'/media/'+id+'.'+prepared.ext,ext:prepared.ext,mime:prepared.mime,kind:prepared.kind,width:prepared.width,height:prepared.height,size:prepared.data.length,sha256:createHash('sha256').update(prepared.data).digest('hex'),...labels(captured,['data','name','mime','title','alt']),createdAt:new Date().toISOString()};const target=path.join(directory,id+'.'+meta.ext);let handle;try{handle=await open(target,'wx',0o600);await handle.writeFile(prepared.data);await handle.sync();await handle.close();handle=null;await write([...records,meta]);records.push(meta);}catch(e){await handle?.close().catch(()=>{});await unlink(target).catch(()=>{});throw e;}return structuredClone(meta);});});uploads.add(job);job.then(()=>uploads.delete(job),()=>uploads.delete(job));return job;},
   update(id,value){active();const captions=labels(value);return mutation.run(async()=>{const previous=get(id);if(!previous)throw new HttpError(404,'Файл не найден.','MEDIA_NOT_FOUND');const meta={...previous,...captions},next=records.map(r=>r.id===id?meta:r);await write(next);records=next;return structuredClone(meta);});},
-  remove(id){active();return mutation.run(async()=>{const meta=get(id);if(!meta)throw new HttpError(404,'Файл не найден.','MEDIA_NOT_FOUND');const used=usages(meta.url);if(store.references().has(meta.url)||used.length){const error=new HttpError(409,'Файл используется в содержимом сайта.','MEDIA_REFERENCED');error.locations=used;throw error;}const next=records.filter(r=>r.id!==id);await write(next);records=next;await unlink(path.join(directory,id+'.'+meta.ext)).catch(e=>{if(e.code!=='ENOENT')throw e;});return {deleted:true,id};});},
+  remove(id){
+   active();
+   return mutation.run(async()=>{
+    const meta=get(id);
+    if(!meta)throw new HttpError(404,'Файл не найден.','MEDIA_NOT_FOUND');
+    const used=usages(meta.url);
+    if(store.references().has(meta.url)||used.length){
+     const error=new HttpError(409,'Файл используется в содержимом сайта.','MEDIA_REFERENCED');
+     error.locations=used;throw error;
+    }
+    // The same guard covers reference validation and acknowledged draft writes.
+    const next=records.filter(record=>record.id!==id);
+    await write(next);records=next;
+    await unlink(path.join(directory,id+'.'+meta.ext)).catch(error=>{if(error.code!=='ENOENT')throw error;});
+    return {deleted:true,id};
+   });
+  },
   read,
   withMutation(operation){active();return mutation.run(operation);},
   publish(expectedRevision,options={}){active();return mutation.run(async()=>{const draft=store.getDraft();if(draft.revision!==expectedRevision)throw new HttpError(409,'Черновик изменён.','CONTENT_REVISION_CONFLICT');const content=validateContent(draft.content,{forPublication:true});for(const [url,kind] of publicationResources(content)){
-    if(url.startsWith('/media/')){const file=await read(url);if(!file)throw new HttpError(400,'Не найден медиафайл: '+url,'CONTENT_MEDIA_MISSING');if(kind&&file.meta.kind!==kind)throw new HttpError(400,'Неверный тип медиафайла: '+url,'CONTENT_MEDIA_TYPE');}
+    if(url.startsWith('/media/')){const file=await readStored(url);if(!file)throw new HttpError(400,'Не найден медиафайл: '+url,'CONTENT_MEDIA_MISSING');if(kind&&file.meta.kind!==kind)throw new HttpError(400,'Неверный тип медиафайла: '+url,'CONTENT_MEDIA_TYPE');}
     else if(/^\/(assets|documents)\//.test(url)){const candidate=path.resolve(publicDir,'.'+url.split(/[?#]/)[0]);let real;try{real=await realpath(candidate);const base=await realpath(publicDir),info=await stat(real);if(!real.startsWith(base+path.sep)||!info.isFile())throw new Error();}catch{throw new HttpError(400,'Не найден файл: '+url,'CONTENT_MEDIA_MISSING');}const ext=path.extname(real).slice(1).toLowerCase();if(kind==='document'&&!['pdf','docx'].includes(ext)||kind==='image'&&!['png','jpg','jpeg','webp','avif','svg','ico'].includes(ext))throw new HttpError(400,'Неверный тип файла: '+url,'CONTENT_MEDIA_TYPE');}
    }return store.publish(expectedRevision,options);});},
-  async close(){if(closePromise)return closePromise;closed=true;closePromise=(async()=>{await Promise.allSettled([...uploads]);await mutation.close();owners.delete(owner);})();return closePromise;}
+  async close(){if(closePromise)return closePromise;closed=true;closePromise=(async()=>{await Promise.allSettled([...uploads]);await mutation.close();detachReferenceGuard?.();owners.delete(owner);})();return closePromise;}
  };
+ try {
+  detachReferenceGuard=store.attachReferenceGuard({
+   run:operation=>api.withMutation(operation),
+   async validate(content){
+    for(const url of referencedMedia(content)){
+     if(!await readStored(url))throw new HttpError(409,'Выбранный файл больше недоступен. Выберите его заново: '+url,'CONTENT_MEDIA_MISSING');
+    }
+   }
+  });
+ }catch(error){owners.delete(owner);throw error;}
  return api;
 }

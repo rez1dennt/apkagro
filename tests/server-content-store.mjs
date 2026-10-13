@@ -8,6 +8,21 @@ import {courses} from '../public/assets/js/courses.js';
 const root = path.resolve('.');
 const invalid = error => error.status === 400;
 const conflict = error => error.status === 409;
+test('reference guards validate saves and restores before acknowledging state',async t=>{
+ const {store}=await fixture(t);let validated=0,reject=false;
+ const detach=store.attachReferenceGuard({run:operation=>operation(),async validate(){validated++;if(reject)throw new Error('Missing selected file');}});
+ let draft=store.getDraft();draft.content.fields['hero.title']='Сохранённое';draft=await store.saveDraft(draft.content,draft.revision);await store.publish(draft.revision);
+ draft.content.fields['hero.title']='Следующий черновик';draft=await store.saveDraft(draft.content,draft.revision);reject=true;const before=store.getDraft();
+ await assert.rejects(store.restore(1,before.revision),/Missing selected file/);assert.deepEqual(store.getDraft(),before);
+ reject=false;await store.restore(1,before.revision);assert.equal(validated,4);detach();
+});
+test('intro and disclaimer validate approved links and track media while SEO remains plain',async()=>{
+ const {loadDefaultContent,validateContent,referencedMedia}=await modules(),c=await loadDefaultContent(),url='/media/11111111-1111-4111-8111-111111111111.pdf';
+ c.pages[0].intro='**Важное** [Документ]('+url+')';c.programs[0].disclaimer='Условия\n\n- [Документ]('+url+')';
+ assert.ok(referencedMedia(c).has(url));assert.ok(referencedMedia(c,{publicOnly:true}).has(url));
+ for(const field of [c.pages[0],c.programs[0]]){const key='intro'in field?'intro':'disclaimer',original=field[key];field[key]='[Опасная ссылка](javascript:alert)';assert.throws(()=>validateContent(c),invalid);field[key]=original;}
+ c.pages[0].intro='';c.programs[0].disclaimer='';c.seo.description='[Буквальный текст]('+url+')';assert.ok(!referencedMedia(c).has(url));assert.equal(validateContent(c).seo.description,c.seo.description);
+});
 async function modules() {
   return {...await import('../server/content-schema.mjs'), ...await import('../server/content-store.mjs')};
 }

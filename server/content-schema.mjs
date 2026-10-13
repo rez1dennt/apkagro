@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {HttpError} from './intake.mjs';
+import {contentFieldContract,richTextEntries,robotsChoices} from '../public/assets/js/content-field-contract.js';
 
 const readJson=name=>JSON.parse(readFileSync(new URL('../content/'+name,import.meta.url),'utf8'));
 const defaults=readJson('site-defaults.json');
@@ -58,6 +59,11 @@ function markdown(value,where,max=100000){
   const remainder=value.replace(/(?<!\\)\[([^\]\n]*)\]\(([^\s)]*)\)/g,'').replace(/\\[\[\]]/g,'');
   if(/\]\(/.test(remainder))fail(where,'Некорректная ссылка');
 }
+function prose(value,where,max=100000){
+  const contract=contentFieldContract(where);
+  if(contract.format==='markdown')markdown(value,where,contract.maxLength);
+  else string(value,where,max);
+}
 function records(value,where,max,keys,validate){
   list(value,where,max);const ids=new Set();
   for(const [index,record] of value.entries()){const location=where+'['+index+']';object(record,keys,location);identifier(record.id,location+'.id');if(ids.has(record.id))fail(location,'Повтор идентификатора');ids.add(record.id);validate(record,location);}
@@ -66,7 +72,7 @@ function seo(value,where,main=false){
   const keys=main?Object.keys(defaults.seo):['title','description','robots','ogTitle','ogDescription','ogType','ogImage'];object(value,keys,where);
   for(const key of keys){if(key==='themeColor')color(value[key],where+'.'+key);else if(key==='icon')url(value[key],where+'.icon',{image:true});else if(key==='ogImage')url(value[key],where+'.ogImage',{image:true,empty:true});else string(value[key],where+'.'+key,key==='description'||key==='ogDescription'?2000:500);}
   enumValue(value.ogType,['website'],where+'.ogType');
-  enumValue(value.robots,['index,follow','noindex,follow','noindex,nofollow','index,nofollow'],where+'.robots');
+  enumValue(value.robots,robotsChoices.map(([value])=>value),where+'.robots');
 }
 
 export async function loadDefaultContent(){return structuredClone(defaults);}
@@ -79,24 +85,25 @@ export function validateContent(content,{forPublication=false}={}){
   }
   object(content.navigation,['desktop','mobile','footer'],'navigation');
   for(const name of ['desktop','mobile','footer'])records(content.navigation[name],'navigation.'+name,30,['id','label','url'],(item,where)=>{string(item.label,where+'.label',200,1);url(item.url,where+'.url');});
-  records(content.benefits,'benefits',50,['id','title','body','icon','image','alt','imageFocus'],(item,where)=>{const visible=forPublication&&!hidden.has('about');string(item.title,where+'.title',500,visible?1:0);markdown(item.body,where+'.body',20000);icon(item.icon,where+'.icon');url(item.image,where+'.image',{image:true,empty:!visible});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');});
-  records(content.steps,'steps',50,['id','title','body','icon'],(item,where)=>{string(item.title,where+'.title',500,forPublication&&!hidden.has('steps')?1:0);markdown(item.body,where+'.body',20000);icon(item.icon,where+'.icon');});
-  records(content.faqs,'faqs',100,['id','question','answer'],(item,where)=>{const visible=forPublication&&!hidden.has('faq');string(item.question,where+'.question',1000,visible?1:0);markdown(item.answer,where+'.answer',20000);if(visible&&!item.answer.trim())fail(where+'.answer');});
+  records(content.benefits,'benefits',50,['id','title','body','icon','image','alt','imageFocus'],(item,where)=>{const visible=forPublication&&!hidden.has('about');string(item.title,where+'.title',500,visible?1:0);prose(item.body,where+'.body',20000);icon(item.icon,where+'.icon');url(item.image,where+'.image',{image:true,empty:!visible});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');});
+  records(content.steps,'steps',50,['id','title','body','icon'],(item,where)=>{string(item.title,where+'.title',500,forPublication&&!hidden.has('steps')?1:0);prose(item.body,where+'.body',20000);icon(item.icon,where+'.icon');});
+  records(content.faqs,'faqs',100,['id','question','answer'],(item,where)=>{const visible=forPublication&&!hidden.has('faq');string(item.question,where+'.question',1000,visible?1:0);prose(item.answer,where+'.answer',20000);if(visible&&!item.answer.trim())fail(where+'.answer');});
   records(content.programs,'programs',100,Object.keys(defaults.programs[0]),(item,where)=>{
     const visible=forPublication&&!hidden.has('programs')&&['published','closed'].includes(item.status);
-    for(const key of ['title','cardTitle','category','alt','format','priceText','disclaimer','buttonLabel'])string(item[key],where+'.'+key,key==='disclaimer'?2000:500,visible&&['title','cardTitle','format','buttonLabel'].includes(key)?1:0);
-    markdown(item.description,where+'.description',20000);list(item.topics,where+'.topics',100);item.topics.forEach((topic,index)=>string(topic,where+'.topics['+index+']',1000));
+    for(const key of ['title','cardTitle','category','alt','format','priceText','buttonLabel'])string(item[key],where+'.'+key,key==='disclaimer'?2000:500,visible&&['title','cardTitle','format','buttonLabel'].includes(key)?1:0);
+    prose(item.disclaimer,where+'.disclaimer');
+    prose(item.description,where+'.description',20000);list(item.topics,where+'.topics',100);item.topics.forEach((topic,index)=>string(topic,where+'.topics['+index+']',1000));
     if(visible&&!item.description.trim())fail(where+'.description');
     icon(item.icon,where+'.icon');url(item.image,where+'.image',{image:true,empty:!visible});url(item.modalImage,where+'.modalImage',{image:true,empty:!visible});focus(item.imageFocus,where+'.imageFocus');focus(item.modalFocus,where+'.modalFocus');number(item.hours,where+'.hours',1,10000);if(!Number.isInteger(item.hours))fail(where+'.hours');enumValue(item.status,statuses,where+'.status');
   });
-  records(content.pages,'pages',100,['id','slug','title','intro','body','seo','status'],(item,where)=>{identifier(item.slug,where+'.slug');if(reserved.has(item.slug))fail(where+'.slug','Служебное имя страницы');string(item.title,where+'.title',500,forPublication&&item.status==='published'?1:0);string(item.intro,where+'.intro',5000);markdown(item.body,where+'.body');if(forPublication&&item.status==='published'&&!item.body.trim())fail(where+'.body');seo(item.seo,where+'.seo');enumValue(item.status,['published','draft','archived'],where+'.status');if(builtin.includes(item.slug)&&(item.id!==item.slug||item.status!=='published'))fail(where,'Обязательная страница');});
+  records(content.pages,'pages',100,['id','slug','title','intro','body','seo','status'],(item,where)=>{identifier(item.slug,where+'.slug');if(reserved.has(item.slug))fail(where+'.slug','Служебное имя страницы');string(item.title,where+'.title',500,forPublication&&item.status==='published'?1:0);prose(item.intro,where+'.intro');prose(item.body,where+'.body');if(forPublication&&item.status==='published'&&!item.body.trim())fail(where+'.body');seo(item.seo,where+'.seo');enumValue(item.status,['published','draft','archived'],where+'.status');if(builtin.includes(item.slug)&&(item.id!==item.slug||item.status!=='published'))fail(where,'Обязательная страница');});
   const slugs=content.pages.map(page=>page.slug);if(new Set(slugs).size!==slugs.length||builtin.some(slug=>!slugs.includes(slug)))fail('pages','Необходимы все обязательные страницы без повторов');
   records(content.extraSections,'extraSections',50,['id','type','title','body','image','alt','imageFocus','buttonLabel','buttonUrl','items'],(item,where)=>{
-    if(defaults.sectionOrder.includes(item.id)||reserved.has(item.id))fail(where+'.id');enumValue(item.type,['text','image','cta','faq','cards','gallery'],where+'.type');string(item.title,where+'.title',500);markdown(item.body,where+'.body',20000);url(item.image,where+'.image',{image:true,empty:true});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');string(item.buttonLabel,where+'.buttonLabel',200);url(item.buttonUrl,where+'.buttonUrl',{empty:true});
+    if(defaults.sectionOrder.includes(item.id)||reserved.has(item.id))fail(where+'.id');enumValue(item.type,['text','image','cta','faq','cards','gallery'],where+'.type');string(item.title,where+'.title',500);prose(item.body,where+'.body',20000);url(item.image,where+'.image',{image:true,empty:true});string(item.alt,where+'.alt',500);focus(item.imageFocus,where+'.imageFocus');string(item.buttonLabel,where+'.buttonLabel',200);url(item.buttonUrl,where+'.buttonUrl',{empty:true});
     const visible=forPublication&&!hidden.has(item.id);
-    if(item.type==='faq')records(item.items,where+'.items',100,['id','title','body'],(entry,location)=>{string(entry.title,location+'.title',1000);markdown(entry.body,location+'.body',20000);});
+    if(item.type==='faq')records(item.items,where+'.items',100,['id','title','body'],(entry,location)=>{string(entry.title,location+'.title',1000);prose(entry.body,location+'.body',20000);});
     else if(item.type==='cards')records(item.items,where+'.items',50,['id','title','body','icon','image','alt','imageFocus','buttonLabel','buttonUrl'],(entry,location)=>{
-      string(entry.title,location+'.title',500);markdown(entry.body,location+'.body',20000);string(entry.icon,location+'.icon',100);if(entry.icon)icon(entry.icon,location+'.icon');url(entry.image,location+'.image',{image:true,empty:true});string(entry.alt,location+'.alt',500);focus(entry.imageFocus,location+'.imageFocus');string(entry.buttonLabel,location+'.buttonLabel',200);url(entry.buttonUrl,location+'.buttonUrl',{empty:true});
+      string(entry.title,location+'.title',500);prose(entry.body,location+'.body',20000);string(entry.icon,location+'.icon',100);if(entry.icon)icon(entry.icon,location+'.icon');url(entry.image,location+'.image',{image:true,empty:true});string(entry.alt,location+'.alt',500);focus(entry.imageFocus,location+'.imageFocus');string(entry.buttonLabel,location+'.buttonLabel',200);url(entry.buttonUrl,location+'.buttonUrl',{empty:true});
       if(visible&&(!entry.title.trim()||Boolean(entry.buttonLabel.trim())!==Boolean(entry.buttonUrl)))fail(location,'Заполните заголовок и обе части кнопки карточки');
     });
     else if(item.type==='gallery')records(item.items,where+'.items',100,['id','image','alt','imageFocus','caption'],(entry,location)=>{
@@ -139,8 +146,8 @@ export function referencedMedia(content,{publicOnly=false}={}){
   for(const group of Object.values(value.navigation))group.forEach(item=>add(item.url));
   value.benefits.forEach(item=>add(item.image));value.programs.forEach(item=>{add(item.image);add(item.modalImage);});value.extraSections.forEach(item=>{add(item.image);add(item.buttonUrl);item.items.forEach(entry=>{add(entry.image);add(entry.buttonUrl);});});
   Object.values(value.documents).forEach(add);add(value.seo.icon);add(value.seo.ogImage);add(value.settings.organization.registryUrl);
-  for(const page of value.pages){add(page.seo.ogImage);for(const match of page.body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);}
-  for(const body of [...value.benefits.map(item=>item.body),...value.steps.map(item=>item.body),...value.faqs.map(item=>item.answer),...value.programs.map(item=>item.description),...value.extraSections.flatMap(item=>[item.body,...item.items.map(entry=>entry.body)])].filter(body=>typeof body==='string'))for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
+  for(const page of value.pages)add(page.seo.ogImage);
+  for(const [,body] of richTextEntries(value))for(const match of body.matchAll(/\]\((\/media\/[^)]+)\)/g))add(match[1]);
   return references;
 }
 function stable(value){if(Array.isArray(value))return value.map(stable);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])]));return value;}

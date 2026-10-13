@@ -44,23 +44,33 @@ export async function openContentStore({dir,defaults,persist=true}){
     }
     if(!state){const now=new Date().toISOString(),snapshot=envelope(initial,1,now);state={format:1,draft:clone(snapshot),published:clone(snapshot),history:[clone(snapshot)]};await write(state);}
   }catch(e){if(claimed)owners.delete(owner);throw e;}
-  let tail=Promise.resolve(),closed=false;
+  let tail=Promise.resolve(),closed=false,referenceGuard=null;
   const active=()=>{if(closed)throw error(503,'Хранилище контента закрыто.','CONTENT_STORE_CLOSED');};
   const revision=expected=>{if(!Number.isSafeInteger(expected)||expected!==state.draft.revision)throw error(409,'Черновик изменён. Обновите данные и повторите действие.','CONTENT_REVISION_CONFLICT');};
   const queue=operation=>{active();const pending=tail.then(operation);tail=pending.catch(()=>{});return pending;};
+  // Every reference-changing operation acquires media before the content queue.
+  // Publication uses this same ordering; never acquire media from inside queue().
+  const referenceQueue=operation=>referenceGuard?referenceGuard.run(()=>queue(operation)):queue(operation);
   const promote=async next=>{await write(next);state=next;};
   const save=async(content,expected)=>{
     revision(expected);const canonical=validateContent(content);canonical.settings.intake.consentVersion=state.published.content.settings.intake.consentVersion;
+    await referenceGuard?.validate(canonical);
     const draft=envelope(canonical,state.draft.revision+1,new Date().toISOString(),state.published.revision,state.published.publishedAt,contentDigest(canonical)!==contentDigest(state.published.content));
     await promote({...state,draft});return clone(draft);
   };
   return {
+    attachReferenceGuard(guard){
+      active();
+      if(referenceGuard)throw error(409,'Медиатека уже связана с хранилищем.','CONTENT_MEDIA_OWNED');
+      referenceGuard=guard;
+      return ()=>{if(referenceGuard===guard)referenceGuard=null;};
+    },
     getDraft(){active();return clone(state.draft);},
     getPublished(){active();return clone(state.published);},
     history(){active();return clone(state.history).reverse();},
     version(value){active();return clone(state.history.find(item=>item.revision===value)??null);},
     references(){active();return new Set([state.draft,state.published,...state.history].flatMap(item=>[...referencedMedia(item.content)]));},
-    async saveDraft(content,expectedRevision){const captured=validateContent(content);return queue(()=>save(captured,expectedRevision));},
+    async saveDraft(content,expectedRevision){const captured=validateContent(content);return referenceQueue(()=>save(captured,expectedRevision));},
     publish(expectedRevision,{documentsConfirmed=false}={}){return queue(async()=>{
       revision(expectedRevision);if(typeof documentsConfirmed!=='boolean')throw error(400,'Некорректное подтверждение документов.','INVALID_CONTENT');
       const content=validateContent(state.draft.content,{forPublication:true});
@@ -71,7 +81,7 @@ export async function openContentStore({dir,defaults,persist=true}){
       const published=envelope(content,state.draft.revision,new Date().toISOString());
       await promote({format:1,draft:clone(published),published,history:[...state.history,clone(published)].slice(-20)});return clone(published);
     });},
-    restore(value,expectedRevision){return queue(async()=>{revision(expectedRevision);const version=state.history.find(item=>item.revision===value);if(!version)throw error(404,'Версия контента не найдена.','CONTENT_VERSION_NOT_FOUND');return save(version.content,expectedRevision);});},
+    restore(value,expectedRevision){return referenceQueue(async()=>{revision(expectedRevision);const version=state.history.find(item=>item.revision===value);if(!version)throw error(404,'Версия контента не найдена.','CONTENT_VERSION_NOT_FOUND');return save(version.content,expectedRevision);});},
     async close(){if(closed)return tail;closed=true;await tail;if(claimed){owners.delete(owner);claimed=false;}}
   };
 }

@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const helpers=await import('../public/assets/js/admin-content-state.js').catch(()=>({}));
+test('field contracts distinguish rich prose plain metadata required icons and seeded robots',async()=>{
+ const {parseHTML}=await import('linkedom'),{objectFields}=await import('../public/assets/js/admin-content-fields.js');
+ const previous=globalThis.document;globalThis.document=parseHTML('<html><body></body></html>').document;
+ const prototype=Object.getPrototypeOf(document.createElement('select'));const descriptor=Object.getOwnPropertyDescriptor(prototype,'value');Object.defineProperty(prototype,'value',{configurable:true,get(){return this.querySelector('option[selected]')?.value??'';},set(value){for(const option of this.querySelectorAll('option'))option.toggleAttribute('selected',option.value===value);}});
+ try{
+  const ctx={content:{},change(){}},seo=objectFields({description:'Обычное описание',robots:'noindex,follow'},'pages.page.seo',ctx);
+  assert.equal(Boolean(seo.querySelector('.cms-rich')),false,'SEO must not offer formatted preview');
+  assert.equal(seo.querySelector('select').value,'noindex,follow');assert.equal(seo.querySelectorAll('option').length,4);
+  for(const [path,field]of [['pages.page','intro'],['programs.course','disclaimer']])assert.ok(objectFields({[field]:'Текст'},path,ctx).querySelector('.cms-rich'));
+  for(const path of ['programs.course','benefits.benefit','steps.step'])assert.equal(Boolean(objectFields({icon:'leaf'},path,ctx).querySelector('option[value=""]')),false);
+  assert.ok(objectFields({icon:''},'extraSections.cards.items.card',ctx).querySelector('option[value=""]'));
+ }finally{Object.defineProperty(prototype,'value',descriptor);globalThis.document=previous;}
+});
 test('program-managed modal image fields are not offered as ineffective common editor controls',async()=>{
  const {parseHTML}=await import('linkedom'),{bindingFields}=await import('../public/assets/js/admin-content-fields.js');
  const previous=globalThis.document;globalThis.document=parseHTML('<html><body></body></html>').document;
