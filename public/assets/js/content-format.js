@@ -1,5 +1,5 @@
 // Pure shared formatting used by SSR, the public dialogs and editor previews.
-import {contentFieldContract} from './content-field-contract.js?v=20261013-custom-icons';
+import {contentFieldContract} from './content-field-contract.js?v=20261013-form-builder';
 export function renderContentField(value, path) {
   return contentFieldContract(path).format === 'markdown' ? renderMarkdown(value) : escapeHtml(value);
 }

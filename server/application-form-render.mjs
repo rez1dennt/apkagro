@@ -7,22 +7,24 @@ export function renderApplicationForm({document:d,content,preview=false}){
  const make=(tag,cls,text)=>{const n=d.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
  const modelUpload=original.get('snilsFile')?.cloneNode(true);
  const isOriginal=fields.length===10&&fields.every((f,i)=>f.id===defaultApplicationForm().fields[i].id);
- if(!isOriginal){for(const n of original.values())n.remove();grids[0]?.classList.remove('form-grid--three');grids[0]?.classList.add('form-grid--two');}
+ if(!isOriginal){for(const n of original.values())n.remove();grids[0]?.classList.remove('form-grid--three');grids[0]?.classList.add('form-grid--two','form-grid--custom');}
  for(const definition of fields){
   const {id,type,required}=definition,domId=definition.domId??id;let node=original.get(id),control;
   if(node){
    control=node.querySelector('[name="'+id+'"]');
-   const label=node.querySelector('label'),marker=label?.querySelector('span:not(.field-hint)');
+   const label=node.querySelector('label'),optionalHint=label?.querySelector('.field-hint');
+   if(id==='middleName'&&required&&optionalHint?.textContent.trim()==='(если есть)')optionalHint.remove();
+   const marker=label?.querySelector('span:not(.field-hint)');
    if(required&&!marker){label.append(d.createTextNode(' '),make('span','',definition.marker??'*'));}else if(!required&&marker)marker.remove();
   }else{
    node=type==='file'&&modelUpload?modelUpload.cloneNode(true):make('div','field');
    if(type==='file'&&modelUpload){
-    const label=node.querySelector('label');label.replaceChildren(d.createTextNode(definition.label));label.htmlFor=domId;
-    const zone=node.querySelector('.upload-zone');zone.htmlFor=domId;
+    const label=node.querySelector('label');label.replaceChildren(d.createTextNode(definition.label));if(type!=='radio')label.setAttribute('for',domId);
+    const zone=node.querySelector('.upload-zone');zone.setAttribute('for',domId);
     const strong=node.querySelector('strong');strong.textContent='Выберите файл или перетащите';strong.dataset.fileLabel=domId;
     node.querySelector('small').textContent=definition.hint||'PDF, JPG, PNG до 10 МБ';control=node.querySelector('input');node.querySelector('.field-error').id=domId+'-error';
    }else{
-    const label=make('label','',definition.label);label.htmlFor=domId;node.append(label);
+    const label=make('label','',definition.label);if(type!=='radio')label.setAttribute('for',domId);node.append(label);
     if(type==='radio'){
      control=make('div','field-options');control.id=domId;control.setAttribute('role','radiogroup');label.id=domId+'-label';control.setAttribute('aria-labelledby',label.id);
      for(const option of definition.rules.options){const row=make('label','checkbox-label'),input=make('input');input.type='radio';input.name=id;input.id=id+'-'+option.id;input.value=option.id;if(required)input.setAttribute('required','');row.append(input,make('span','',option.label));control.append(row);}

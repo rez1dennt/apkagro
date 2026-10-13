@@ -8,6 +8,7 @@ import {courses} from '../public/assets/js/courses.js';
 import {refreshRequiredMessage,previewSubmissionMessage} from '../public/assets/js/content-format.js';
 export class HttpError extends Error {constructor(status,message,code='INVALID_REQUEST'){super(message);this.status=status;this.code=code;}}
 const invalid=message=>new HttpError(400,message);
+const fieldInvalid=(definition,message)=>Object.assign(invalid(message),{fieldErrors:{[definition.id]:message}});
 const allowed=new Set(['courseId','contentRevision','lastName','firstName','middleName','birthDate','phone','email','snils','education','consent','consentVersion','website','_csrf']);
 export function validateFields(fields,{programs,consentVersion=CONSENT_VERSION,contentRevision}={}){
  if(fields.submissionContext==='preview'||fields.contentRevision==='preview')throw new HttpError(403,previewSubmissionMessage,'PREVIEW_INTAKE_DISABLED');
@@ -43,12 +44,12 @@ export function validateSubmission(fields,files,{form,programs,consentVersion=CO
  if(!Array.isArray(files)||files.length>FORM_LIMITS.activeFiles)throw invalid(FORM_MESSAGES.fileCount);
  for(const file of files){
   const definition=byId.get(file.field);if(!definition||definition.type!=='file'||seen.has(file.field))throw invalid(FORM_MESSAGES.unknownFile);seen.add(file.field);
-  if(!Buffer.isBuffer(file.data)||file.data.length>FORM_LIMITS.fileBytes)throw invalid('Каждый файл должен быть не больше 10 МБ.');
-  const [mime,ext]=identify(file.data),extension=ext.slice(1);if(file.mime!==mime||!definition.rules.accept.includes(extension)||!(extension==='jpg'?['.jpg','.jpeg']:[ext]).includes(path.extname(file.name??'').toLowerCase()))throw invalid(FORM_MESSAGES.fileType);
+  if(!Buffer.isBuffer(file.data)||file.data.length>FORM_LIMITS.fileBytes)throw fieldInvalid(definition,'Каждый файл должен быть не больше 10 МБ.');
+  const [mime,ext]=identify(file.data),extension=ext.slice(1);if(file.mime!==mime||!definition.rules.accept.includes(extension)||!(extension==='jpg'?['.jpg','.jpeg']:[ext]).includes(path.extname(file.name??'').toLowerCase()))throw fieldInvalid(definition,FORM_MESSAGES.fileType);
   acceptedFiles.push({field:definition.id,mime,name:definition.id+ext,data:file.data,fileLabel:definition.label});
  }
  const formValues={};
- for(const definition of definitions){const result=validateFieldValue(definition,definition.type==='file'?seen.has(definition.id):fields[definition.id],{today});if(!result.ok)throw invalid(result.message);formValues[definition.id]=result.value;}
+ for(const definition of definitions){const result=validateFieldValue(definition,definition.type==='file'?seen.has(definition.id):fields[definition.id],{today});if(!result.ok)throw fieldInvalid(definition,result.message);formValues[definition.id]=result.value;}
  const normalized=Object.fromEntries(['lastName','firstName','middleName','birthDate','phone','email','snils','education'].map(id=>[id,formValues[id]??'']));
  return {fields:{...normalized,courseId:fields.courseId,consent:'true',consentVersion,formSnapshot:{version:1,fields:structuredClone(definitions)},formValues},files:acceptedFiles};
 }

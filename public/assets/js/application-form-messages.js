@@ -1,0 +1,4 @@
+// Keep the fixed legacy CMS message registry and its authored translations stable.
+export const legacyFormMessages=Object.freeze({
+ consent:'Для отправки необходимо ваше согласие.',fileMissing:'Прикрепите документ.',fileSize:'Размер файла должен быть не больше 10 МБ.',fileFormat:'Выберите PDF, JPG или PNG.',educationMissing:'Выберите уровень образования.',required:'Заполните это поле.',email:'Проверьте адрес электронной почты.',phone:'Введите российский номер из 11 цифр.',snilsLength:'Введите СНИЛС полностью — 11 цифр.',snilsZero:'СНИЛС не может состоять только из нулей. Сверьте номер с документом.',snilsCheck:'Неверные контрольные цифры СНИЛС. Сверьте номер с документом.',birthDate:'Укажите корректную дату рождения.',name:'Используйте буквы, пробел или дефис.',upload:'Выберите файл или перетащите'
+});

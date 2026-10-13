@@ -17,7 +17,7 @@ export function formatSnils(value) {
 
 export function attachMask(input, format) {
   if (!input) return;
-  input.addEventListener('beforeinput', event => {
+  const beforeInput = event => {
     if (event.isComposing || input.selectionStart !== input.selectionEnd) return;
     const backward = event.inputType === 'deleteContentBackward';
     const forward = event.inputType === 'deleteContentForward';
@@ -32,8 +32,8 @@ export function attachMask(input, format) {
     const position = backward ? index : cursor;
     input.setSelectionRange(position, position);
     input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  input.addEventListener('input', event => {
+  };
+  const onInput = event => {
     if (event.isComposing) return;
     const raw = input.value, cursor = input.selectionStart ?? raw.length, atEnd = cursor === raw.length;
     let digitCount = raw.slice(0, cursor).replace(/\D/g, '').length;
@@ -50,5 +50,8 @@ export function attachMask(input, format) {
       }
     }
     input.setSelectionRange(position, position);
-  });
+  };
+  input.addEventListener('beforeinput',beforeInput);
+  input.addEventListener('input',onInput);
+  return ()=>{input.removeEventListener('beforeinput',beforeInput);input.removeEventListener('input',onInput);};
 }

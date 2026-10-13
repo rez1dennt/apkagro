@@ -11,3 +11,9 @@
 .cms-dialog-header{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;gap:var(--cms-gap);background:var(--paper);padding-block:.25rem var(--cms-gap);margin-bottom:var(--cms-gap)}.cms-dialog-header h2{margin:0;min-width:0}.cms-dialog-header>.cms-button{flex-shrink:0}.cms-preview-viewport{position:relative}.cms-preview-viewport[data-fit=true]{overflow:hidden}.cms-preview-frame{transform-origin:top left}
 @media(max-width:400px){.cms-dialog-header{flex-wrap:wrap}.cms-dialog-header h2{flex:1 1 16rem}.cms-dialog-header>.cms-button{order:-1;margin-inline-start:auto}}
 .cms-record>summary small{display:block;margin:.375rem 0 0}.cms-record-body{scroll-margin-top:calc(var(--cms-header) + var(--cms-space))}
+.cms-form-record .cms-field>span{font-size:var(--cms-small);font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.cms-form-record .cms-check span{overflow-wrap:anywhere;min-width:0}
+.cms-form-options{display:grid;gap:var(--cms-gap)}
+.cms-form-options .cms-field{flex:1 1 var(--cms-sidebar)}
+.cms-form-options .cms-actions{align-items:end}
+.cms-form-record input[type=number]{min-width:0}

@@ -152,7 +152,7 @@ export async function extractDefaultContent(){
       add('background.'+hash(file+'|'+occurrence+++'|'+rule),'Оформление — фон '+rule.slice(0,65),'background',value,{file:'assets/css/'+file,selector:rule,mode:'css-url',sourceUrl:value,occurrence:occurrence-1,group:'Оформление'});
     }
   }
-  const js=await readFile(path.join(root,'public/assets/js/site.js'),'utf8');
+  const js=(await Promise.all(['site.js','application-form-messages.js'].map(file=>readFile(path.join(root,'public/assets/js',file),'utf8')))).join('\n');
   for(const match of js.matchAll(/(['`])([А-ЯЁ][^'`\r\n]*?)\1/g)){
     const value=match[2];if(!/[А-Яа-яЁё]{2}/.test(value)||value.includes('${input'))continue;
     const normalized=value.replace('${result.reference}','{reference}');

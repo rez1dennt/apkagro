@@ -1,6 +1,7 @@
-import { createContentAdmin } from './admin-content.js?v=20261013-custom-icons';
-import { courses } from './courses.js?v=20261013-custom-icons';
-import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261013-custom-icons';
+import {applicationDetailFields} from './application-form.js?v=20261013-form-builder';
+import { createContentAdmin } from './admin-content.js?v=20261013-form-builder';
+import { courses } from './courses.js?v=20261013-form-builder';
+import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261013-form-builder';
 let csrfToken = null, applications = [], currentId = null, opener = null;
 let pollTimer = null, loading = false, programOptions=[];
 let authGeneration = 0;
@@ -56,7 +57,7 @@ function renderApplications(){
   $('#stat-total').textContent=applications.length;
   for(const status of ['new','review','accepted'])$(`#stat-${status}`).textContent=applications.filter(a=>a.status===status).length;
   $('#applications-table-body').replaceChildren(...filtered.map(a=>{
-    const tr=document.createElement('tr'),name=document.createElement('td');name.append(textElement('strong',[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ')),textElement('small',a.education==='student'?'Студент 4-го курса и старше':'Профессиональное образование'));
+    const tr=document.createElement('tr'),name=document.createElement('td');name.append(textElement('strong',[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ')||'Заявка '+(a.reference||a.id)),textElement('small',a.education==='student'?'Студент 4-го курса и старше':a.education==='professional'?'Профессиональное образование':'Образование не указано'));
     const course=textElement('td',a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId,'course-cell');
     const contact=document.createElement('td');contact.className='contact-cell';for(const [label,href] of [[a.email,'mailto:'+encodeURIComponent(a.email)],[a.phone,'tel:'+String(a.phone).replace(/[^+\d]/g,'')]]){const link=textElement('a',label);link.href=href;contact.append(link);}
     const date=textElement('td',formatDate(a.createdAt));const status=document.createElement('td');status.append(textElement('span',statuses[a.status]||a.status,`status-badge status-badge--${Object.hasOwn(statuses,a.status)?a.status:'new'}`));
@@ -106,10 +107,10 @@ $('#export-button').addEventListener('click',async()=>{
 function svgIcon(id){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('icon');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href',`/assets/icons-v2.svg#${id}`);svg.append(use);return svg;}
 async function openDetail(id,button){
   button.disabled=true;showError('#dashboard-error','');
-  try{const a=await api('/api/admin/applications/'+encodeURIComponent(id));currentId=id;opener=button;$('#detail-title').textContent=[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ');$('#detail-reference').textContent=`${a.reference||a.id} · ${formatDate(a.createdAt)}`;
-    const fields=[['Программа',a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId],['Дата рождения',a.birthDate?new Date(a.birthDate+'T00:00:00').toLocaleDateString('ru-RU'):'—'],['Телефон',a.phone],['Электронная почта',a.email],['СНИЛС',a.snils],['Образование',a.education==='student'?'Студент 4-го курса и старше':'Среднее профессиональное / высшее'],['Согласие',`Версия ${a.consentVersion||'—'}, ${formatDate(a.consentAt||a.createdAt)}`]];
+  try{const a=await api('/api/admin/applications/'+encodeURIComponent(id));currentId=id;opener=button;$('#detail-title').textContent=[a.lastName,a.firstName,a.middleName].filter(Boolean).join(' ')||'Заявка '+(a.reference||a.id);$('#detail-reference').textContent=`${a.reference||a.id} · ${formatDate(a.createdAt)}`;
+    const fields=[['Программа',a.courseSnapshot?.title||a.courseTitle||courses[a.courseId]?.title||a.courseId],...applicationDetailFields(a),['Согласие',`Версия ${a.consentVersion||'—'}, ${formatDate(a.consentAt||a.createdAt)}`]];
     $('#detail-fields').replaceChildren(...fields.flatMap(([label,value])=>[textElement('dt',label),textElement('dd',value||'—')]));
-    $('#detail-documents').replaceChildren(...(a.documents||[]).map(doc=>{const link=document.createElement('a');link.href='/api/admin/documents/'+encodeURIComponent(doc.id);link.setAttribute('download','');const span=document.createElement('span');span.append(textElement('strong',doc.field==='snilsFile'?'Копия СНИЛС':'Документ об образовании'),textElement('small',`${doc.name} · ${Math.ceil(doc.size/1024)} КБ`));link.append(svgIcon('download'),span);return link;}));
+    $('#detail-documents').replaceChildren(...(a.documents||[]).map(doc=>{const link=document.createElement('a');link.href='/api/admin/documents/'+encodeURIComponent(doc.id);link.setAttribute('download','');const span=document.createElement('span');span.append(textElement('strong',doc.fileLabel||a.formSnapshot?.fields?.find(f=>f.id===doc.field)?.label||(doc.field==='snilsFile'?'Копия СНИЛС':doc.field==='educationFile'?'Документ об образовании':'Документ')),textElement('small',`${doc.name} · ${Math.ceil(doc.size/1024)} КБ`));link.append(svgIcon('download'),span);return link;}));
     $('#detail-status').value=a.status;syncStatusSelect($('#detail-status'));showError('#detail-error','');$('#detail-status-message').textContent='';const dialog=$('#application-detail');dialog.classList.remove('is-closing');document.documentElement.classList.add('is-locked');dialog.showModal();
   }catch(error){showError('#dashboard-error',error.message);}finally{button.disabled=false;}
 }

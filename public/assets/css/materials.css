@@ -174,3 +174,19 @@
 .section-heading { overflow-wrap: anywhere; flex-wrap: wrap; }
 .section-heading > div { flex: 1 1 18rem; }
 .section-heading .text-link { flex-shrink: 0; max-width: 100%; white-space: normal; }
+:root{--form-gap:.75rem;--form-control:2.75rem;--form-check:1.125rem;--form-text:.8125rem;--form-hint:.75rem;--form-padding:.75rem;--form-border:1px;--form-textarea:7rem;--form-focus-offset:.1875rem;--form-focus-width:.125rem}
+.field textarea{display:block;width:100%;min-width:0;min-height:var(--form-textarea);resize:vertical;padding:var(--form-padding);border:var(--form-border) solid var(--line);border-radius:var(--radius-sm);background:var(--input);color:var(--ink);font:var(--form-text)/1.5 var(--font-body);transition:border-color var(--motion),box-shadow var(--motion)}
+.field textarea:focus-visible,.field-options input:focus-visible{outline:var(--form-focus-width) solid var(--forest);outline-offset:var(--form-focus-offset)}
+.field textarea[aria-invalid=true],.field input[aria-invalid=true]{border-color:var(--danger)}
+.field:has(textarea),.field:has(.field-options){grid-column:1/-1}
+.field>label.checkbox-label,.field-options .checkbox-label{display:flex;align-items:center;gap:var(--form-gap);min-height:var(--form-control);line-height:1.6}
+.field input:is([type=checkbox],[type=radio]){appearance:auto;accent-color:var(--forest);width:var(--form-check);height:var(--form-check);min-width:var(--form-check);padding:0;margin:0;flex:none;background:var(--white);box-shadow:none}
+.field input:is([type=checkbox],[type=radio]):checked:after{content:none}
+.field-options{display:grid;gap:var(--form-gap)}
+.field-options .checkbox-label,.field>.field-hint{font:var(--form-text)/1.6 var(--font-body);color:var(--ink);overflow-wrap:anywhere}
+.field>.field-hint{display:block;margin-block:var(--form-gap);color:var(--muted)}
+.field:has([aria-invalid=true]) .upload-zone{border-color:var(--danger)}
+.field>label,.field-error,.field-options span{overflow-wrap:anywhere;min-width:0}
+@media(prefers-reduced-motion:reduce){.field textarea{transition:none}}
+.form-grid:not(:has(.field)){display:none}
+@media(max-width:768px){.form-grid--custom{grid-template-columns:minmax(0,1fr)}.form-grid--custom>.field{grid-column:1/-1}.form-grid--custom .field>label:first-child{font-size:var(--form-text)}}

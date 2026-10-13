@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {applicationDetailFields} from '../public/assets/js/application-form.js';
 import { readFile } from 'node:fs/promises';
 
 const source = (await readFile(new URL('../public/assets/js/admin.js', import.meta.url), 'utf8'))
+  .replace(/import \{applicationDetailFields\} from '[^']+';/, '')
   .replace(/import \{ courses \} from '[^']+';/, 'const courses = {};')
   .replace(/import \{ enhanceStatusSelects, syncStatusSelect, closeStatusSelects \} from '[^']+';/, 'const enhanceStatusSelects = () => {}; const syncStatusSelect = () => {}; const closeStatusSelects = () => {};')
   .replace(/import \{ createContentAdmin \} from '[^']+';/, 'const createContentAdmin=()=>({setAuthenticated(){},confirmLeave:async()=>true});')
@@ -32,7 +34,7 @@ function fixture() {
   const response = new Promise(resolve => { settle = resolve; });
   // A late completion can outlive cancellation; exercise the UI's generation guard.
   const context = vm.createContext({
-    document, window: { addEventListener() {} }, fetch: () => response,
+    applicationDetailFields,document, window: { addEventListener() {} }, fetch: () => response,
     FormData, URL, AbortController, DOMException,
     setInterval: () => 1, clearInterval() {}, setTimeout, clearTimeout, console
   });
