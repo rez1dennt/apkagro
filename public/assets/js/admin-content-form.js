@@ -48,9 +48,9 @@ export function renderFormEditor(host,{state,definitions,onChange}){
    actions.append(button('Удалить поле',async()=>{const answer=await confirmAction('Удалить поле?',`«${definition.label}» будет удалено из черновика. Ответы в старых заявках сохранятся.${meta?' Стандартное поле можно добавить снова.':''}`,'Удалить поле',{danger:true});if(answer.confirmed&&card.isConnected&&state.content===content){fields.splice(fields.indexOf(field),1);changed();draw(fields[Math.min(index,fields.length-1)]?.id);}},'is-danger'));
    body.append(actions,el('p',meta?'Стандартное поле. Тип и проверка закреплены; подписи используют общие тексты сайта.':'Тип: '+typeLabels[field.type],'cms-hint'));
    const grid=el('div','','cms-fields');body.append(grid);
-   const edit=(role,label,value,maxLength,type='text')=>control(grid,label,value,next=>{const alias=meta?.aliases[role];if(alias)content.fields[alias]=next;else field[role]=next;changed();if(role==='label')caption();},{role,maxLength,type,required:role==='label'});
+   const edit=(role,label,value,maxLength,type='text')=>control(grid,label,value,next=>{const alias=meta?.aliases[role];if(alias)content.fields[alias]=next;else if(!meta||role==='hint')field[role]=next;else return;changed();if(role==='label')caption();},{role,maxLength,type,required:role==='label'});
    edit('label','Подпись поля',definition.label,FORM_LIMITS.label);edit('hint','Подсказка',definition.hint,FORM_LIMITS.hint,'textarea');
-   if(!['checkbox','radio','file'].includes(definition.type))edit('placeholder','Пример или приглашение',definition.placeholder,FORM_LIMITS.placeholder);
+   if((!meta||meta.aliases.placeholder)&&!['checkbox','radio','file'].includes(definition.type))edit('placeholder','Пример или приглашение',definition.placeholder,FORM_LIMITS.placeholder);
    if(meta?.aliases.marker)edit('marker','Отметка обязательного поля',definition.marker,FORM_LIMITS.label);
    if(meta?.aliases.uploadLabel)edit('uploadLabel','Приглашение выбрать файл',definition.uploadLabel,FORM_LIMITS.label);
    if(meta?.rules.options)for(const option of definition.rules.options)edit('option:'+option.id,'Подпись варианта',option.label,FORM_LIMITS.optionLabel);

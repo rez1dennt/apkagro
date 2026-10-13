@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {loadDefaultContent} from '../server/content-schema.mjs';
+import {loadDefaultContent,validateContent} from '../server/content-schema.mjs';
 import {contentDefinitions} from '../server/content-routes.mjs';
-import {resolveFormFields,formBuiltinMetadata} from '../server/application-form.mjs';
+import {resolveFormFields,formBuiltinMetadata,validateApplicationForm} from '../server/application-form.mjs';
 import {validateFieldValue,createCustomField} from '../public/assets/js/application-fields.js';
 import {createPreset,copyFormField,restoreBuiltin,renderFormEditor,collectionChanged} from '../public/assets/js/admin-content-form.js';
 import {attachApplicationForm,applicationDetailFields} from '../public/assets/js/application-form.js';
@@ -69,4 +69,45 @@ test('editor gives field-specific rule guidance and allows empty choice drafts u
 test('editor select names use only their caption and public custom labels target their controls',async()=>{
  const f=fixture(),content=await loadDefaultContent(),definitions=await contentDefinitions();content.applicationForm.fields=[createCustomField('text')];try{renderFormEditor(f.document.querySelector('#editor'),{state:{content},definitions,onChange(){}});const select=f.document.querySelector('[data-form-role=format]');const caption=f.document.getElementById(select.getAttribute('aria-labelledby'));assert.equal(caption?.textContent,'Допустимые символы');}finally{f.close();}
  const fields=[createCustomField('text'),createCustomField('file'),createCustomField('textarea')];content.applicationForm.fields=fields;const template=await readFile(new URL('../public/index.html',import.meta.url),'utf8'),document=parseHTML(renderContentPage({content,template,revision:2})).document;for(const field of fields){const container=document.querySelector('.field[data-field-id="'+field.id+'"]');assert.equal(container.querySelector('label').getAttribute('for'),field.id);if(field.type==='file')assert.equal(container.querySelector('.upload-zone').getAttribute('for'),field.id);}
+});
+
+test('every offered builtin text control roundtrips through canonical metadata and strict schemas',async()=>{
+ const f=fixture(),content=await loadDefaultContent(),definitions=await contentDefinitions();
+ try{
+  renderFormEditor(f.document.querySelector('#editor'),{state:{content},definitions,onChange(){}});
+  for(const meta of definitions.applicationForm.builtins){
+   const ref=content.applicationForm.fields.find(field=>field.id===meta.id),card=f.document.querySelector('[data-form-id="'+meta.id+'"]');
+   for(const control of card.querySelectorAll('[data-form-role]')){
+    const role=control.dataset.formRole;
+    if(['enabled','required'].includes(role)){control.checked=!ref[role];f.event(control,'change');assert.equal(ref[role],control.checked);}
+    else{
+     const value='Текст '+meta.id+' '+role;control.value=value;f.event(control);
+     const alias=meta.aliases[role];
+     if(alias){assert.equal(content.fields[alias],value);assert.equal(Object.hasOwn(ref,role),false);}
+     else assert.equal(role,'hint','only a hint may live on the builtin ref: '+meta.id+'/'+role);
+     const resolved=resolveFormFields(content,{includeDisabled:true}).find(field=>field.id===meta.id);
+     assert.equal(role.startsWith('option:')?resolved.rules.options.find(option=>option.id===role.slice(7)).label:resolved[role],value);
+    }
+    assert.doesNotThrow(()=>validateApplicationForm(content.applicationForm),meta.id+'/'+role);
+    assert.doesNotThrow(()=>validateContent(content),meta.id+'/'+role);
+   }
+   assert.ok(Object.keys(ref).every(key=>['id','kind','enabled','required','hint'].includes(key)),meta.id);
+  }
+ }finally{f.close();}
+});
+test('builtin date exposes no unsupported placeholder control',async()=>{
+ const f=fixture(),content=await loadDefaultContent(),definitions=await contentDefinitions();
+ try{renderFormEditor(f.document.querySelector('#editor'),{state:{content},definitions,onChange(){}});assert.equal(Boolean(f.document.querySelector('[data-form-id="birthDate"] [data-form-role="placeholder"]')),false);}finally{f.close();}
+});
+test('radio hint and existing descriptions survive invalid valid clear and reset states without duplication',()=>{
+ const definition={...createCustomField('radio'),id:'radio',required:true,hint:'Подсказка',rules:{options:[{id:'yes',label:'Да'}]}};
+ const f=fixture('<form><div class="field" data-field-id="radio"><div role="radiogroup" aria-describedby="radio-hint extra"><input type="radio" id="radio" name="radio" value="yes" aria-describedby="individual"></div><small id="radio-hint">Подсказка</small><p class="field-error" id="radio-error"></p></div></form>');
+ try{
+  const widget=attachApplicationForm(f.document.querySelector('form'),{definitions:[definition]}),group=f.document.querySelector('[role=radiogroup]'),input=f.document.querySelector('input');
+  const description=()=>{const ids=group.getAttribute('aria-describedby').split(/\s+/);assert.deepEqual(ids,['radio-hint','extra','radio-error']);assert.equal(new Set(ids).size,ids.length);assert.equal(input.getAttribute('aria-describedby'),'individual radio-error');};
+  assert.equal(widget.validateAll(),false);description();assert.equal(group.getAttribute('aria-invalid'),'true');
+  input.checked=true;f.event(input,'change');assert.equal(widget.validateAll(),true);description();assert.equal(group.getAttribute('aria-invalid'),'false');
+  widget.setServerErrors({radio:'Проверьте выбор.'});description();widget.clearErrors();description();assert.equal(f.document.querySelector('.field-error').textContent,'');
+  input.checked=false;f.event(f.document.querySelector('form'),'reset');widget.clearErrors();description();assert.equal(group.getAttribute('aria-invalid'),'false');widget.dispose();
+ }finally{f.close();}
 });
