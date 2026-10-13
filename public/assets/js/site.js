@@ -1,8 +1,8 @@
-import './cookie-notice.js?v=20261009-working';
-import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js';
-import {renderMarkdown} from './content-format.js';
-import { validSnils, savedApplication } from './form-logic.js';
-import { attachMask, formatPhone, formatSnils } from './input-masks.js';
+import './cookie-notice.js?v=20261013-content-admin';
+import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261013-content-admin';
+import {renderMarkdown,formatHours,replaceCaption,previewPhotoPlaceholder} from './content-format.js?v=20261013-content-admin';
+import { validSnils, savedApplication } from './form-logic.js?v=20261013-content-admin';
+import { attachMask, formatPhone, formatSnils } from './input-masks.js?v=20261013-content-admin';
 
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const delay = () => motion.matches ? 0 : 220;
@@ -94,14 +94,22 @@ document.addEventListener('click', event => {
   courseDialog.dataset.course = id;courseDialog.dataset.originalFrame=String(Boolean(course.originalFrame));
   document.querySelector('#dialog-title').textContent = course.title;
   const description=document.querySelector('#dialog-description');if(description.tagName==='P'){const block=document.createElement('div');block.id=description.id;description.replaceWith(block);}if(course.preserveDescription)document.querySelector('#dialog-description').textContent=course.description;else document.querySelector('#dialog-description').innerHTML=renderMarkdown(course.description);
-  const image = document.querySelector('#dialog-image'); image.src = course.modalImage; image.alt = course.alt;
+  const image = document.querySelector('#dialog-image');
+  let placeholder = courseDialog.querySelector('.cms-photo-placeholder');
+  if (siteContent?.preview && !course.modalImage) {
+    image.hidden = true; image.removeAttribute('src');
+    if (!placeholder) { placeholder = document.createElement('p'); placeholder.className = 'cms-photo-placeholder'; image.after(placeholder); }
+    placeholder.textContent = previewPhotoPlaceholder;
+  } else {
+    placeholder?.remove(); image.hidden = false; image.src = course.modalImage; image.alt = course.alt;
+  }
   const topics = document.querySelector('#dialog-topics');
   topics.replaceChildren(...course.topics.map(topic => { const item = document.createElement('li'); item.textContent = topic; return item; }));
   topics.hidden = course.topics.length === 0;
   document.querySelector('#dialog-topics-heading').hidden = topics.hidden;
   const disclaimer=document.querySelector('.course-dialog__disclaimer');disclaimer.textContent=course.disclaimer;disclaimer.hidden=!course.disclaimer||course.hideDefaultDisclaimer;
-  document.querySelectorAll('.course-meta > span').forEach((node,i)=>node.textContent=[`${course.hours} часа`,course.format,course.priceText][i]);
-  const choose=document.querySelector('#choose-course');choose.textContent=course.status==='closed'?translate(closedMessage):course.buttonLabel;choose.disabled=!canSelect(id)||!document.querySelector('#application');
+  document.querySelectorAll('.course-meta > span').forEach((node,i)=>replaceCaption(node,[course.hoursLabel ?? formatHours(course.hours),course.format,course.priceText][i]));
+  const choose=document.querySelector('#choose-course');replaceCaption(choose,course.status==='closed'?translate(closedMessage):course.buttonLabel);choose.disabled=!canSelect(id)||!document.querySelector('#application');
   openDialog(courseDialog, button);
 });
 function selectCourse(id) {

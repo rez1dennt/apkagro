@@ -87,7 +87,17 @@
 .program-card[data-course="cider"] .program-card__photo > img { object-position: var(--cider-card-focus); transform: none; }
 .course-dialog[data-course="cider"] .course-dialog__image { object-position: var(--cider-modal-focus); }
 .program-card__footer { margin-top: auto; }
-#dialog-description { white-space: pre-line; }
+#dialog-description { white-space: pre-line; font-size: 14px; line-height: 1.6; color: var(--muted); margin-top: 19px; }
+#dialog-description:has(> *) { white-space: normal; }
+#dialog-description > :first-child { margin-top: 0; }
+#dialog-description > :last-child { margin-bottom: 0; }
+#dialog-description :is(h2,h3,h4,h5,h6) { font-family: var(--font-display); font-size: 1.4em; line-height: 1.3; margin-block: 1em .65em; color: var(--ink); }
+#dialog-description :is(p,ul,ol) { font-size: inherit; line-height: inherit; margin-block: 0 1em; }
+.cms-photo-placeholder { display: grid; place-content: center; min-height: 10rem; padding: 1rem; background: var(--cream); color: var(--muted); text-align: center; }
+.course-dialog__media > img[hidden] { display: none; }
+.cms-section .body-copy > :is(h2,h3,h4) { margin-block: 1em .65em; }
+.cms-section .body-copy > :is(p,ul,ol) { margin-block: 0 1em; }
+.cms-section .body-copy > :first-child { margin-top: 0; }
 /* New/changed photos share the 290px frame; original three supplied crops retain their approved frames. */
 .course-dialog[data-course]:not([data-original-frame="true"]) .course-dialog__image { height: auto; max-height: var(--course-dialog-photo-max); aspect-ratio: var(--program-photo-ratio); object-fit: cover; }
 .cms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--footer-details-gap); }
@@ -96,9 +106,9 @@
 .cms-section .benefit { min-width: 0; }
 .cms-section :is(h2,h3,p,a,figcaption) { overflow-wrap: anywhere; }
 .cms-section .body-copy { margin-bottom: 1em; }
-#dialog-description p { margin-block: 0 1em; }
 .consent-text p { overflow-wrap: anywhere; }
 @media (max-width: 699px) {
+  #dialog-description { font-size: 13px; line-height: 1.5; margin-top: 14px; }
   :root { --footer-details-gap: 18px; --footer-details-copy: 11px; }
   .footer__organization { grid-template-columns: minmax(0, 1fr); }
   .footer__organization .footer__documents { flex-direction: column; align-items: flex-start; gap: 6px; }

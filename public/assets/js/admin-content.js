@@ -1,7 +1,7 @@
-import {el,button,dialog,confirmAction,downloadJson,dateLabel} from './admin-content-ui.js';
-import {createDraftState,changedGroups,createRecord,moveRecord,removeRecord,splitTemplate} from './admin-content-state.js';
-import {bindingFields,collectionEditor,objectFields,fieldControl,labels,sectionLabels,templateLabels} from './admin-content-fields.js';
-import {createMediaLibrary} from './admin-content-media.js';
+import {el,button,dialog,confirmAction,downloadJson,dateLabel} from './admin-content-ui.js?v=20261013-content-admin';
+import {createDraftState,changedGroups,createRecord,moveRecord,removeRecord,splitTemplate} from './admin-content-state.js?v=20261013-content-admin';
+import {bindingFields,collectionEditor,objectFields,fieldControl,labels,sectionLabels,templateLabels} from './admin-content-fields.js?v=20261013-content-admin';
+import {createMediaLibrary} from './admin-content-media.js?v=20261013-content-admin';
 const tabs=[['applications','Заявки'],['content','Содержимое сайта'],['programs','Программы'],['media','Медиатека'],['pages','Страницы и документы'],['settings','Настройки'],['history','История публикаций']];
 const groupLabels={fields:'Тексты и изображения',navigation:'Меню',benefits:'Преимущества',steps:'Шаги поступления',faqs:'Вопросы и ответы',programs:'Программы',pages:'Страницы',sectionOrder:'Порядок разделов',hiddenSections:'Видимость разделов',extraSections:'Дополнительные разделы',settings:'Настройки и реквизиты',documents:'Документы',seo:'Поиск и социальные сети',messages:'Сообщения посетителю'};
 export function createContentAdmin({api,onUnauthorized}){

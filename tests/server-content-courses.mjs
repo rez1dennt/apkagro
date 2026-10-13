@@ -16,6 +16,30 @@ import {openStore} from '../server/storage.mjs';
 import {parseHTML} from 'linkedom';
 import {renderContentCss} from '../server/content-render.mjs';
 const fields={courseId:'brand-new',lastName:'Иванов',firstName:'Иван',middleName:'',birthDate:'1990-01-01',phone:'+79267908090',email:'person@example.test',snils:'11223344595',education:'professional',consent:'true',consentVersion:'new-version'};
+
+test('cached HTML closes at Moscow rollover and real restart retains publications and draft',async t=>{
+ const dir=await mkdtemp(path.resolve('output/content-admin/rollover-')),key=randomBytes(32);
+ await setupAdmin(dir,key,'rollover-editor','synthetic-rollover-password!',randomBytes(20));
+ let app;
+ const start=async()=>{app=await createApp({dataDir:dir,key,intakeEnabled:true,origin:'http://127.0.0.1:0',testDynamicOrigin:true});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+app.server.address().port;};
+ const stop=async()=>{await new Promise(r=>app.server.close(r));await app.close();app=null;};
+ try {
+  let origin=await start();let services=await app.getContentServices(),draft=services.store.getDraft();
+  for(const asset of ['/assets/js/site.js','/assets/js/content-format.js','/assets/css/materials.css'])assert.equal((await fetch(origin+asset)).headers.get('cache-control'),'no-cache','mutable release assets must revalidate');
+  draft.content.settings.intake.deadline='2026-10-31';draft=await services.store.saveDraft(draft.content,draft.revision);await services.media.publish(draft.revision);
+  t.mock.timers.enable({apis:['Date'],now:new Date('2026-10-31T20:59:59.999Z')});
+  const boot=async()=>JSON.parse(parseHTML(await(await fetch(origin+'/')).text()).document.querySelector('#site-content').textContent);
+  assert.equal((await boot()).intake.enabled,true);t.mock.timers.tick(1);
+  assert.equal((await boot()).intake.enabled,false,'cached HTML must change without a publication');
+  assert.equal((await(await fetch(origin+'/api/config')).json()).enabled,false);
+  draft=services.store.getDraft();draft.content.settings.intake.deadline='';draft=await services.store.saveDraft(draft.content,draft.revision);await services.media.publish(draft.revision);
+  assert.equal((await boot()).intake.enabled,true);
+  const publication=services.store.getPublished();draft=services.store.getDraft();draft.content.seo.title='Несохранённая на сайте версия';draft=await services.store.saveDraft(draft.content,draft.revision);
+  t.mock.timers.reset();await stop();origin=await start();services=await app.getContentServices();
+  assert.equal(services.store.getDraft().revision,draft.revision);assert.equal(services.store.getDraft().content.seo.title,'Несохранённая на сайте версия');
+  assert.deepEqual(services.store.getPublished(),publication);assert.equal((await boot()).revision,publication.revision);
+ }finally{t.mock.timers.reset();if(app)await stop();await rm(dir,{recursive:true,force:true});key.fill(0);}
+});
 test('intake accepts only exact current published IDs and consent version',()=>{const options={programs:[{id:'brand-new',status:'published'},{id:'closed',status:'closed'}],consentVersion:'new-version'};assert.equal(validateFields(fields,options).courseId,'brand-new');for(const id of ['drone','closed','__proto__'])assert.throws(()=>validateFields({...fields,courseId:id},options));assert.throws(()=>validateFields({...fields,consentVersion:'old'},options));});
 test('intake rejects stale catalog revisions while legacy initial form remains compatible',()=>{const options={programs:[{id:'brand-new',status:'published'}],consentVersion:'new-version',contentRevision:2};assert.throws(()=>validateFields({...fields,contentRevision:'1'},options),e=>e.code==='CONTENT_CHANGED');assert.throws(()=>validateFields(fields,options),e=>e.code==='CONTENT_CHANGED');assert.equal(validateFields({...fields,contentRevision:'2'},options).courseId,'brand-new');assert.equal(validateFields(fields,{...options,contentRevision:1}).courseId,'brand-new');});
 test('Excel keeps immutable snapshot title, then current catalog, then original fallback',()=>{const book=createApplicationsWorkbook([{courseId:'brand-new',courseSnapshot:{title:'Снимок'}},{courseId:'brand-new'},{courseId:'drone'}],{programs:[{id:'brand-new',title:'Текущее название'}]});assert.equal(book.worksheets[0].getCell('D2').value,'Снимок');assert.equal(book.worksheets[0].getCell('D3').value,'Текущее название');assert.match(book.worksheets[0].getCell('D4').value,/БАС/);});

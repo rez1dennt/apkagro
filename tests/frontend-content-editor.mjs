@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const helpers=await import('../public/assets/js/admin-content-state.js').catch(()=>({}));
+test('program-managed modal image fields are not offered as ineffective common editor controls',async()=>{
+ const {parseHTML}=await import('linkedom'),{bindingFields}=await import('../public/assets/js/admin-content-fields.js');
+ const previous=globalThis.document;globalThis.document=parseHTML('<html><body></body></html>').document;
+ try {
+  const field={id:'placeholder',label:'Фото',group:'common',kind:'text',maxLength:100};
+  const node=bindingFields({groups:[{id:'common',label:'Общее'}],fields:[{...field,managedBy:'programs'}, {...field,id:'caption'}]},{content:{fields:{placeholder:'Фото программы',caption:'Подпись'}},change(){}});
+  assert.equal(node.querySelectorAll('[data-content-path="fields.placeholder"]').length,0);
+  assert.equal(node.querySelectorAll('[data-content-path="fields.caption"]').length,1);
+ }finally{globalThis.document=previous;}
+});
 test('repeatable CRUD keeps permanent IDs, deep clones children, and reorders without loss',()=>{
  assert.equal(typeof helpers.createRecord,'function','editor record helpers exist');
  const first=helpers.createRecord('programs'), second=helpers.createRecord('programs');

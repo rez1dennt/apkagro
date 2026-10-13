@@ -1,5 +1,5 @@
-import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js';
-import {labels,sectionLabels} from './admin-content-fields.js';
+import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js?v=20261013-content-admin';
+import {labels,sectionLabels} from './admin-content-fields.js?v=20261013-content-admin';
 
 export function describeUsage(location,content){
  const parts=location.path.replace(/\[(\d+)\]/g,'.$1').split('.');

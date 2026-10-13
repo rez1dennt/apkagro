@@ -1,4 +1,21 @@
 // Pure shared formatting used by SSR, the public dialogs and editor previews.
+// System copy for authenticated unfinished drafts; never part of the public message schema.
+export const previewPhotoPlaceholder = 'Фото не добавлено';
+export function formatHours(hours) {
+  const lastTwo = hours % 100, last = hours % 10;
+  const noun = lastTwo >= 11 && lastTwo <= 14 ? 'часов' : last === 1 ? 'час' : last >= 2 && last <= 4 ? 'часа' : 'часов';
+  return `${hours} ${noun}`;
+}
+
+// Change only caption text; trusted SVG children retain their edited icon choices.
+export function replaceCaption(node, text) {
+  if (!node) return;
+  const captions = [...node.childNodes].filter(child => child.nodeType === 3);
+  if (captions.length) {
+    captions[0].textContent = text + (node.querySelector('svg') ? ' ' : '');
+    captions.slice(1).forEach(child => child.remove());
+  } else node.prepend(node.ownerDocument.createTextNode(text + ' '));
+}
 export const refreshRequiredMessage='Обновите страницу и повторите отправку.';
 export const previewSubmissionMessage='Предпросмотр содержимого. Отправка заявок отключена.';
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

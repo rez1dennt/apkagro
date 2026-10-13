@@ -1,6 +1,6 @@
-import {courses as originalCourses} from './courses.js?v=20261012-course-materials';
-import {CONSENT_VERSION} from './organization.js?v=20261011-materials';
-import {lookupMessage} from './content-format.js';
+import {courses as originalCourses} from './courses.js?v=20261013-content-admin';
+import {CONSENT_VERSION} from './organization.js?v=20261013-content-admin';
+import {lookupMessage} from './content-format.js?v=20261013-content-admin';
 export const siteContent=(()=>{try{return JSON.parse(document.querySelector('#site-content')?.textContent||'null');}catch{return null;}})();
 export const courses=siteContent?Object.fromEntries(siteContent.programs.map(p=>[p.id,p])):Object.fromEntries(Object.entries(originalCourses).map(([id,p])=>[id,{...p,id,originalFrame:['flowers','wine','cider'].includes(id),preserveDescription:true,status:'published',modalImage:`/assets/images/${p.image}.webp`,alt:p.title,hours:72,format:'Онлайн',priceText:'Бесплатно',buttonLabel:'Выбрать программу',disclaimer:p.suppliedAnnotation?'':'Учебный план и условия участия можно уточнить у координатора.'}]));
 export const consentVersion=siteContent?.intake.consentVersion??CONSENT_VERSION;

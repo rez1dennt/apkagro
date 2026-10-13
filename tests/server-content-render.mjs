@@ -2,10 +2,44 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {parseHTML} from 'linkedom';
-import {loadDefaultContent} from '../server/content-schema.mjs';
+import {loadDefaultContent,validateContent} from '../server/content-schema.mjs';
 import {lookupMessage} from '../public/assets/js/content-format.js';
+import * as format from '../public/assets/js/content-format.js';
 const renderer = await import('../server/content-render.mjs').catch(()=>({}));
 const template=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
+test('private preview system copy does not change the persisted public message schema',async()=>{
+ const oldDocument=await loadDefaultContent();delete oldDocument.messages['site-b2625983c82a'];
+ assert.doesNotThrow(()=>validateContent(oldDocument));
+});
+test('Moscow deadline includes its final day and closes at midnight UTC+3',async()=>{
+ const c=await loadDefaultContent();c.settings.intake.deadline='2026-10-31';
+ assert.equal(renderer.contentIntakeEnabled(c,new Date('2026-10-31T20:59:59.999Z')),true);
+ assert.equal(renderer.contentIntakeEnabled(c,new Date('2026-10-31T21:00:00.000Z')),false);
+});
+test('private incomplete program preview has intentional title and photo placeholders',async()=>{
+ const c=await loadDefaultContent();c.programs.push({...c.programs[0],id:'empty-course',status:'draft',title:'',cardTitle:'',image:'',modalImage:'',description:'',topics:[]});
+ const d=parseHTML(renderer.renderContentPage({content:c,template,preview:true})).document;
+ assert.equal(d.querySelectorAll('img[src=""]').length,0);
+ assert.match(d.querySelector('[data-course="empty-course"]').textContent,/Название программы не заполнено/);
+ assert.match(d.querySelector('[data-course="empty-course"]').textContent,/Фото не добавлено/);
+});
+test('hidden section projects out authored navigation and CTA links and restores them without changing content',async()=>{
+ const c=await loadDefaultContent();c.hiddenSections=['application','programs'];const original=structuredClone(c);
+ let d=parseHTML(renderer.renderContentPage({content:c,template})).document;
+ assert.equal(d.querySelectorAll('a[href="#application"],a[href="#programs"]').length,0);
+ const legal=await readFile(new URL('../public/privacy/index.html',import.meta.url),'utf8');
+ d=parseHTML(renderer.renderContentPage({content:c,template:legal,route:'/privacy/'})).document;
+ assert.equal(d.querySelectorAll('header a[href="/#application"],footer a[href="/#programs"]').length,0);
+ assert.deepEqual(c,original);c.hiddenSections=[];
+ assert.ok(parseHTML(renderer.renderContentPage({content:c,template})).document.querySelector('a[href="#application"]'));
+});
+test('Russian hours agree and common modal caption is an effective fallback',async()=>{
+ assert.equal(typeof format.formatHours,'function');
+ for(const [hours,label]of [[1,'1 час'],[2,'2 часа'],[11,'11 часов'],[108,'108 часов'],[21,'21 час']])assert.equal(format.formatHours(hours),label);
+ const c=await loadDefaultContent();c.fields['other.text-083dd138ad9a']='Общий выбор';c.programs[1].buttonLabel='Особый выбор';
+ const boot=JSON.parse(parseHTML(renderer.renderContentPage({content:c,template})).document.querySelector('#site-content').textContent);
+ assert.equal(boot.programs[0].buttonLabel,'Общий выбор');assert.equal(boot.programs[1].buttonLabel,'Особый выбор');
+});
 test('renderer exposes safe SSR and theme interfaces',()=>{assert.equal(typeof renderer.renderContentPage,'function');assert.equal(typeof renderer.renderContentCss,'function');});
 test('SSR renders new programs, collections, metadata, aliases and keeps private records out',async()=>{
  const c=await loadDefaultContent();c.fields['hero.title']='Новые знания\nдля всех';c.seo.title='Новый сайт';c.settings.contacts.email='usersacracorona@yandex.ru';

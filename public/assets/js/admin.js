@@ -1,6 +1,6 @@
-import { createContentAdmin } from './admin-content.js';
-import { courses } from './courses.js?v=20261012-course-materials';
-import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261009-controls';
+import { createContentAdmin } from './admin-content.js?v=20261013-content-admin';
+import { courses } from './courses.js?v=20261013-content-admin';
+import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261013-content-admin';
 let csrfToken = null, applications = [], currentId = null, opener = null;
 let pollTimer = null, loading = false, programOptions=[];
 let authGeneration = 0;

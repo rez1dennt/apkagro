@@ -17,6 +17,14 @@ for(const file of sources){
   }
 }
 const main=await readFile(path.join(publicDir,'index.html'),'utf8');
+const releaseVersion=main.match(/src="\/assets\/js\/site\.js\?v=([^"&]+)"/)?.[1];
+checks++;if(!releaseVersion)failures.push('Public entry must have a release asset version');
+for(const file of sources.filter(file=>/\.(html|js)$/.test(file))){
+ const text=await readFile(file,'utf8');
+ const links=[...text.matchAll(/(?:src|href)="\/assets\/[^"?]+\.(?:css|js)(?:\?v=([^"&]+))?"/g),...text.matchAll(/(?:from\s+|import\s*)['"]\.[^'"?]+\.js(?:\?v=([^'"&]+))?['"]/g)];
+ for(const link of links){checks++;if(link[1]!==releaseVersion)failures.push(`${path.relative(root,file)} uses an inconsistent release asset version`);}
+}
+checks++;if(/Шесть онлайн-программ/.test(main))failures.push('SEO copy must remain accurate when the catalog grows');
 const cardIds=[...main.matchAll(/<button class="program-card"[^>]*data-course="([^"]+)"/g)].map(match=>match[1]);
 checks++;if(cardIds.length!==Object.keys(courses).length||new Set(cardIds).size!==cardIds.length||cardIds.some(id=>!Object.hasOwn(courses,id)))failures.push('Course cards must match the published course catalog');
 checks++;if(/href="\/admin/.test(main))failures.push('Admin link must not appear on public landing');checks++;if(/id="consent"[^>]*checked/.test(main))failures.push('Consent must not be checked by default');

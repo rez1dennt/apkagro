@@ -16,7 +16,7 @@
 | Документы | documents.consentPdf/consentWord/policyPdf/license | 4, исходные файлы не изменяются |
 | Цвета | settings.colors (только исходные hex-токены) | 16 |
 | Приём | settings.intake: enabled,deadline,deadlineLabel,consentVersion | Версия согласия создаётся сервером при публикации |
-| SEO | seo и pages[].seo | title,description,ogTitle,ogDescription,ogType,robots,themeColor,icon |
+| SEO | seo и pages[].seo | title,description,ogTitle,ogDescription,ogType,ogImage,robots,themeColor,icon |
 | Сообщения формы | messages: site-<digest> | 60 |
 
 Юридические страницы: полный текст `.legal-body` (заголовки как жирные абзацы, списки, ссылки, пары реквизитов), отдельно title/intro/seo. Все семь аннотаций скопированы без сокращения. Карточки: title/cardTitle/category/icon/image/modalImage/alt/focus/hours/format/price/description/topics/disclaimer/buttonLabel/status. benefits/steps/faqs содержат полный текст, картинки и значки исходных элементов.
@@ -31,6 +31,8 @@
 - operator/index.html: 82 непустых текстовых узлов; все относятся к полям либо перечисленным типизированным поверхностям.
 
 ## Доверенный реестр полей
+
+Два начальных атрибута скрытого #dialog-image сохранены в схеме для совместимости существующих документов; managedBy=programs исключает их из общих полей редактора. Фотография и её описание редактируются в программе. Общие подписи окна применяются как запасные значения, индивидуальные подписи программы имеют приоритет.
 
 Поле всегда имеет id,label,group,kind,minLength,maxLength,targets. Text с BR хранится с переносами строки; text-node сохраняет leadingSpace/trailingSpace, чтобы соседние узлы не склеивались. Цели file/selector/attribute находятся только в проверенном коде. Рендерить поля до пересборки коллекций. CSS-url цели задают замену sourceUrl в указанном CSS-файле; gradients/crop/адаптивные правила сохраняются. Не принимать цели из API.
 
@@ -200,14 +202,14 @@
 | other.src-9f2d827b4070 | Общие элементы — Изображение (img) | image | 1 |
 | other.alt-b02b5a8f7b2b | Общие элементы — Описание изображения (img) | text | 1 |
 | other.text-07cc44cc2cb0 | Общие элементы — Онлайн-программа повышения квалификации | text | 1 |
-| other.text-1db1c090f064 | Общие элементы — 72 часа | text | 1 |
+| other.text-1db1c090f064 | Общая подпись длительности для программ на 72 часа | text | 1 |
 | other.href-cad9ace07c4f | Общие элементы — Ссылка (use) | icon | 1 |
-| other.text-1e052b1d9eb0 | Общие элементы — Онлайн | text | 1 |
+| other.text-1e052b1d9eb0 | Общий формат для программ со стандартным значением Онлайн | text | 1 |
 | other.href-eb86cc469dd4 | Общие элементы — Ссылка (use) | icon | 1 |
-| other.text-a3d0eae4c33c | Общие элементы — Бесплатно | text | 1 |
+| other.text-a3d0eae4c33c | Общая стоимость для программ со стандартным значением Бесплатно | text | 1 |
 | other.text-51ccb64f7fe1 | Общие элементы — О чём программа | text | 1 |
 | other.text-a94ec463c8ec | Общие элементы — Учебный план и условия участия можно уточнить у координатора. | text | 1 |
-| other.text-083dd138ad9a | Общие элементы — Выбрать программу | text | 1 |
+| other.text-083dd138ad9a | Общая кнопка выбора (если у программы стандартная подпись) | text | 1 |
 | other.href-10d7e1f65431 | Общие элементы — Ссылка (use) | icon | 1 |
 | cookie.aria-label-bca79d829b73 | Cookie — Доступное название (button) | text | 4 |
 | cookie.href-4982c9956a72 | Cookie — Ссылка (use) | icon | 4 |
