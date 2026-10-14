@@ -1,6 +1,6 @@
-import {validateFieldValue,formatFieldValue,FORM_LIMITS} from './application-fields.js?v=20261013-form-builder';
-import {legacyFormMessages} from './application-form-messages.js?v=20261013-form-builder';
-import {attachMask,formatPhone,formatSnils} from './input-masks.js?v=20261013-form-builder';
+import {validateFieldValue,formatFieldValue,FORM_LIMITS} from './application-fields.js?v=20261014-contacts';
+import {legacyFormMessages} from './application-form-messages.js?v=20261014-contacts';
+import {attachMask,formatPhone,formatSnils} from './input-masks.js?v=20261014-contacts';
 export const staleFormMessage='Состав формы изменился. Обновите страницу перед отправкой. Введённые данные остаются в этом окне.';
 export function inferFormDefinitions(form){return [...form.querySelectorAll('.field')].map(node=>{const input=node.querySelector('input,select,textarea');if(!input)return null;const id=input.name,type=input.tagName==='SELECT'?'select':input.type||'text';return {id,kind:'builtin',type,domId:input.id,name:id,enabled:true,required:input.required,rules:['lastName','firstName','middleName'].includes(id)?{format:'name',minLength:0,maxLength:80}:id==='snils'?{format:'snils',minLength:0,maxLength:14}:id==='birthDate'?{min:'1900-01-01',max:null}:type==='select'?{options:[...input.querySelectorAll('option')].filter(o=>o.value).map(o=>({id:o.value,label:o.textContent}))}:type==='file'?{accept:['pdf','jpg','png']}:{} };}).filter(Boolean);}
 export function applicationDetailFields(application){

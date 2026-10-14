@@ -10,8 +10,8 @@ export const organization = Object.freeze({
   licenseDate: '05.10.2026',
   licensingAuthority: 'Департамент образования и науки города Москвы',
   registryUrl: 'https://islod.obrnadzor.gov.ru/view/322690',
-  email: 'sacracorona@yandex.ru',
-  phone: '+79267908090'
+  email: 'apk@vozrojdenie-agro.ru',
+  phone: '+79858964975'
 });
 
 export const publicDocuments = Object.freeze({

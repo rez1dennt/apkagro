@@ -156,7 +156,7 @@ export async function extractDefaultContent(){
   for(const match of js.matchAll(/(['`])([А-ЯЁ][^'`\r\n]*?)\1/g)){
     const value=match[2];if(!/[А-Яа-яЁё]{2}/.test(value)||value.includes('${input'))continue;
     const normalized=value.replace('${result.reference}','{reference}');
-    content.messages['site-'+hash(normalized)]=normalized;
+    content.messages[{"1fcdfe7dfdfb":"site-dfca1870e9ce","011422a56d00":"site-c2a0e11412b8"}[hash(normalized)]??('site-'+hash(normalized))]=normalized;
   }
   const intake=await readFile(path.join(root,'server/intake.mjs'),'utf8');
   for(const match of intake.matchAll(/'([А-ЯЁ][^'\r\n]*?)'/g))content.messages['intake-'+hash(match[1])]=match[1];

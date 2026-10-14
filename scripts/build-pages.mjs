@@ -34,7 +34,7 @@ function replaceOnce(text, before, after) {
 function previewSiteScript(text) {
   text = replaceOnce(text, "fetch('/api/config'", "fetch('/assets/pages-config.json'");
   text = replaceOnce(text,
-    'Приём заявок пока закрыт. Данные и документы не отправляются. Вопросы: sacracorona@yandex.ru.',
+    'Приём заявок пока закрыт. Данные и документы не отправляются. Вопросы: apk@vozrojdenie-agro.ru.',
     previewMessage);
   // The design artifact contains no application POST handler or server endpoints.
   const start = text.indexOf("form?.addEventListener('submit', async event => {");

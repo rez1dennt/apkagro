@@ -1,5 +1,5 @@
-import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js?v=20261013-form-builder';
-import {labels,sectionLabels} from './admin-content-fields.js?v=20261013-form-builder';
+import {el,button,dialog,confirmAction,privateUrl} from './admin-content-ui.js?v=20261014-contacts';
+import {labels,sectionLabels} from './admin-content-fields.js?v=20261014-contacts';
 
 export function describeUsage(location,content){
  const parts=location.path.replace(/\[(\d+)\]/g,'.$1').split('.');

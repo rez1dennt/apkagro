@@ -1,5 +1,5 @@
-import {el,button,dialog,confirmAction} from './admin-content-ui.js?v=20261013-form-builder';
-import {createCustomField,FIELD_TYPES,FORM_LIMITS,resolveFormDefinitions,formConsentShape} from './application-fields.js?v=20261013-form-builder';
+import {el,button,dialog,confirmAction} from './admin-content-ui.js?v=20261014-contacts';
+import {createCustomField,FIELD_TYPES,FORM_LIMITS,resolveFormDefinitions,formConsentShape} from './application-fields.js?v=20261014-contacts';
 export const typeLabels={text:'Текст',textarea:'Длинный текст',email:'Электронная почта',tel:'Телефон',date:'Дата',number:'Число',select:'Список',radio:'Один вариант',checkbox:'Галочка',file:'Файл'};
 export function createPreset(name){const field=createCustomField('text',{label:name==='passportSeries'?'Серия паспорта':'Номер паспорта'});const length=name==='passportSeries'?4:6;field.rules={format:'digits',minLength:length,maxLength:length};return field;}
 export function copyFormField(field){if(field.kind!=='custom')throw new TypeError('Стандартное поле нельзя копировать.');const copy=structuredClone(field);copy.id='field-'+crypto.randomUUID();if(copy.rules.options)for(const option of copy.rules.options)option.id='option-'+crypto.randomUUID();return copy;}

@@ -5784,7 +5784,7 @@
   {
     "id": "settings.contacts.email",
     "source": "settings.contacts.email",
-    "defaultValue": "sacracorona@yandex.ru",
+    "defaultValue": "apk@vozrojdenie-agro.ru",
     "label": "Общее значение — settings.contacts.email",
     "group": "Реквизиты и документы",
     "kind": "alias",
@@ -5796,7 +5796,7 @@
         "selector": "#faq > div:nth-child(1) > aside:nth-child(3) > div:nth-child(1) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": "faq"
       },
@@ -5805,7 +5805,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5813,7 +5813,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5822,7 +5822,7 @@
         "selector": "html > body:nth-child(2) > noscript:nth-child(8) > p:nth-child(1) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5830,7 +5830,7 @@
         "selector": "html > body:nth-child(2) > noscript:nth-child(8) > p:nth-child(1) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5839,14 +5839,14 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5854,7 +5854,7 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5862,7 +5862,7 @@
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "mailto:sacracorona@yandex.ru",
+        "sourceText": "mailto:apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5871,14 +5871,14 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(21) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5886,7 +5886,7 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(21) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5894,7 +5894,7 @@
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "mailto:sacracorona@yandex.ru",
+        "sourceText": "mailto:apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5903,7 +5903,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5911,7 +5911,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5920,7 +5920,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5928,7 +5928,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5937,14 +5937,14 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(12) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5952,7 +5952,7 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(12) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5960,7 +5960,7 @@
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "mailto:sacracorona@yandex.ru",
+        "sourceText": "mailto:apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
@@ -5969,7 +5969,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
@@ -5977,20 +5977,20 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(2)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "prefix": "mailto:",
         "section": null
       },
       {
         "mode": "message-alias",
         "messageKey": "site-dfca1870e9ce",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       },
       {
         "mode": "message-alias",
         "messageKey": "site-c2a0e11412b8",
-        "sourceText": "sacracorona@yandex.ru",
+        "sourceText": "apk@vozrojdenie-agro.ru",
         "section": null
       }
     ]
@@ -5998,7 +5998,7 @@
   {
     "id": "settings.contacts.phoneLabel",
     "source": "settings.contacts.phoneLabel",
-    "defaultValue": "+7 (926) 790-80-90",
+    "defaultValue": "+7 985 896-49-75",
     "label": "Общее значение — settings.contacts.phoneLabel",
     "group": "Реквизиты и документы",
     "kind": "alias",
@@ -6010,7 +6010,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
@@ -6018,14 +6018,14 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(3)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
@@ -6033,7 +6033,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
@@ -6041,7 +6041,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
@@ -6049,14 +6049,14 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(14) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 0,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       },
       {
@@ -6064,7 +6064,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "text-node",
         "childIndex": 1,
-        "sourceText": "+7 (926) 790-80-90",
+        "sourceText": "+7 985 896-49-75",
         "section": null
       }
     ]
@@ -6072,7 +6072,7 @@
   {
     "id": "settings.contacts.phone",
     "source": "settings.contacts.phone",
-    "defaultValue": "+79267908090",
+    "defaultValue": "+79858964975",
     "label": "Общее значение — settings.contacts.phone",
     "group": "Реквизиты и документы",
     "kind": "alias",
@@ -6084,7 +6084,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6093,7 +6093,7 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > p:nth-child(3) > a:nth-child(3)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6101,7 +6101,7 @@
         "file": "privacy/index.html",
         "pageId": "privacy",
         "mode": "markdown-alias",
-        "sourceText": "tel:+79267908090",
+        "sourceText": "tel:+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6110,7 +6110,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6119,7 +6119,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6128,7 +6128,7 @@
         "selector": "#main > div:nth-child(1) > div:nth-child(4) > dl:nth-child(1) > dd:nth-child(14) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6136,7 +6136,7 @@
         "file": "operator/index.html",
         "pageId": "operator",
         "mode": "markdown-alias",
-        "sourceText": "tel:+79267908090",
+        "sourceText": "tel:+79858964975",
         "prefix": "tel:",
         "section": null
       },
@@ -6145,7 +6145,7 @@
         "selector": "#contacts > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > a:nth-child(1)",
         "mode": "attribute",
         "attribute": "href",
-        "sourceText": "+79267908090",
+        "sourceText": "+79858964975",
         "prefix": "tel:",
         "section": null
       }

@@ -1,9 +1,9 @@
-import {initResponsiveContent} from './content-responsive.js?v=20261013-form-builder';
-import './cookie-notice.js?v=20261013-form-builder';
-import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261013-form-builder';
-import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261013-form-builder';
-import { savedApplication } from './form-logic.js?v=20261013-form-builder';
-import {attachApplicationForm,staleFormMessage} from './application-form.js?v=20261013-form-builder';
+import {initResponsiveContent} from './content-responsive.js?v=20261014-contacts';
+import './cookie-notice.js?v=20261014-contacts';
+import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261014-contacts';
+import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261014-contacts';
+import { savedApplication } from './form-logic.js?v=20261014-contacts';
+import {attachApplicationForm,staleFormMessage} from './application-form.js?v=20261014-contacts';
 
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const delay = () => motion.matches ? 0 : 220;
@@ -159,7 +159,7 @@ async function refreshConfig() {
   try {
     const response = await fetch('/api/config', { credentials: 'same-origin', cache: 'no-store' });
     if (response.ok) {config = await response.json();const availability=formWidget?.updateAvailability(config);if(availability?.stale){showStatus(staleFormMessage,true);return;}}
-    if (!config.enabled && form) showStatus('Приём заявок пока закрыт. Данные и документы не отправляются. Вопросы: sacracorona@yandex.ru.');
+    if (!config.enabled && form) showStatus('Приём заявок пока закрыт. Данные и документы не отправляются. Вопросы: apk@vozrojdenie-agro.ru.');
   } catch { if (form) showStatus('Нет соединения с сервером. Отправка заявки будет доступна после подключения.'); }
 }
 if (form) refreshConfig();
@@ -170,7 +170,7 @@ function showStatus(message, error = false) {
 form?.addEventListener('submit', async event => {
   event.preventDefault();
   if(formWidget.stale){showStatus(staleFormMessage,true);return;}
-  if (!config.enabled) { showStatus('Приём заявок ещё не подключён. Ваши данные и документы не отправлены. Свяжитесь с координатором: sacracorona@yandex.ru.'); return; }
+  if (!config.enabled) { showStatus('Приём заявок ещё не подключён. Ваши данные и документы не отправлены. Свяжитесь с координатором: apk@vozrojdenie-agro.ru.'); return; }
   if (!canSelect(form.elements.courseId.value)) { showStatus('Сначала выберите программу обучения.',true); document.querySelector('#change-course').focus(); return; }
   if (!formWidget.validateAll()) { showStatus('Проверьте отмеченные поля формы.',true); return; }
   const button = document.querySelector('#submit-application'); button.disabled = true; button.setAttribute('aria-busy','true'); button.querySelector('span').textContent = translate('Отправляем…');
