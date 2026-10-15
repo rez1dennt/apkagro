@@ -1,0 +1,146 @@
+#!/bin/bash
+source /usr/local/lib/apkagro-backup/common.sh
+require_root
+if [[ ${1:-} == recover ]]; then
+ install -d -o root -g root -m 0700 "$ROOT" "$RUN"
+ pending=0; [[ ! -f $RESTART ]] || pending=1
+ if ((pending)); then
+  exec 9>/run/lock/apkagro-backup.lock
+  flock -w 1 9 || die 'Backup is still running; do not restart a service during its snapshot.'
+  exec 8>/run/lock/apkagro-operations.lock
+  flock -w 30 8 || die 'Another state maintenance operation is running.'
+ fi
+ recover_service
+ if ((pending)); then record_status recovered-interruption; fi
+ exit $?
+fi
+[[ $# == 0 ]] || die 'Usage: apkagro-backup [recover]'
+load_config
+exec 9>/run/lock/apkagro-backup.lock
+flock -w 1 9 || die 'Another backup or restore is running.'
+exec 8>/run/lock/apkagro-operations.lock
+flock -w 30 8 || die 'Deployment or state maintenance is running.'
+[[ ! -e $RESTART ]] || die 'Resolve the pending restart-required marker before taking a new backup.'
+readonly LOG=$ROOT/last-run.log
+: > "$LOG"; chmod 0600 "$LOG"
+finished=0
+cleanup(){
+ local code=$?
+ trap - EXIT INT TERM HUP
+ if ! recover_service; then code=1; fi
+ if ((code!=0||finished==0)); then
+  if [[ ! -f $RESTART ]]; then record_status failed; fi
+  printf 'apkagro-backup: FAILED; inspect the root-only last-run.log and service journal.\n' >&2
+  ((code!=0)) || code=1
+ fi
+ exit "$code"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+record_status preparing
+secure_file /etc/apkagro/site.env
+node --input-type=module -e '
+ import fs from "node:fs";import {parseEnv} from "node:util";
+ try{const env=parseEnv(fs.readFileSync("/etc/apkagro/site.env","utf8"));if(env.APP_DATA_DIR!=="/var/lib/apkagro"||!/^[A-Za-z0-9+/]{43}=$/.test(env.APP_DATA_KEY??""))process.exit(1);}catch{process.exit(1);}
+' || die 'The application environment must use the protected state directory and a valid encryption key.'
+[[ -d /var/lib/apkagro && ! -L /var/lib/apkagro ]] || die 'Private state directory is missing or is a symlink.'
+[[ -f /var/lib/apkagro/applications.sqlite && -f /var/lib/apkagro/admin.json ]] || die 'Production state is not initialized.'
+release=$(readlink -f /opt/apkagro/current)
+[[ $release =~ ^/opt/apkagro/releases/([a-f0-9]{40,64})$ ]] || die 'Current release is outside the immutable release directory.'
+commit=${BASH_REMATCH[1]}
+[[ $(cat "$release/RELEASE") == "$commit" && $(cat /etc/apkagro/release-id) == "$commit" ]] || die 'Deployment release identifiers disagree.'
+archive=/opt/apkagro/artifacts/$commit.tar.gz
+[[ -f $archive && ! -L $archive ]] || die 'The current source release archive is missing.'
+state_bytes=$(du -sb /var/lib/apkagro | awk '{print $1}')
+archive_bytes=$(stat -c %s "$archive")
+# Allow a full new state, new source staging/archive, and a 1 GiB reserve by default.
+required=$((state_bytes+2*archive_bytes+MIN_FREE_BYTES))
+for mount in "$ROOT" /var/cache/apkagro-restic; do
+ available=$(df --output=avail -B1 "$mount" | tail -n1 | tr -d ' ')
+ ((available>=required)) || die 'Insufficient free space; backup was not started.'
+done
+if [[ $RESTIC_REPOSITORY == /* ]]; then
+ [[ -d $RESTIC_REPOSITORY ]] || die 'Initialize the local restic repository before enabling backups.'
+ available=$(df --output=avail -B1 "$RESTIC_REPOSITORY" | tail -n1 | tr -d ' ')
+ ((available>=required)) || die 'Insufficient space on the repository filesystem.'
+fi
+timeout --kill-after=5s 30s restic cat config >> "$LOG" 2>&1 || die 'Repository preflight failed.'
+cp --reflink=auto -- "$archive" "$METADATA/source.tar.gz"
+source_sha=$(sha256sum "$METADATA/source.tar.gz" | awk '{print $1}')
+printf '{"format":1,"release":"%s","sourceSha256":"%s","createdAt":"%s","state":"/var/lib/apkagro","environment":"/etc/apkagro/site.env"}\n' "$commit" "$source_sha" "$(date --utc +%FT%TZ)" > "$METADATA/deployment.json"
+install -m 0600 /etc/systemd/system/apkagro.service "$METADATA/apkagro.service"
+if [[ -f /etc/nginx/sites-available/apkagro ]]; then install -m 0600 /etc/nginx/sites-available/apkagro "$METADATA/nginx-apkagro"; fi
+install -d -m 0700 "$METADATA/backup-tools"
+for tool in apkagro-backup apkagro-backup-status apkagro-restore; do install -m 0600 "/usr/local/sbin/$tool" "$METADATA/backup-tools/$tool"; done
+for tool in common.sh verify-restored.mjs; do install -m 0600 "/usr/local/lib/apkagro-backup/$tool" "$METADATA/backup-tools/$tool"; done
+for unit in apkagro-backup.service apkagro-backup.timer apkagro-backup-alert.service; do install -m 0600 "/etc/systemd/system/$unit" "$METADATA/backup-tools/$unit"; done
+# These installed operations files are deliberately separate from the immutable
+# application's source archive. Every file is mandatory before quiescing writers.
+runtime_files=(
+ usr/local/bin/apkagro-scan
+ etc/nginx/nginx.conf etc/nginx/conf.d/00-apkagro.conf
+ etc/nginx/snippets/apkagro-proxy.conf etc/nginx/snippets/apkagro-tls.conf
+ etc/nginx/sites-available/apkagro etc/apkagro/intake-gate.conf etc/apkagro/backup.env
+ etc/clamav/clamd.conf etc/clamav/freshclam.conf
+ etc/systemd/system/apkagro.service
+ usr/local/sbin/apkagro-backup usr/local/sbin/apkagro-backup-status usr/local/sbin/apkagro-restore
+ usr/local/lib/apkagro-backup/common.sh usr/local/lib/apkagro-backup/verify-restored.mjs
+ etc/systemd/system/apkagro-backup.service etc/systemd/system/apkagro-backup.timer etc/systemd/system/apkagro-backup-alert.service
+ usr/local/sbin/apkagro-domains-finalize
+ etc/systemd/system/apkagro-domains-finalize.service etc/systemd/system/apkagro-domains-finalize.timer
+ etc/nginx/sites-available/apkagro-final
+)
+install -d -o root -g root -m 0700 "$METADATA/runtime-root"
+for file in "${runtime_files[@]}"; do
+ [[ -f /$file && -s /$file && ! -L /$file && $(stat -c '%u' "/$file") == 0 ]] || die 'A mandatory runtime configuration/tool is missing, empty, symlinked or not root-owned.'
+ original_mode=$(stat -c '%a' "/$file")
+ (( (8#$original_mode & 022) == 0 )) || die 'A mandatory runtime file is writable by group/others.'
+ install -d -o root -g root -m 0700 "$(dirname "$METADATA/runtime-root/$file")"
+ install -o root -g root -m 0600 "/$file" "$METADATA/runtime-root/$file"
+done
+node --input-type=module -e '
+ import fs from "node:fs";import path from "node:path";import {createHash} from "node:crypto";import {execFileSync} from "node:child_process";
+ const root=process.argv[1],files=process.argv.slice(2).map(relative=>{
+  const original="/"+relative,info=fs.statSync(original),data=fs.readFileSync(path.join(root,"runtime-root",relative));
+  return {path:relative,mode:(info.mode&0o7777).toString(8),owner:"root",group:execFileSync("stat",["-c","%G",original],{encoding:"utf8"}).trim(),sha256:createHash("sha256").update(data).digest("hex")};
+ });
+ fs.writeFileSync(path.join(root,"runtime-files.json"),JSON.stringify({format:1,files})+"\n",{mode:0o600});
+' "$METADATA" "${runtime_files[@]}" || die 'Could not record mandatory runtime configuration metadata.'
+active=$(systemctl show -p ActiveState --value "$SERVICE")
+case "$active" in
+ active)
+  # Persist intent BEFORE stopping, so every later error attempts a restart.
+  printf 'previously-active\n' > "$RESTART"
+  timeout --signal=TERM --kill-after=5s 45s systemctl stop "$SERVICE" >> "$LOG" 2>&1 || die 'Could not stop the application within the shutdown budget.'
+  ;;
+ inactive|failed) ;;
+ *) die 'Application is transitioning; retry after it reaches a stable state.' ;;
+esac
+[[ $(systemctl show -p ActiveState --value "$SERVICE") =~ ^(inactive|failed)$ ]] || die 'Application did not become quiescent.'
+[[ $(systemctl show -p MainPID --value "$SERVICE") == 0 ]] || die 'Application process remains running.'
+record_status snapshotting
+timeout --signal=TERM --kill-after=5s "${BACKUP_SECONDS}s" restic backup --host "$BACKUP_HOST" --tag apkagro-pending --group-by host,paths --json \
+ /var/lib/apkagro /etc/apkagro/site.env /etc/apkagro/release-id "$METADATA" > "$ROOT/last-snapshot.jsonl" 2>> "$LOG" || die 'Snapshot failed, was incomplete, or exceeded its time limit.'
+# Prune and integrity checks run only after the service has resumed.
+recover_service || die 'Snapshot exists but the application could not restart.'
+flock -u 8
+record_status maintaining
+snapshot=$(node --input-type=module -e '
+ import fs from "node:fs";
+ let id="";for(const line of fs.readFileSync(process.argv[1],"utf8").split("\n")){
+  try{const row=JSON.parse(line);if(row.message_type==="summary")id=row.snapshot_id??"";}catch{}
+ }
+ if(!/^[a-f0-9]{8,64}$/.test(id))process.exit(1);console.log(id);
+' "$ROOT/last-snapshot.jsonl") || die 'Successful snapshot did not return a valid snapshot ID.'
+# A partial/aborted snapshot must never become the latest accepted recovery point.
+timeout --signal=TERM --kill-after=5s 30s restic tag --add apkagro --remove apkagro-pending "$snapshot" >> "$LOG" 2>&1 || die 'Could not mark the complete snapshot as an accepted recovery point.'
+timeout --signal=TERM --kill-after=5s "${MAINTENANCE_SECONDS}s" restic forget --host "$BACKUP_HOST" --tag apkagro --group-by host,tags \
+ --keep-daily 7 --keep-weekly 4 --keep-monthly 3 --prune --max-repack-size 256M >> "$LOG" 2>&1 || die 'Snapshot was created but retention/prune failed.'
+timeout --signal=TERM --kill-after=5s "${MAINTENANCE_SECONDS}s" restic check >> "$LOG" 2>&1 || die 'Repository metadata integrity check failed.'
+success_file=$(mktemp "$ROOT/.success.XXXXXXXX")
+date --utc +%FT%TZ > "$success_file"
+mv -f -- "$success_file" "$ROOT/last-success"
+record_status ok
+finished=1
+printf 'apkagro-backup: snapshot, retention and repository metadata check completed.\n'

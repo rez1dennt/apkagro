@@ -1,0 +1,11 @@
+[Unit]
+Description=Record an APKAgro backup failure alert
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/logger --priority daemon.alert --tag apkagro-backup BACKUP_FAILED: inspect systemctl status apkagro-backup.service and run apkagro-backup-status as root
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes

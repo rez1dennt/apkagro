@@ -1,0 +1,33 @@
+#!/bin/bash
+source /usr/local/lib/apkagro-backup/common.sh
+[[ $# == 1 && $1 =~ ^(latest|[a-f0-9]{8,64})$ ]] || die 'Usage: apkagro-restore <snapshot-id|latest>'
+load_config
+exec 9>/run/lock/apkagro-backup.lock
+flock -w 1 9 || die 'Another backup or restore is running.'
+# This command NEVER modifies production or starts/stops a service.
+target=$(mktemp -d "$ROOT/restore.XXXXXXXX")
+chmod 0700 "$target"
+printf 'RESTORE_TARGET=%s\n' "$target"
+log=$target/restore.log
+: > "$log"; chmod 0600 "$log"
+trap 'printf "apkagro-restore: interrupted; isolated files retained at %s\n" "$target" >&2; exit 143' TERM HUP INT
+selection=(); [[ $1 == latest ]] || selection+=("$1")
+timeout --signal=TERM --kill-after=5s 60s restic snapshots "${selection[@]}" --host "$BACKUP_HOST" --tag apkagro --json --latest 1 > "$target/snapshot.json" 2>> "$log" || die 'Could not find the requested snapshot; isolated files retained.'
+# snapshots accepts a snapshot prefix, while latest is a restore-only selector.
+snapshot=$(node --input-type=module -e '
+ import fs from "node:fs";
+ const rows=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+ if(rows.length!==1||!/^[a-f0-9]{64}$/.test(rows[0].id))process.exit(1);
+ console.log(rows[0].id);
+' "$target/snapshot.json") || die 'Snapshot selection was ambiguous or empty.'
+required=$(node --input-type=module -e '
+ import fs from "node:fs";
+ const bytes=JSON.parse(fs.readFileSync(process.argv[1],"utf8"))[0]?.summary?.total_bytes_processed;
+ if(!Number.isSafeInteger(bytes)||bytes<=0)process.exit(1);console.log(bytes);
+' "$target/snapshot.json") || die 'Snapshot size is unavailable; inspect it privately before restoring.'
+available=$(df --output=avail -B1 "$target" | tail -n1 | tr -d ' ')
+((available>=required+MIN_FREE_BYTES)) || die 'Insufficient space for the isolated restore plus reserve.'
+timeout --signal=TERM --kill-after=5s "${RESTORE_SECONDS}s" restic restore "$snapshot" --target "$target" --verify >> "$log" 2>&1 || die 'Restore or restic file verification failed; isolated files retained.'
+timeout --signal=TERM --kill-after=5s "${RESTORE_SECONDS}s" node /usr/local/lib/apkagro-backup/verify-restored.mjs "$target" || die 'Application data verification failed; isolated files retained.'
+timeout --signal=TERM --kill-after=5s 60s tar -tzf "$target/var/backups/apkagro/metadata/source.tar.gz" > /dev/null 2>> "$log" || die 'Recovered source archive failed its gzip/tar read check.'
+printf 'apkagro-restore: verified isolated restore at %s; production was not changed.\n' "$target"

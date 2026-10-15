@@ -1,0 +1,42 @@
+[Unit]
+Description=Agrarian education website and private administration
+Wants=network-online.target clamav-daemon.service
+After=network-online.target clamav-daemon.service
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=apkagro
+Group=apkagro
+SupplementaryGroups=clamav
+WorkingDirectory=/opt/apkagro/current
+EnvironmentFile=/etc/apkagro/site.env
+ExecStart=/usr/bin/node /opt/apkagro/current/server/index.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=100
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/apkagro
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+LimitNOFILE=8192
+TasksMax=128
+MemoryHigh=1G
+MemoryMax=1536M
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

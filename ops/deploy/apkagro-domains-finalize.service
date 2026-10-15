@@ -1,0 +1,20 @@
+[Unit]
+Description=Finish APKAgro domain TLS after registrar DNS propagation
+Wants=network-online.target
+Requires=nginx.service
+After=network-online.target nginx.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart=/usr/local/sbin/apkagro-domains-finalize
+TimeoutStartSec=10min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/etc/letsencrypt /etc/nginx/sites-available /var/www/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx /var/lib/apkagro-operations /run/lock /run/nginx.pid
+StandardOutput=journal
+StandardError=journal

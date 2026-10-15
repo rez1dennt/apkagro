@@ -1,0 +1,11 @@
+[Unit]
+Description=Retry the initial APKAgro domain connection until DNS propagates
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=15min
+RandomizedDelaySec=1min
+Unit=apkagro-domains-finalize.service
+
+[Install]
+WantedBy=timers.target

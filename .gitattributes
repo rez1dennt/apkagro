@@ -11,6 +11,7 @@
 *.json text eol=lf
 *.svg text eol=lf
 *.txt text eol=lf
+ops/** text eol=lf
 *.webp binary
 *.png binary
 *.jpg binary

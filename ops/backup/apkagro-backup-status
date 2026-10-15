@@ -1,0 +1,15 @@
+#!/bin/bash
+source /usr/local/lib/apkagro-backup/common.sh
+require_root
+[[ $# == 0 ]] || die 'Usage: apkagro-backup-status'
+[[ -f $STATUS ]] || die 'No backup status exists yet.'
+node --input-type=module -e '
+ import fs from "node:fs";
+ import {execFileSync} from "node:child_process";
+ const data=JSON.parse(fs.readFileSync("/var/backups/apkagro/status.json","utf8"));
+ let unitResult="unknown";try{unitResult=execFileSync("systemctl",["show","-p","Result","--value","apkagro-backup.service"],{encoding:"utf8",timeout:5000,stdio:["ignore","pipe","ignore"]}).trim();}catch{}
+ const age=Number.isFinite(Date.parse(data.last_success))?Math.max(0,Math.floor((Date.now()-Date.parse(data.last_success))/1000)):null;
+ const healthy=unitResult==="success"&&age!==null&&age<36*3600&&!["failed","restart-failed","recovered-interruption"].includes(data.state);
+ console.log(JSON.stringify({state:data.state,at:data.at,last_success:data.last_success,age_seconds:age,unit_result:unitResult,healthy}));
+ process.exitCode=healthy?0:1;
+'

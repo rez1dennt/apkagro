@@ -1,0 +1,18 @@
+#!/bin/bash
+# Application scanner contract: --no-summary - (stdin); fail closed without a
+# recently built, FreshClam-verified daily CVD database. No filename from users.
+set -euo pipefail
+if [[ $# -ne 2 || $1 != --no-summary || $2 != - ]]; then exit 2; fi
+database=/var/lib/clamav/daily.cvd
+[[ -r $database ]] || exit 2
+header=$(head -c 512 "$database")
+IFS=: read -r magic built version signatures level digest signature builder epoch rest <<< "$header"
+# CVD's fixed 512-byte ASCII header pads its final epoch with spaces.
+epoch=${epoch%%[[:space:]]*}
+[[ $magic == ClamAV-VDB && $epoch =~ ^[0-9]{10}$ ]] || exit 2
+[[ $version =~ ^[0-9]+$ ]] || exit 2
+now=$(date +%s)
+(( epoch <= now + 3600 && now - epoch <= 259200 )) || exit 2
+loaded=$(/usr/bin/clamdscan --version 2>/dev/null) || exit 2
+[[ $loaded == */"$version"/* ]] || exit 2
+exec /usr/bin/clamdscan --no-summary -

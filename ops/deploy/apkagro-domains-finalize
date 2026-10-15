@@ -1,0 +1,63 @@
+#!/bin/bash
+# Finish the already-authorized six-name deployment after registrar propagation.
+set -euo pipefail
+umask 077
+[[ $EUID == 0 ]] || exit 1
+readonly state=/var/lib/apkagro-operations/domains.json
+readonly canonical=xn----8sbegcgafin8chbjtk.xn--p1ai
+readonly expected=89.108.71.253
+domains=("$canonical" "www.$canonical" vozrojdenie-agro.ru www.vozrojdenie-agro.ru vozrojdenie-agro.online www.vozrojdenie-agro.online)
+install -d -o root -g root -m 0700 /var/lib/apkagro-operations
+exec 9>/run/lock/apkagro-operations.lock
+flock -w 30 9
+for domain in "${domains[@]}"; do
+ answers=$(dig @1.1.1.1 +time=3 +tries=1 +short A "$domain" || true)
+ if [[ $answers != "$expected" ]]; then
+  printf '{"state":"waiting-for-dns","at":"%s","domain":"%s"}\n' "$(date --utc +%FT%TZ)" "$domain" > "$state"
+  printf 'Domain finalization: waiting for authoritative DNS propagation for %s.\n' "$domain"
+  exit 0
+ fi
+done
+args=()
+for domain in "${domains[@]}"; do args+=(-d "$domain"); done
+certificate=/etc/letsencrypt/live/apkagro/fullchain.pem
+complete=1
+for domain in "${domains[@]}"; do
+ if ! openssl x509 -in "$certificate" -noout -checkhost "$domain" | grep -Fq 'does match certificate'; then complete=0; fi
+done
+if ((complete==0)); then
+ certbot certonly --webroot -w /var/www/letsencrypt --cert-name apkagro --expand "${args[@]}" --non-interactive --agree-tos --register-unsafely-without-email
+fi
+# Exact whole-name checks, including SAN delimiters, before enabling TLS aliases.
+for domain in "${domains[@]}"; do openssl x509 -in "$certificate" -noout -checkhost "$domain" | grep -Fq 'does match certificate' || exit 1; done
+previous=$(mktemp /etc/nginx/sites-available/.apkagro-before.XXXXXXXX)
+staged=$(mktemp /etc/nginx/sites-available/.apkagro-next.XXXXXXXX)
+cp /etc/nginx/sites-available/apkagro "$previous"
+install -o root -g root -m 0644 /etc/nginx/sites-available/apkagro-final "$staged"
+swapped=0
+accepted=0
+recover(){
+ code=$?
+ trap - EXIT INT TERM HUP
+ if ((code!=0&&swapped==1&&accepted==0)); then
+  mv -f -- "$previous" /etc/nginx/sites-available/apkagro
+  nginx -t && systemctl reload nginx || code=1
+ fi
+ if [[ -f $staged ]]; then rm -f -- "$staged"; fi
+ exit "$code"
+}
+trap recover EXIT
+trap 'exit 143' INT TERM HUP
+mv -f -- "$staged" /etc/nginx/sites-available/apkagro
+swapped=1
+nginx -t
+systemctl reload nginx
+for domain in "${domains[@]:1}"; do
+ result=$(curl --silent --show-error --retry 2 --retry-all-errors --retry-delay 1 --max-time 10 --resolve "$domain:443:127.0.0.1" -o /dev/null -w '%{http_code} %{redirect_url}' "https://$domain/admin?domain-check=1")
+ [[ $result == "308 https://$canonical/admin?domain-check=1" ]] || exit 1
+done
+printf '{"state":"ready","at":"%s","httpsNames":6,"canonical":"%s"}\n' "$(date --utc +%FT%TZ)" "$canonical" > "$state"
+accepted=1
+mv -- "$previous" /var/lib/apkagro-operations/nginx-before-domains.conf
+systemctl disable --now apkagro-domains-finalize.timer
+printf 'Domain finalization: six-name HTTPS and canonical redirects verified; one-time timer disabled.\n'
