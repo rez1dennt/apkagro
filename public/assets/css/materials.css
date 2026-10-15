@@ -175,6 +175,10 @@
 .section-heading > div { flex: 1 1 18rem; }
 .section-heading .text-link { flex-shrink: 0; max-width: 100%; white-space: normal; }
 :root{--form-gap:.75rem;--form-control:2.75rem;--form-check:1.125rem;--form-text:.8125rem;--form-hint:.75rem;--form-padding:.75rem;--form-border:1px;--form-textarea:7rem;--form-focus-offset:.1875rem;--form-focus-width:.125rem}
+/* iOS themes force date controls to content-box when appearance stays native,
+   adding padding outside the grid width and height (WebKit issue 301648). */
+.field input[type=date]{-webkit-appearance:none;appearance:none;display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-inline-size:0;text-align:left}
+.field input[type=date]::-webkit-date-and-time-value{min-height:1em;text-align:left}
 .field textarea{display:block;width:100%;min-width:0;min-height:var(--form-textarea);resize:vertical;padding:var(--form-padding);border:var(--form-border) solid var(--line);border-radius:var(--radius-sm);background:var(--input);color:var(--ink);font:var(--form-text)/1.5 var(--font-body);transition:border-color var(--motion),box-shadow var(--motion)}
 .field textarea:focus-visible,.field-options input:focus-visible{outline:var(--form-focus-width) solid var(--forest);outline-offset:var(--form-focus-offset)}
 .field textarea[aria-invalid=true],.field input[aria-invalid=true]{border-color:var(--danger)}
