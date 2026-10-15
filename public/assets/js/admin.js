@@ -1,7 +1,7 @@
-import {applicationDetailFields} from './application-form.js?v=20261014-contacts';
-import { createContentAdmin } from './admin-content.js?v=20261014-contacts';
-import { courses } from './courses.js?v=20261014-contacts';
-import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261014-contacts';
+import {applicationDetailFields} from './application-form.js?v=20261016-education-files';
+import { createContentAdmin } from './admin-content.js?v=20261016-education-files';
+import { courses } from './courses.js?v=20261016-education-files';
+import { enhanceStatusSelects, syncStatusSelect, closeStatusSelects } from './status-select.js?v=20261016-education-files';
 let csrfToken = null, applications = [], currentId = null, opener = null;
 let pollTimer = null, loading = false, programOptions=[];
 let authGeneration = 0;

@@ -1,5 +1,5 @@
 import {resolveFormFields,FORM_MESSAGES} from './application-form.mjs';
-import {FORM_LIMITS,validateFieldValue} from '../public/assets/js/application-fields.js';
+import {FORM_LIMITS,validateFieldValue,maxFilesForField,fileCountMessage} from '../public/assets/js/application-fields.js';
 import Busboy from 'busboy';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
@@ -41,13 +41,14 @@ export function validateSubmission(fields,files,{form,programs,consentVersion=CO
  if(fields.website)throw invalid('Не удалось принять заявку.');
  if(programs?!programs.some(p=>p.id===fields.courseId&&p.status==='published'):!Object.hasOwn(courses,fields.courseId))throw invalid('Выберите программу обучения.');
  if(fields.consent!=='true'||fields.consentVersion!==consentVersion)throw invalid('Для отправки требуется актуальное согласие на обработку данных.');
- const seen=new Set(),acceptedFiles=[];
- if(!Array.isArray(files)||files.length>FORM_LIMITS.activeFiles)throw invalid(FORM_MESSAGES.fileCount);
+ const seen=new Set(),counts=new Map(),acceptedFiles=[];
+ if(!Array.isArray(files)||files.length>FORM_LIMITS.uploadedFiles)throw invalid(FORM_MESSAGES.fileCount);
  for(const file of files){
-  const definition=byId.get(file.field);if(!definition||definition.type!=='file'||seen.has(file.field))throw invalid(FORM_MESSAGES.unknownFile);seen.add(file.field);
+  const definition=byId.get(file.field);if(!definition||definition.type!=='file')throw invalid(FORM_MESSAGES.unknownFile);
+  const count=(counts.get(file.field)??0)+1,limit=maxFilesForField(definition);if(count>limit)throw fieldInvalid(definition,fileCountMessage(limit));counts.set(file.field,count);seen.add(file.field);
   if(!Buffer.isBuffer(file.data)||file.data.length>FORM_LIMITS.fileBytes)throw fieldInvalid(definition,'Каждый файл должен быть не больше 10 МБ.');
   const [mime,ext]=identify(file.data),extension=ext.slice(1);if(file.mime!==mime||!definition.rules.accept.includes(extension)||!(extension==='jpg'?['.jpg','.jpeg']:[ext]).includes(path.extname(file.name??'').toLowerCase()))throw fieldInvalid(definition,FORM_MESSAGES.fileType);
-  acceptedFiles.push({field:definition.id,mime,name:definition.id+ext,data:file.data,fileLabel:definition.label});
+  acceptedFiles.push({field:definition.id,mime,name:definition.id+(limit>1?'-'+count:'')+ext,data:file.data,fileLabel:definition.label});
  }
  const formValues={};
  for(const definition of definitions){const result=validateFieldValue(definition,definition.type==='file'?seen.has(definition.id):fields[definition.id],{today});if(!result.ok)throw fieldInvalid(definition,result.message);formValues[definition.id]=result.value;}
@@ -56,10 +57,10 @@ export function validateSubmission(fields,files,{form,programs,consentVersion=CO
 }
 
 function identify(data){if(data.subarray(0,5).toString()==='%PDF-'&&data.subarray(-1024).includes(Buffer.from('%%EOF')))return ['application/pdf','.pdf'];if(data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))&&data.subarray(-12).includes(Buffer.from('IEND')))return ['image/png','.png'];if(data[0]===255&&data[1]===216&&data[2]===255&&data.at(-2)===255&&data.at(-1)===217)return ['image/jpeg','.jpg'];throw invalid('Прикрепите PDF, JPG или PNG с корректным содержимым.');}
-export function parseMultipart(req,{form,contentRevision}={}){const definitions=effectiveForm(form).filter(f=>f.enabled&&f.type==='file'),fileFields=new Set(definitions.map(f=>f.id));return new Promise((resolve,reject)=>{
+export function parseMultipart(req,{form,contentRevision}={}){const definitions=effectiveForm(form).filter(f=>f.enabled&&f.type==='file'),fileFields=new Map(definitions.map(f=>[f.id,f]));return new Promise((resolve,reject)=>{
  // Busboy emits limit when size reaches its configured threshold, so reserve one byte.
- let parser;try{parser=Busboy({headers:req.headers,defParamCharset:'utf8',limits:{fileSize:FORM_LIMITS.fileBytes+1,files:FORM_LIMITS.activeFiles,fields:FORM_LIMITS.scalarParts,fieldSize:FORM_LIMITS.scalarBytes+1,parts:FORM_LIMITS.parts+1,headerPairs:100}});}catch{req.resume();reject(invalid('Не удалось прочитать форму.'));return;}
- const fields=Object.create(null),files=[],seen=new Set();let error=null,total=0;const fail=message=>{error??=invalid(message);};
+ let parser;try{parser=Busboy({headers:req.headers,defParamCharset:'utf8',limits:{fileSize:FORM_LIMITS.fileBytes+1,files:FORM_LIMITS.uploadedFiles,fields:FORM_LIMITS.scalarParts,fieldSize:FORM_LIMITS.scalarBytes+1,parts:FORM_LIMITS.parts+1,headerPairs:100}});}catch{req.resume();reject(invalid('Не удалось прочитать форму.'));return;}
+ const fields=Object.create(null),files=[],counts=new Map();let error=null,total=0;const fail=message=>{error??=invalid(message);};
  const sizeHandler=chunk=>{total+=chunk.length;if(total>FORM_LIMITS.multipartBytes){fail('Общий размер формы слишком большой.');req.unpipe(parser);parser.destroy(error);req.resume();}};
  req.on('data',sizeHandler);req.once('aborted',()=>parser.destroy(invalid('Загрузка прервана.')));req.once('error',()=>parser.destroy(invalid('Загрузка прервана.')));
  parser.on('field',(name,value,info)=>{if(Object.hasOwn(fields,name)||info.valueTruncated||info.nameTruncated||Buffer.byteLength(value)>FORM_LIMITS.scalarBytes)fail('Некорректное или слишком длинное поле формы.');else fields[name]=value.trim();});
@@ -68,12 +69,14 @@ export function parseMultipart(req,{form,contentRevision}={}){const definitions=
   // Register on every stream before any field validation, resume or early return.
   stream.on('error', () => fail('Не удалось загрузить документ.'));
   stream.on('limit', () => fail('Каждый файл должен быть не больше 10 МБ.'));
-  if (!fileFields.has(field) || seen.has(field)) {
+  if (!fileFields.has(field)) {
    fail(form?FORM_MESSAGES.unknownFile:'Допустим один документ СНИЛС и один документ об образовании.');
    stream.resume();
    return;
   }
-  seen.add(field);
+  const count=(counts.get(field)??0)+1,limit=maxFilesForField(fileFields.get(field));
+  if(count>limit){error??=fieldInvalid(fileFields.get(field),fileCountMessage(limit));stream.resume();return;}
+  counts.set(field,count);
   const chunks = [];
   let size = 0;
   stream.on('data', chunk => {
@@ -93,7 +96,7 @@ export function parseMultipart(req,{form,contentRevision}={}){const definitions=
     if (info.mimeType !== mime || !extensions.includes(sourceExt)) {
      throw invalid('Формат документа не соответствует его содержимому.');
     }
-    files.push({field, mime, name: field + ext, data});
+    files.push({field, mime, name: field + (limit>1?'-'+count:'') + ext, data});
    } catch (e) { error = e; }
   });
  });

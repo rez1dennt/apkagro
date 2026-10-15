@@ -197,3 +197,11 @@
 
 /* Authored upload captions and selected names remain readable in full. */
 .upload-zone--authored strong{-webkit-line-clamp:unset}
+.upload-files{list-style:none;padding:0;margin:0;min-width:0;display:grid;gap:var(--form-gap);font-size:var(--form-text)}
+.upload-files:empty{display:none}
+.upload-files li{display:flex;align-items:center;gap:var(--form-gap);min-width:0;padding-inline-start:var(--form-padding);border:var(--form-border) solid var(--line);border-radius:var(--radius-sm);background:var(--cream)}
+.upload-files li>span{flex:1;min-width:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.upload-files button{flex-shrink:0;min-height:var(--form-control);padding:var(--form-padding);border:0;border-radius:var(--radius-sm);background:transparent;color:var(--forest);font:inherit;text-decoration:underline;cursor:pointer}
+.upload-files button:hover{background:var(--paper)}
+.upload-files button:focus-visible{outline:var(--form-focus-width) solid var(--forest);outline-offset:var(--form-focus-offset)}
+@media(max-width:768px){.form-grid>.field:has(.upload-files){grid-column:1/-1}}

@@ -97,6 +97,28 @@ import {Readable} from 'node:stream';
 import {createApp} from '../server/app.mjs';
 import {setupAdmin,totp} from '../server/security.mjs';
 async function multipart(data,form){const request=new Request('http://localhost/',{method:'POST',body:data});const req=Readable.from([Buffer.from(await request.arrayBuffer())]);req.headers={'content-type':request.headers.get('content-type')};return intake.parseMultipart(req,{form});}
+
+test('education accepts one through five files and renders a multiple control without changing other uploads',async()=>{
+ const content=await config([{id:'educationFile',kind:'builtin',enabled:true,required:true}]),definitions=model.resolveFormFields(content);
+ const html=renderContentPage({content,template:await readFile('public/index.html','utf8')}),document=parseHTML(html).document;
+ assert.ok(document.querySelector('[name="educationFile"]').hasAttribute('multiple'));
+ for(let count=1;count<=5;count++){
+  const data=new FormData();for(let i=0;i<count;i++)data.append('educationFile',new Blob([pdf('educationFile').data],{type:'application/pdf'}),'page-'+i+'.pdf');
+  const parsed=await multipart(data,definitions),accepted=intake.validateSubmission(system,parsed.files,options(content));
+  assert.equal(accepted.files.length,count);assert.equal(new Set(accepted.files.map(f=>f.name)).size,count);assert.equal(accepted.fields.formValues.educationFile,true);
+ }
+ const six=Array.from({length:6},()=>pdf('educationFile'));
+ assert.throws(()=>intake.validateSubmission(system,six,options(content)),invalid);
+ const data=new FormData();for(const file of six)data.append(file.field,new Blob([file.data],{type:file.mime}),'page.pdf');await assert.rejects(multipart(data,definitions),invalid);
+});
+
+test('multipart accepts five full size education files plus three other file controls and fifty scalar parts',async()=>{
+ const content=await config([{id:'educationFile',kind:'builtin',enabled:true,required:true},...Array.from({length:3},()=>pure.createCustomField('file'))]);
+ const definitions=model.resolveFormFields(content),data=new FormData(),buffer=Buffer.alloc(10*1024*1024,32);buffer.write('%PDF-1.4');buffer.write('%%EOF',buffer.length-5);
+ for(let i=0;i<50;i++)data.append('value'+i,'x');for(const definition of definitions)for(let i=0;i<(definition.id==='educationFile'?5:1);i++)data.append(definition.id,new Blob([buffer],{type:'application/pdf'}),'page.pdf');
+ const parsed=await multipart(data,definitions);assert.equal(parsed.files.length,8);assert.equal(Object.keys(parsed.fields).length,50);
+ assert.equal(parsed.files.reduce((sum,f)=>sum+f.data.length,0),80*1024*1024);
+});
 test('multipart accepts zero through four configured files and exact scalar/file byte limits',async()=>{
  for(let count=0;count<=4;count++){
   const definitions=Array.from({length:count},()=>pure.createCustomField('file'));const data=new FormData();data.append('website','');for(const f of definitions)data.append(f.id,new Blob([pdf(f.id).data],{type:'application/pdf'}),'a.pdf');assert.equal((await multipart(data,definitions)).files.length,count);

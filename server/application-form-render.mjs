@@ -1,4 +1,5 @@
 import {resolveFormFields,defaultApplicationForm,formBuiltinMetadata} from './application-form.mjs';
+import {maxFilesForField} from '../public/assets/js/application-fields.js';
 
 export function renderApplicationForm({document:d,content,preview=false}){
  const form=d.querySelector('#application-form');if(!form)return;
@@ -46,7 +47,7 @@ export function renderApplicationForm({document:d,content,preview=false}){
   control.dataset.fieldId=id;
   if(definition.kind==='builtin'&&definition.hint&&!node.querySelector('small,.field-hint')){const hint=make('small','field-hint',definition.hint);hint.id=domId+'-hint';node.append(hint);control.setAttribute('aria-describedby',hint.id);}
   if(type==='file')node.querySelector('.upload-zone')?.classList.toggle('upload-zone--authored',definition.kind==='custom'||definition.uploadLabel!==builtinMap.get(id)?.defaultUploadLabel);
-  if(type==='file')control.setAttribute('accept',definition.rules.accept.flatMap(ext=>ext==='jpg'?['.jpg','.jpeg']:['.'+ext]).join(','));
+  if(type==='file'){control.setAttribute('accept',definition.rules.accept.flatMap(ext=>ext==='jpg'?['.jpg','.jpeg']:['.'+ext]).join(','));control.toggleAttribute('multiple',maxFilesForField(definition)>1);}
   else if(!['select','radio','checkbox'].includes(type)&&definition.placeholder)control.setAttribute('placeholder',definition.placeholder);
   if(definition.rules.maxLength!==undefined)control.setAttribute('maxlength',definition.rules.maxLength);
   if(definition.rules.minLength)control.setAttribute('minlength',definition.rules.minLength);

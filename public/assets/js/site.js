@@ -1,9 +1,9 @@
-import {initResponsiveContent} from './content-responsive.js?v=20261014-contacts';
-import './cookie-notice.js?v=20261014-contacts';
-import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261014-contacts';
-import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261014-contacts';
-import { savedApplication } from './form-logic.js?v=20261014-contacts';
-import {attachApplicationForm,staleFormMessage} from './application-form.js?v=20261014-contacts';
+import {initResponsiveContent} from './content-responsive.js?v=20261016-education-files';
+import './cookie-notice.js?v=20261016-education-files';
+import {courses,siteContent,consentVersion,message as translate,canSelect,previewMessage,closedMessage} from './site-content.js?v=20261016-education-files';
+import {formatHours,replaceCaption,previewPhotoPlaceholder,renderContentField} from './content-format.js?v=20261016-education-files';
+import { savedApplication } from './form-logic.js?v=20261016-education-files';
+import {attachApplicationForm,staleFormMessage} from './application-form.js?v=20261016-education-files';
 
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const delay = () => motion.matches ? 0 : 220;

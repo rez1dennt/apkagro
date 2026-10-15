@@ -52,6 +52,20 @@ test('file errors reject multiple drops and format size mismatch and reset resto
  const field={...createCustomField('file'),id:'file',rules:{accept:['pdf']}},f=fixture('<form><div class="field" data-field-id="file"><label class="upload-zone"><input id="file" name="file" type="file"><strong>Свой документ</strong></label><p class="field-error" id="file-error"></p></div></form>');
  try{const input=f.document.querySelector('input'),zone=f.document.querySelector('.upload-zone');Object.defineProperty(input,'files',{value:[],writable:true});const widget=attachApplicationForm(f.document.querySelector('form'),{definitions:[field]});const drop=new f.window.Event('drop');drop.dataTransfer={files:[{name:'a.pdf',size:1,type:'application/pdf'},{name:'b.pdf',size:1,type:'application/pdf'}]};zone.dispatchEvent(drop);assert.equal(widget.validateAll(),false);assert.match(f.document.querySelector('.field-error').textContent,/один файл/);input.files=[{name:'x.png',size:1,type:'image/png'}];f.event(input,'change');assert.equal(widget.validateAll(),false);input.files=[{name:'x.pdf',size:10485761,type:'application/pdf'}];f.event(input,'change');assert.match(f.document.querySelector('.field-error').textContent,/10 МБ/);input.files=[];widget.clearErrors();assert.equal(f.document.querySelector('strong').textContent,'Свой документ');assert.equal(widget.validateAll(),true);widget.dispose();}finally{f.close();}
 });
+
+test('education upload accumulates five files removes one rejects a sixth and resets without stale selection',()=>{
+ const field={id:'educationFile',kind:'builtin',type:'file',enabled:true,required:true,rules:{accept:['pdf']}},f=fixture('<form><div class="field" data-field-id="educationFile"><label class="upload-zone"><input id="education-file" name="educationFile" type="file"><strong>Выберите файлы</strong></label><p class="field-error"></p></div></form>');
+ f.window.DataTransfer=class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}};
+ try{
+  const input=f.document.querySelector('input');Object.defineProperty(input,'files',{value:[],writable:true});const widget=attachApplicationForm(f.document.querySelector('form'),{definitions:[field]});
+  const add=i=>{input.files=[{name:'Диплом-'+i+'.pdf',size:10,type:'application/pdf',lastModified:i}];f.event(input,'change');};
+  for(let i=1;i<=5;i++)add(i);assert.equal(input.files.length,5);assert.equal(widget.validateAll(),true);assert.equal(f.document.querySelectorAll('.upload-files li').length,5);
+  add(6);assert.equal(input.files.length,5);assert.equal(widget.validateAll(),false);assert.match(f.document.querySelector('.field-error').textContent,/5/);
+  f.document.querySelector('.upload-files button').click();assert.equal(input.files.length,4);assert.equal(widget.validateAll(),true);add(6);assert.equal(input.files.length,5);assert.equal(widget.validateAll(),true);
+  input.files=[{name:'bad.png',size:10,type:'image/png',lastModified:7}];f.event(input,'change');assert.equal(widget.validateAll(),false);
+  widget.clearErrors();assert.equal(input.files.length,0);assert.equal(f.document.querySelectorAll('.upload-files li').length,0);add(1);assert.equal(input.files.length,1);assert.equal(widget.validateAll(),true);widget.dispose();
+ }finally{f.close();}
+});
 import {readFile} from 'node:fs/promises';
 import {renderContentPage} from '../server/content-render.mjs';
 test('required middle name hides only the default optional caption and keeps authored hints',async()=>{

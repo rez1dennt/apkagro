@@ -1,7 +1,7 @@
 import {HttpError} from './http-error.mjs';
 import {readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
-import {FIELD_TYPES,FORM_LIMITS,validDate,resolveFormDefinitions,formConsentShape} from '../public/assets/js/application-fields.js';
+import {FIELD_TYPES,FORM_LIMITS,validDate,resolveFormDefinitions,formConsentShape,maxFilesForField} from '../public/assets/js/application-fields.js';
 
 // Resolve positional legacy bindings once against the original checked-in template,
 // never against a reordered form or by comparing translated/duplicated labels.
@@ -20,6 +20,7 @@ const builtins=ids.map(id=>{
  }
  const type=control.tagName==='SELECT'?'select':control.getAttribute('type')??'text';
  const rules=['lastName','firstName','middleName'].includes(id)?{format:'name',minLength:0,maxLength:80}:id==='snils'?{format:'snils',minLength:0,maxLength:14}:id==='birthDate'?{min:'1900-01-01',max:null}:type==='select'?{options:[...control.querySelectorAll('option')].filter(n=>n.value).map(n=>({id:n.value,label:n.textContent}))}:type==='file'?{accept:['pdf','jpg','png']}:{};
+ if(type==='file')rules.maxFiles=maxFilesForField({id,kind:'builtin'});
  return {id,kind:'builtin',type,domId:control.id,name:id,autocomplete:control.getAttribute('autocomplete')??'',inputmode:control.getAttribute('inputmode')??'',aliases,controlBindings,rules,defaultRequired:control.hasAttribute('required'),defaultLabel:label.childNodes[0].textContent.trim(),defaultHint:container.querySelector('small,.field-hint')?.textContent??'',defaultPlaceholder:control.getAttribute('placeholder')??control.querySelector('option[value=""]')?.textContent??'',defaultUploadLabel:container.querySelector('[data-file-label]')?.textContent??'',defaultMarker:label.querySelector('span:not(.field-hint)')?.textContent??'*'};
 });
 const builtinMap=new Map(builtins.map(f=>[f.id,f]));

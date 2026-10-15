@@ -67,7 +67,8 @@ export async function extractDefaultContent(){
     content.pages.push({id:slug,slug,title:text(legal.querySelector('h1')),intro:text(legal.querySelector('.legal-intro')),body:markdown(legal.querySelector('.legal-body')).trim(),seo:{title:legal.title,description,robots:legal.querySelector('meta[name="robots"]').getAttribute('content'),ogTitle:og('title')??legal.title,ogDescription:og('description')??description,ogType:og('type')??'website',ogImage:og('image')??''},status:'published'});
   }
   const typed='.nav a,.mobile-menu nav a,.footer__nav a,.benefit,.step-list li,.accordion details,.program-card,.legal-body,.legal-container > h1,.legal-intro,.application__deadline';
-  const specials={'#hero-title':'hero.title','.hero__description':'hero.description','#application-title':'application.title','.closing h2':'closing.title'};
+  // Keep persisted field aliases stable when upload instructions change.
+  const specials={'#hero-title':'hero.title','.hero__description':'hero.description','#application-title':'application.title','.closing h2':'closing.title','[data-file-label="education-file"]':'application.text-20290e6504e5','.upload-zone[for="education-file"] small':'application.text-cee23e286893'};
   for(const [file,doc] of [['index.html',document],...await Promise.all(['privacy','consent','operator'].map(async slug=>[slug+'/index.html',parseHTML(await readFile(path.join(root,'public',slug,'index.html'),'utf8')).document]))]){
     const consumed=new Set();
     for(const node of doc.querySelectorAll('body *')){

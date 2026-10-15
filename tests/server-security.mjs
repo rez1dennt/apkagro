@@ -50,6 +50,19 @@ if(moduleExists){
   f.append('educationFile',new Blob([Buffer.from('%PDF-1.4\nsynthetic diploma\n%%EOF')],{type:'application/pdf'}),'diploma.pdf');return f;
  }
  test('anonymous admin routes and private paths are inaccessible',async()=>{const f=await fixture();try{for(const p of ['/api/admin/applications','/api/admin/applications/abc','/api/admin/documents/abc','/api/admin/export'])assert.equal((await f.req(p)).status,401);for(const p of ['/data/admin.json','/.env','/server/app.mjs','/%2e%2e/.env'])assert.equal((await f.req(p)).status,404);}finally{await f.close();}});
+ test('five education attachments survive encrypted storage and each downloads separately in the admin',async()=>{
+  const f=await fixture();try{
+   const data=form();data.delete('educationFile');const expected=[];
+   for(let i=1;i<=5;i++){const bytes=Buffer.from('%PDF-1.4\nsynthetic diploma page '+i+'\n%%EOF');expected.push(bytes.toString());data.append('educationFile',new Blob([bytes],{type:'application/pdf'}),'diploma-'+i+'.pdf');}
+   const response=await f.req('/api/applications',{method:'POST',body:data});assert.equal(response.status,201,await response.clone().text());const {id}=await response.json();
+   await f.authorize();const detail=await(await f.req('/api/admin/applications/'+id)).json(),documents=detail.documents.filter(d=>d.field==='educationFile');
+   assert.equal(documents.length,5);assert.equal(detail.documents.length,6);assert.equal(new Set(documents.map(d=>d.name)).size,5);
+   const actual=[];for(const document of documents){const download=await f.req('/api/admin/documents/'+document.id);assert.equal(download.status,200);actual.push(await download.text());}
+   assert.deepEqual(actual.sort(),expected.sort());
+   const sixth=form();for(let i=0;i<5;i++)sixth.append('educationFile',new Blob([Buffer.from(expected[0])],{type:'application/pdf'}),'extra.pdf');
+   assert.equal((await f.req('/api/applications',{method:'POST',body:sixth})).status,400);assert.equal((await(await f.req('/api/admin/applications')).json()).total,1);
+  }finally{await f.close();}
+ });
  test('CSRF and cross-origin protections fail closed',async()=>{const f=await fixture();try{assert.equal((await f.req('/api/admin/login',{method:'POST',headers:{origin:'https://evil.test'},body:'{}'})).status,403);assert.equal((await f.req('/api/admin/login',{method:'POST',headers:{'x-csrf-token':'wrong'},body:'{}'})).status,403);}finally{await f.close();}});
  test('password and OTP required, TOTP replay prevented and logout invalidates',async()=>{
   const f=await fixture(),realNow=Date.now;let time=realNow();Date.now=()=>time;

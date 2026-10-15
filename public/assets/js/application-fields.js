@@ -1,5 +1,7 @@
 // Shared pure field rules. Never evaluate configured code, markup or expressions.
-export const FORM_LIMITS=Object.freeze({fields:40,activeFiles:4,fileBytes:10*1024*1024,multipartBytes:41*1024*1024,scalarParts:50,parts:54,scalarBytes:16*1024,label:500,hint:2000,placeholder:500,text:2000,textarea:4000,options:50,optionLabel:500,number:1e12});
+export const FORM_LIMITS=Object.freeze({fields:40,activeFiles:4,uploadedFiles:8,fileBytes:10*1024*1024,multipartBytes:81*1024*1024,scalarParts:50,parts:58,scalarBytes:16*1024,label:500,hint:2000,placeholder:500,text:2000,textarea:4000,options:50,optionLabel:500,number:1e12});
+export const maxFilesForField=definition=>definition.kind==='builtin'&&definition.id==='educationFile'?5:1;
+export const fileCountMessage=limit=>limit===1?'Выберите один файл для этого поля.':`Для этого поля можно прикрепить не больше ${limit} файлов.`;
 export const FIELD_TYPES=Object.freeze(['text','textarea','email','tel','date','number','select','radio','checkbox','file']);
 export function createCustomField(type,{id,label='Новое поле'}={}){
  if(!FIELD_TYPES.includes(type))throw new TypeError('Неизвестный тип поля.');

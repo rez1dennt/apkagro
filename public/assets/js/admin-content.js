@@ -1,8 +1,8 @@
-import {el,button,dialog,confirmAction,downloadJson,dateLabel} from './admin-content-ui.js?v=20261014-contacts';
-import {createDraftState,changedGroups,createRecord,moveRecord,removeRecord,splitTemplate} from './admin-content-state.js?v=20261014-contacts';
-import {bindingFields,collectionEditor,objectFields,fieldControl,labels,sectionLabels,templateLabels} from './admin-content-fields.js?v=20261014-contacts';
-import {createMediaLibrary} from './admin-content-media.js?v=20261014-contacts';
-import {renderFormEditor,collectionChanged,formEditorError} from './admin-content-form.js?v=20261014-contacts';
+import {el,button,dialog,confirmAction,downloadJson,dateLabel} from './admin-content-ui.js?v=20261016-education-files';
+import {createDraftState,changedGroups,createRecord,moveRecord,removeRecord,splitTemplate} from './admin-content-state.js?v=20261016-education-files';
+import {bindingFields,collectionEditor,objectFields,fieldControl,labels,sectionLabels,templateLabels} from './admin-content-fields.js?v=20261016-education-files';
+import {createMediaLibrary} from './admin-content-media.js?v=20261016-education-files';
+import {renderFormEditor,collectionChanged,formEditorError} from './admin-content-form.js?v=20261016-education-files';
 const tabs=[['applications','Заявки'],['content','Содержимое сайта'],['programs','Программы'],['form','Форма заявки'],['media','Медиатека'],['pages','Страницы и документы'],['settings','Настройки'],['history','История публикаций']];
 const groupLabels={applicationForm:'Форма заявки',fields:'Тексты и изображения',navigation:'Меню',benefits:'Преимущества',steps:'Шаги поступления',faqs:'Вопросы и ответы',programs:'Программы',pages:'Страницы',sectionOrder:'Порядок разделов',hiddenSections:'Видимость разделов',extraSections:'Дополнительные разделы',settings:'Настройки и реквизиты',documents:'Документы',seo:'Поиск и социальные сети',messages:'Сообщения посетителю'};
 export function createContentAdmin({api,onUnauthorized}){
